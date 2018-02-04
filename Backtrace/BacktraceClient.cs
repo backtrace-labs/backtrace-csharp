@@ -14,12 +14,7 @@ namespace Backtrace
     /// Backtrace .NET Client 
     /// </summary>
     public class BacktraceClient : Backtrace<object>, IBacktraceClient<object>
-    {
-        /// <summary>
-        /// Get or set request timeout
-        /// </summary>
-        public int Timeout { get; set; }
-
+    {     
         /// <summary>
         /// Set a event executed before data send to Backtrace API
         /// </summary>

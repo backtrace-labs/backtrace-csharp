@@ -12,6 +12,22 @@ namespace Backtrace.Base
     public class Backtrace<T>
     {
         /// <summary>
+        /// Get or set request timeout
+        /// </summary>
+        public int Timeout { get; set; }
+
+        /// <summary>
+        /// Get scoped attributes from Backtrace client. Every argument stored in dictionary will be send to a Backtrace service
+        /// </summary>
+        public Dictionary<string, T> Attributes
+        {
+            get
+            {
+                return _attributes;
+            }
+        }
+
+        /// <summary>
         /// Client attributes
         /// </summary>
         protected Dictionary<string, T> _attributes;
@@ -48,18 +64,7 @@ namespace Backtrace.Base
             _attributes = attributes ?? new Dictionary<string, T>();
             _database = new BacktraceDatabase(databaseDirectory);
             _backgroundWatcher = new BackgroundWatcher(reportPerSec);
-        }
-
-        /// <summary>
-        /// Get scoped attributes from Backtrace client. Every argument stored in dictionary will be send to a Backtrace service
-        /// </summary>
-        public Dictionary<string, T> Attributes
-        {
-            get
-            {
-                return _attributes;
-            }
-        }
+        }      
 
         /// <summary>
         /// Send a report to Backtrace
