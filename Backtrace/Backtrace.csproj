@@ -1,11 +1,31 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.3;net35</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net35</TargetFrameworks>
+    <Product>Backtrace</Product>
+    <Description>Backtrace C# client to Backtrace API</Description>
+    <PackageProjectUrl>https://github.com/backtrace-labs/backtrace-csharp</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/backtrace-labs/backtrace-csharp</RepositoryUrl>
+    <!--<TargetFramework>net35</TargetFramework>-->
   </PropertyGroup>
+
+  <!-- Need to conditionally bring in references for the .NET Framework 3.5 target -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'NETSTANDARD2_0'">
+    <Reference Include="System.Configuration" />
+  </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DocumentationFile>bin\Debug\netstandard2.0\Backtrace.xml</DocumentationFile>
   </PropertyGroup>
+  
+  <ItemGroup>
+    <Reference Include="System.Configuration" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="System.Configuration.ConfigurationManager">
+      <Version>4.4.1</Version>
+    </PackageReference>
+  </ItemGroup>
 
 </Project>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Text;
 
 namespace Backtrace
@@ -9,6 +10,9 @@ namespace Backtrace
     /// </summary>
     public class BacktraceCredentials
     {
+        private const string _configurationHostRecordName = "HostUrl";
+        private const string _configurationTokenRecordName = "Token";
+
         private readonly Uri _backtraceHostUri;
         private readonly string _accessToken;
 
@@ -21,8 +25,8 @@ namespace Backtrace
             {
                 return _backtraceHostUri;
             }
-        }      
-      
+        }
+
         /// <summary>
         /// Initialize Backtrace credencials
         /// </summary>
@@ -32,7 +36,8 @@ namespace Backtrace
             Uri backtraceHostUri,
             string accessToken)
         {
-            if (!IsValid(backtraceHostUri, accessToken)) {
+            if (!IsValid(backtraceHostUri, accessToken))
+            {
                 throw new ArgumentException($"{nameof(backtraceHostUri)} or {nameof(accessToken)} is not valid.");
             }
             _backtraceHostUri = backtraceHostUri;
@@ -69,6 +74,31 @@ namespace Backtrace
         internal bool IsValid()
         {
             return string.IsNullOrEmpty(_accessToken) && _backtraceHostUri.IsWellFormedOriginalString();
+        }
+
+        /// <summary>
+        /// Read Backtrace credentials from application configuration
+        /// </summary>
+        /// <param name="sectionName">Credentials section name on app.config or web.config</param>
+        /// <returns></returns>
+        internal static BacktraceCredentials ReadConfigurationSection(string sectionName)
+        {
+            if (string.IsNullOrEmpty(sectionName))
+            {
+                throw new ArgumentException($"Section {nameof(sectionName)} is null or empty");
+            }
+            string backtraceHostUri = "";
+            string accessToken = "";
+            var applicationSettings = System.Configuration.ConfigurationManager.GetSection(sectionName) as NameValueCollection;
+
+            if (applicationSettings == null ||  applicationSettings.Count == 0)
+            {
+                throw new ArgumentException("Application setting are not defined");
+            }
+            backtraceHostUri = applicationSettings[_configurationHostRecordName];
+            accessToken = applicationSettings[_configurationTokenRecordName];
+
+            return new BacktraceCredentials(backtraceHostUri, accessToken);
         }
     }
 }
