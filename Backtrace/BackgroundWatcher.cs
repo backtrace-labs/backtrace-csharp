@@ -7,22 +7,22 @@ using System.Runtime.CompilerServices;
 namespace Backtrace
 {
     /// <summary>
-    /// Create a Backtrace backgroud watcher. Use watcher to send a raport to Backtrace api in a period defined in reportPerSec
+    /// Create a Backtrace backgroud watcher. Use watcher to send a report to Backtrace api in a period defined in reportPerSec
     /// </summary>
     internal class BackgroundWatcher
     {
-        private readonly int _raportPerSec;
+        private readonly int _reportPerSec;
         /// <summary>
         /// Create new instance of background watcher
         /// </summary>
-        /// <param name="reportPerSec">How many times per secound should watcher send a raport</param>
+        /// <param name="reportPerSec">How many times per secound should watcher send a report</param>
         public BackgroundWatcher(int reportPerSec)
         {
-
+            _reportPerSec = reportPerSec;
         }
 
         /// <summary>
-        /// Create work thread that send a environment raport in defined period
+        /// Create work thread that send a environment report in defined period
         /// </summary>
         public void Initialize()
         {

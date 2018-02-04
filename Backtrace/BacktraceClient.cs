@@ -1,5 +1,6 @@
 ﻿using Backtrace.Base;
 using Backtrace.Interfaces;
+using Backtrace.Model;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,30 +13,22 @@ namespace Backtrace
     /// <summary>
     /// Backtrace .NET Client 
     /// </summary>
-    public class BacktraceClient : Backtrace<string>, IBacktraceClient
+    public class BacktraceClient : Backtrace<object>, IBacktraceClient<object>
     {
         /// <summary>
-        /// Backtrace Credentials information
+        /// Get or set request timeout
         /// </summary>
-        private readonly BacktraceCredentials _backtraceCredentials;
+        public int Timeout { get; set; }
 
         /// <summary>
-        /// Initialize client with BacktraceCredentials
+        /// Set a event executed before data send to Backtrace API
         /// </summary>
-        /// <param name="backtraceCredentials">Backtrace credentials to access Backtrace API</param>
-        /// <param name="attributes">Attributes scoped for every report</param>
-        /// <param name="databaseDirectory">Database path</param>
-        /// <param name="reportPerSec">Numbers of records senden per one sec.</param>
-        public BacktraceClient(
-            BacktraceCredentials backtraceCredentials,
-            Dictionary<string, string> attributes = null,
-            string databaseDirectory = "",
-            int reportPerSec = 3
-            )
-        {
-            _backtraceCredentials = backtraceCredentials;
-            _attributes = attributes ?? new Dictionary<string, string>();
-        }
+        public Action<BacktraceReport<object>> BeforeSend = null;
+
+        /// <summary>
+        /// Set a event executed after data send to Backtrace API
+        /// </summary>
+        public Action<BacktraceReport<object>> AfterSend;
 
         /// <summary>
         /// Initialize Backtrace report client
@@ -46,22 +39,64 @@ namespace Backtrace
         /// <param name="reportPerSec">Numbers of records senden per one sec.</param>
         public BacktraceClient(
                 string sectionName = "BacktraceCredentials",
-                Dictionary<string, string> attributes = null,
+                Dictionary<string, object> attributes = null,
                 string databaseDirectory = "",
                 int reportPerSec = 3
             )
-            :this(BacktraceCredentials.ReadConfigurationSection(sectionName), attributes,databaseDirectory, reportPerSec)
+            : base(BacktraceCredentials.ReadConfigurationSection(sectionName),
+                  attributes, databaseDirectory, reportPerSec)
         {
-            
         }
 
         /// <summary>
-        /// Send a report to Backtrace
+        /// Initialize client with BacktraceCredentials
         /// </summary>
-        /// <param name="report">Report to send</param>
-        public void Send(BacktraceReport report)
+        /// <param name="backtraceCredentials">Backtrace credentials to access Backtrace API</param>
+        /// <param name="attributes">Attributes scoped for every report</param>
+        /// <param name="databaseDirectory">Database path</param>
+        /// <param name="reportPerSec">Numbers of records senden per one sec.</param>
+        public BacktraceClient(
+            BacktraceCredentials backtraceCredentials,
+            Dictionary<string, object> attributes = null,
+            string databaseDirectory = "",
+            int reportPerSec = 3)
+            : base(backtraceCredentials, attributes, databaseDirectory, reportPerSec)
+        { }
+
+        /// <summary>
+        /// Send a backtrace report to Backtrace API
+        /// </summary>
+        /// <param name="backtraceReport">report</param>
+        public new void Send(BacktraceReport<object> backtraceReport)
         {
-            throw new NotImplementedException();
+            BeforeSend?.Invoke(backtraceReport);
+
+            base.Send(backtraceReport);
+
+            AfterSend?.Invoke(backtraceReport);
+        }
+
+        /// <summary>
+        /// Send an exception to Backtrace API
+        /// </summary>
+        /// <param name="exception">Exception</param>
+        /// <param name="attributes">Additional information about application state</param>
+        public virtual void Send(
+            Exception exception,
+            Dictionary<string, object> attributes = null)
+        {
+            Send(new BacktraceReport<object>(exception, attributes));
+        }
+        /// <summary>
+        /// Send a message to Backtrace API
+        /// </summary>
+        /// <param name="message">Message</param>
+        /// <param name="attributes">Additional information about application state</param>
+        public virtual void Send(
+            string message,
+            Dictionary<string, object> attributes = null)
+        {
+            Send(new BacktraceReport<object>(message, attributes));
         }
     }
 }

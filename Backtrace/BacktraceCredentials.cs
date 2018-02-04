@@ -32,6 +32,7 @@ namespace Backtrace
         /// </summary>
         /// <param name="backtraceHostUri">Uri to Backtrace host</param>
         /// <param name="accessToken">Access token to Backtrace services</param>
+        /// <exception cref="ArgumentException">Thrown when uri to backtrace is invalid or accessToken is null or empty</exception>
         public BacktraceCredentials(
             Uri backtraceHostUri,
             string accessToken)
@@ -80,7 +81,9 @@ namespace Backtrace
         /// Read Backtrace credentials from application configuration
         /// </summary>
         /// <param name="sectionName">Credentials section name on app.config or web.config</param>
-        /// <returns></returns>
+        /// <returns>New BacktraceCredentials instance</returns>
+        /// <exception cref="ArgumentException">Thrown when a section is null or empty</exception>
+        /// <exception cref="InvalidOperationException">Thrown when a application settings are not defined</exception>
         internal static BacktraceCredentials ReadConfigurationSection(string sectionName)
         {
             if (string.IsNullOrEmpty(sectionName))
@@ -93,7 +96,7 @@ namespace Backtrace
 
             if (applicationSettings == null ||  applicationSettings.Count == 0)
             {
-                throw new ArgumentException("Application setting are not defined");
+                throw new InvalidOperationException("Application setting are not defined");
             }
             backtraceHostUri = applicationSettings[_configurationHostRecordName];
             accessToken = applicationSettings[_configurationTokenRecordName];
