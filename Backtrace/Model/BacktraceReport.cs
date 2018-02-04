@@ -1,5 +1,4 @@
-﻿using Backtrace.Comparers;
-using Backtrace.Extensions;
+﻿using Backtrace.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
