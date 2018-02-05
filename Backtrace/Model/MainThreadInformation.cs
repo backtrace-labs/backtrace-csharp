@@ -7,7 +7,7 @@ namespace Backtrace.Model
     /// <summary>
     /// Generate information about appliaction threads
     /// </summary>
-    internal class AppThreads
+    internal class MainThreadInformation
     {
         public readonly string MainThreadName;
         public readonly bool Fault;
@@ -18,7 +18,7 @@ namespace Backtrace.Model
         /// <summary>
         /// Create instance of AppThread class to get more information about thread information while debugging
         /// </summary>
-        public AppThreads()
+        public MainThreadInformation()
         {
             var mainThread = Thread.CurrentThread;
             MainThreadName = mainThread.Name;

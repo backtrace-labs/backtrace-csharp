@@ -12,6 +12,10 @@ namespace Backtrace.Model
     public class BacktraceReport<T>
     {
         /// <summary>
+        /// Get an information aboout report type. If value is true the BacktraceReport has an error information
+        /// </summary>
+        public bool ExceptionTypeReport = false;
+        /// <summary>
         /// Additional information about report. You can define any information that will be sended to server
         /// </summary>
         private Dictionary<string, T> _attributes;
@@ -65,6 +69,7 @@ namespace Backtrace.Model
         {
             _exception = exception;
             _attributes = attributes ?? new Dictionary<string, T>();
+            ExceptionTypeReport = true;
         }
 
         internal static Dictionary<string, T> ConcatAttributes(

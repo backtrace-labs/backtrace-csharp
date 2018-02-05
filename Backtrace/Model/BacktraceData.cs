@@ -40,7 +40,19 @@ namespace Backtrace.Model
         /// </summary>
         public Version AgentVersion;
 
+        /// <summary>
+        /// Set an information about application main thread
+        /// </summary>
+        public MainThreadInformation MainThread;
+
+        /// <summary>
+        /// Received BacktraceReport
+        /// </summary>
         private readonly BacktraceReport<T> _report;
+
+        /// <summary>
+        /// Merged scoped attributes and report attributes
+        /// </summary>
         private Dictionary<string, T> _attributes;
 
         /// <summary>
@@ -51,15 +63,40 @@ namespace Backtrace.Model
         public BacktraceData(BacktraceReport<T> report, Dictionary<string, T> scopedAttributes)
         {
             _report = report;
-            _attributes = scopedAttributes;
+            MainThread = new MainThreadInformation();
+            PrepareData();
         }
 
-        internal void PrepareData()
+
+        /// <summary>
+        /// Set an assembly information about current program
+        /// </summary>
+        internal void SetAssemblyInformation()
         {
             var assembly = Assembly.GetExecutingAssembly().GetName();
             Agent = assembly.Name;
-            var Version = assembly.Version;
-            var attributes = BacktraceReport<T>.ConcatAttributes(_report, _attributes);
+            AgentVersion = assembly.Version;
+        }
+
+        /// <summary>
+        /// Set information about current report 
+        /// </summary>
+        internal void SetReportInformation()
+        {
+            _attributes = BacktraceReport<T>.ConcatAttributes(_report, _attributes);
+            if (_report.ExceptionTypeReport)
+            {
+                MainThread.SetThreadExceptionInformation(_report.Exception);
+            }
+        }
+
+        /// <summary>
+        /// Prepare all data to JSON file
+        /// </summary>
+        internal void PrepareData()
+        {
+            SetAssemblyInformation();
+            SetReportInformation();
         }
     }
 }
