@@ -14,7 +14,18 @@ namespace Backtrace.Base
         /// <summary>
         /// Get or set request timeout
         /// </summary>
-        public int Timeout { get; set; }
+        public int Timeout {
+            get
+            {
+                return _backtraceApi.Timeout;
+            }
+            set
+            {
+                _backtraceApi.Timeout = value;
+            }
+        }
+
+      
 
         /// <summary>
         /// Get scoped attributes from Backtrace client. Every argument stored in dictionary will be send to a Backtrace service
@@ -33,9 +44,9 @@ namespace Backtrace.Base
         protected Dictionary<string, T> _attributes;
 
         /// <summary>
-        /// Backtrace Credentials information
+        /// Instance of request object to Backtrace API
         /// </summary>
-        private readonly BacktraceCredentials _backtraceCredentials;
+        private readonly BacktraceApi _backtraceApi;
 
         /// <summary>
         /// Backtrace database
@@ -64,7 +75,7 @@ namespace Backtrace.Base
             _attributes = attributes ?? new Dictionary<string, T>();
             _database = new BacktraceDatabase(databaseDirectory);
             _backgroundWatcher = new BackgroundWatcher(reportPerSec);
-        }      
+        }
 
         /// <summary>
         /// Send a report to Backtrace
@@ -72,12 +83,13 @@ namespace Backtrace.Base
         /// <param name="report">Report to send</param>
         public virtual void Send(BacktraceReport<T> report)
         {
-            //prepare JSON
+            //create a JSON payload instance
+            var data = new BacktraceData<T>(report, Attributes);
             //Send it to API
             throw new NotImplementedException();
         }
 
-        
+
 
     }
 }

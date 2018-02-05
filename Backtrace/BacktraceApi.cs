@@ -9,8 +9,18 @@ namespace Backtrace
     /// </summary>
     internal class BacktraceApi
     {
+        /// <summary>
+        /// Get or set request timeout value in milliseconds
+        /// </summary>
+        internal int Timeout { get; set; }
         private readonly BacktraceCredentials _credentials;
-        public BacktraceApi(BacktraceCredentials credentials)
+
+        /// <summary>
+        /// Create a new instance of Backtrace API request.
+        /// </summary>
+        /// <param name="credentials">API credentials</param>
+        /// <param name="timeout">Request timeout in milliseconds</param>
+        public BacktraceApi(BacktraceCredentials credentials, int timeout = 5000)
         {
             _credentials = credentials;
         }
