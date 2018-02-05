@@ -7,7 +7,7 @@ using System.Text;
 namespace Backtrace.Base
 {
     /// <summary>
-    /// Backtrace .NET Client 
+    /// Base Backtrace .NET Client 
     /// </summary>
     public class Backtrace<T>
     {
@@ -24,8 +24,6 @@ namespace Backtrace.Base
                 _backtraceApi.Timeout = value;
             }
         }
-
-      
 
         /// <summary>
         /// Get scoped attributes from Backtrace client. Every argument stored in dictionary will be send to a Backtrace service
@@ -71,10 +69,10 @@ namespace Backtrace.Base
             string databaseDirectory = "",
             int reportPerSec = 3)
         {
-            _backtraceCredentials = backtraceCredentials;
             _attributes = attributes ?? new Dictionary<string, T>();
             _database = new BacktraceDatabase(databaseDirectory);
             _backgroundWatcher = new BackgroundWatcher(reportPerSec);
+            _backtraceApi = new BacktraceApi(backtraceCredentials);
         }
 
         /// <summary>
