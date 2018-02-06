@@ -138,7 +138,7 @@ namespace Backtrace.Model
 
             //read exception stack
             MainThread.Stack = exceptionStack;
-            StackFrames = exceptionStack?.StackFrames
+            StackFrames = exceptionStack?.StackFrames?
                 .Select(n => n.ToString()).ToList();
         }
     }

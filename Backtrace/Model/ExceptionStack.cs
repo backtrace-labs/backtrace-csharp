@@ -58,6 +58,11 @@ namespace Backtrace.Model
             //get a current stack frame from an exception
             var stackTrace = new System.Diagnostics.StackTrace(exception, true);
             StackFrames = stackTrace.GetFrames();
+            //handle custom made exceptions 
+            if (StackFrames == null || StackFrames.Length == 0)
+            {
+                return;
+            }
             var frame = StackFrames[stackTrace.FrameCount - 1];
             if (frame == null)
             {

@@ -67,9 +67,7 @@ namespace Backtrace
         public new void Send(BacktraceReport<object> backtraceReport)
         {
             OnReportStart?.Invoke(backtraceReport);
-
             base.Send(backtraceReport);
-
             AfterSend?.Invoke(backtraceReport);
         }
 

@@ -1,18 +1,22 @@
 ﻿using System;
+using Backtrace.Model;
 using System.Collections.Generic;
 using System.Text;
+using Backtrace.Interfaces;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace
 {
     /// <summary>
     /// Create requests to Backtrace API
     /// </summary>
-    internal class BacktraceApi
+    internal class BacktraceApi<T> : IBacktraceApi<T>
     {
         /// <summary>
         /// Get or set request timeout value in milliseconds
         /// </summary>
-        internal int Timeout { get; set; }
+        public int Timeout { get; set; }
+
         private readonly BacktraceCredentials _credentials;
 
         /// <summary>
@@ -25,7 +29,7 @@ namespace Backtrace
             _credentials = credentials;
         }
 
-        internal void Send()
+        public void Send(BacktraceData<T> data)
         {
             throw new NotImplementedException();
         }

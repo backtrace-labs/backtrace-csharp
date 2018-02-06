@@ -82,10 +82,15 @@ namespace Backtrace.Model
         public BacktraceReport(
             Exception exception,
             Dictionary<string, T> attributes = null)
-        {
-            _exception = exception;
-            var type = _exception.GetType();
+        {            
             _attributes = attributes ?? new Dictionary<string, T>();
+            //handle null value in exception parameter
+            if(exception == null)
+            {
+                return;
+            }
+            _exception = exception;
+            var type = _exception?.GetType();
             ExceptionTypeReport = true;
         }
 

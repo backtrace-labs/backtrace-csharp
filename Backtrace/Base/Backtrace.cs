@@ -1,9 +1,11 @@
 ﻿using Backtrace.Model;
+using Backtrace.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Base
 {
     /// <summary>
@@ -51,7 +53,7 @@ namespace Backtrace.Base
         /// <summary>
         /// Instance of request object to Backtrace API
         /// </summary>
-        private readonly BacktraceApi _backtraceApi;
+        internal IBacktraceApi<T> _backtraceApi;
 
         /// <summary>
         /// Backtrace database
@@ -79,7 +81,7 @@ namespace Backtrace.Base
             _attributes = attributes ?? new Dictionary<string, T>();
             _database = new BacktraceDatabase(databaseDirectory);
             _backgroundWatcher = new BackgroundWatcher(reportPerSec);
-            _backtraceApi = new BacktraceApi(backtraceCredentials);
+            _backtraceApi = new BacktraceApi<T>(backtraceCredentials);
         }
 
         /// <summary>
@@ -91,11 +93,7 @@ namespace Backtrace.Base
             //create a JSON payload instance
             var data = new BacktraceData<T>(report, Attributes);
             BeforeSend?.Invoke(data);
-            //Send it to API
-            throw new NotImplementedException();
+            _backtraceApi.Send(data);
         }
-
-
-
     }
 }

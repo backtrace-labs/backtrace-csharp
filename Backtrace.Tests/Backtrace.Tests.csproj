@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
+    <PackageReference Include="Moq" Version="4.8.1" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.2.0" />
     <PackageReference Include="MSTest.TestFramework" Version="1.2.0" />
     <PackageReference Include="NUnit" Version="3.9.0" />
@@ -16,10 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Backtrace\Backtrace.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="ReportTests\" />
   </ItemGroup>
 
 </Project>
