@@ -29,7 +29,15 @@ namespace Backtrace.Model
         /// </summary>
         public string Lang = "csharp";
 
+        /// <summary>
+        /// Get a C# language version
+        /// </summary>
         public string LangVersion = typeof(string).Assembly.ImageRuntimeVersion;
+
+        /// <summary>
+        /// Get a report exepion type 
+        /// </summary>
+        public string Classifier { get; set; }
 
         /// <summary>
         /// Name of the client that is sending this error report.
@@ -65,11 +73,20 @@ namespace Backtrace.Model
         /// <param name="scopedAttributes">Scoped Attributes from BacktraceClient</param>
         public BacktraceData(BacktraceReport<T> report, Dictionary<string, T> scopedAttributes)
         {
+            _attributes = scopedAttributes;
             _report = report;
             MainThread = new MainThreadInformation();
             PrepareData();
         }
 
+        /// <summary>
+        /// Prepare all data to JSON file
+        /// </summary>
+        internal void PrepareData()
+        {
+            SetAssemblyInformation();
+            SetReportInformation();
+        }        
 
         /// <summary>
         /// Set an assembly information about current program
@@ -87,21 +104,26 @@ namespace Backtrace.Model
         internal void SetReportInformation()
         {
             _attributes = BacktraceReport<T>.ConcatAttributes(_report, _attributes);
-            var exceptionStack = _report.GetExceptionStack();
-            MainThread.Stack = exceptionStack;
-            //read stack frame here
-            StackFrames = exceptionStack.StackFrames
-                .Select(n => n.ToString()).ToList();
-            //exceptionStack.StackFrames.
+
+            //Set exception type properties
+            if (_report.ExceptionTypeReport)
+            {
+                SetExceptionInformation();
+            }  
         }
 
         /// <summary>
-        /// Prepare all data to JSON file
+        /// Set properties based on exception information
         /// </summary>
-        internal void PrepareData()
+        internal void SetExceptionInformation()
         {
-            SetAssemblyInformation();
-            SetReportInformation();
+            Classifier = _report.Classifier;
+            var exceptionStack = _report.GetExceptionStack();
+
+            //read exception stack
+            MainThread.Stack = exceptionStack;
+            StackFrames = exceptionStack?.StackFrames
+                .Select(n => n.ToString()).ToList();
         }
     }
 }

@@ -12,6 +12,18 @@ namespace Backtrace.Examples
             var credentials = new BacktraceCredentials("backtraceHostUrl", "accessToken");
             var backtraceClientWithCredentials = new BacktraceClient(credentials);
 
+            //Add new scoped attributes
+            backtraceClient.Attributes["ClientAttributeNumber"] = 1;
+            backtraceClient.Attributes["ClientAttributeString"] = "string attribute";
+            backtraceClient.Attributes["ClientAttributeCustomClass"] = new
+            {
+                Name = "Backtrace",
+                Type = "Library"
+            };
+
+            //Report a new message
+            backtraceClient.Send("Client message");
+
             //Report a new exception from current application
             try
             {

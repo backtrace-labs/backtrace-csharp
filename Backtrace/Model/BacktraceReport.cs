@@ -15,10 +15,26 @@ namespace Backtrace.Model
         /// Get an information aboout report type. If value is true the BacktraceReport has an error information
         /// </summary>
         public bool ExceptionTypeReport = false;
+
         /// <summary>
         /// Additional information about report. You can define any information that will be sended to server
         /// </summary>
         private Dictionary<string, T> _attributes;
+
+        /// <summary>
+        /// Get a report classification 
+        /// </summary>
+        public string Classifier
+        {
+            get
+            {
+                if (ExceptionTypeReport)
+                {
+                    return _exception.GetType().FullName;
+                }
+                return string.Empty;
+            }
+        }
 
         /// <summary>
         /// Get an report attributes
@@ -68,6 +84,7 @@ namespace Backtrace.Model
             Dictionary<string, T> attributes = null)
         {
             _exception = exception;
+            var type = _exception.GetType();
             _attributes = attributes ?? new Dictionary<string, T>();
             ExceptionTypeReport = true;
         }
@@ -89,12 +106,12 @@ namespace Backtrace.Model
         /// <returns>Exception stack based on exception</returns>
         internal ExceptionStack GetExceptionStack()
         {
-            if(ExceptionTypeReport)
+            if (ExceptionTypeReport)
             {
                 return new ExceptionStack(Exception);
             }
             return null;
-            
+
         }
     }
 }
