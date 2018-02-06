@@ -66,9 +66,7 @@ namespace Backtrace
             string backtraceHostUrl,
             string accessToken)
         : this(new Uri(backtraceHostUrl), Encoding.UTF8.GetBytes(accessToken))
-        {
-
-        }
+        { }
 
         /// <summary>
         /// Initialize Backtrace credencials

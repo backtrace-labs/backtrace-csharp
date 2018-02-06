@@ -50,6 +50,16 @@ namespace Backtrace.Model
         public Version AgentVersion;
 
         /// <summary>
+        /// Exception stack frames
+        /// </summary>
+        public List<string> StackFrames;
+
+        /// <summary>
+        /// Merged scoped attributes and report attributes
+        /// </summary>
+        public Dictionary<string, T> Attributes;
+
+        /// <summary>
         /// Set an information about application main thread
         /// </summary>
         internal MainThreadInformation MainThread;
@@ -60,11 +70,14 @@ namespace Backtrace.Model
         private readonly BacktraceReport<T> _report;
 
         /// <summary>
-        /// Merged scoped attributes and report attributes
+        /// Get built-in attributes
         /// </summary>
-        private Dictionary<string, T> _attributes;
+        private readonly BacktraceAttributes _backtraceAttributes;
 
-        private List<string> StackFrames;
+        /// <summary>
+        /// Current assembly
+        /// </summary>
+        private readonly Assembly _currentAssembly;
 
         /// <summary>
         /// Create instance of report data class
@@ -73,8 +86,10 @@ namespace Backtrace.Model
         /// <param name="scopedAttributes">Scoped Attributes from BacktraceClient</param>
         public BacktraceData(BacktraceReport<T> report, Dictionary<string, T> scopedAttributes)
         {
-            _attributes = scopedAttributes;
+            Attributes = scopedAttributes;
             _report = report;
+            _currentAssembly = Assembly.GetExecutingAssembly();
+            _backtraceAttributes = new BacktraceAttributes(_currentAssembly);
             MainThread = new MainThreadInformation();
             PrepareData();
         }
@@ -93,9 +108,9 @@ namespace Backtrace.Model
         /// </summary>
         internal void SetAssemblyInformation()
         {
-            var assembly = Assembly.GetExecutingAssembly().GetName();
-            Agent = assembly.Name;
-            AgentVersion = assembly.Version;
+            var assemblyInformation = _currentAssembly.GetName();
+            Agent = assemblyInformation.Name;
+            AgentVersion = assemblyInformation.Version;
         }
 
         /// <summary>
@@ -103,12 +118,13 @@ namespace Backtrace.Model
         /// </summary>
         internal void SetReportInformation()
         {
-            _attributes = BacktraceReport<T>.ConcatAttributes(_report, _attributes);
+            Attributes = BacktraceReport<T>.ConcatAttributes(_report, Attributes);
 
             //Set exception type properties
             if (_report.ExceptionTypeReport)
             {
                 SetExceptionInformation();
+                _backtraceAttributes.SetExceptionAttributes(_report.Exception);
             }  
         }
 
