@@ -77,12 +77,24 @@ namespace Backtrace.Model
         {
             if (attributes == null)
             {
-                throw new ArgumentException(nameof(attributes));
+                return report._attributes;
             }
             var reportAttributes = report._attributes;
             return reportAttributes.Merge(attributes);
+        }
 
-
+        /// <summary>
+        /// Convert exception to ExceptionStack
+        /// </summary>
+        /// <returns>Exception stack based on exception</returns>
+        internal ExceptionStack GetExceptionStack()
+        {
+            if(ExceptionTypeReport)
+            {
+                return new ExceptionStack(Exception);
+            }
+            return null;
+            
         }
     }
 }

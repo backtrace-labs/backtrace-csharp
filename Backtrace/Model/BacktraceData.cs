@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -55,6 +56,8 @@ namespace Backtrace.Model
         /// </summary>
         private Dictionary<string, T> _attributes;
 
+        private List<string> StackFrames;
+
         /// <summary>
         /// Create instance of report data class
         /// </summary>
@@ -84,10 +87,12 @@ namespace Backtrace.Model
         internal void SetReportInformation()
         {
             _attributes = BacktraceReport<T>.ConcatAttributes(_report, _attributes);
-            if (_report.ExceptionTypeReport)
-            {
-                MainThread.SetThreadExceptionInformation(_report.Exception);
-            }
+            var exceptionStack = _report.GetExceptionStack();
+            MainThread.Stack = exceptionStack;
+            //read stack frame here
+            StackFrames = exceptionStack.StackFrames
+                .Select(n => n.ToString()).ToList();
+            //exceptionStack.StackFrames.
         }
 
         /// <summary>

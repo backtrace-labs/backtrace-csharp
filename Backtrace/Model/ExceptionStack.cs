@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace Backtrace.Model
@@ -23,6 +24,11 @@ namespace Backtrace.Model
         /// Column number in source code where exception occurs
         /// </summary>
         public int Column { get; set; }
+
+        /// <summary>
+        /// Full path to source code where exception occurs
+        /// </summary>
+        public string SourceCodeFullPath { get; set; }
 
         /// <summary>
         /// Source code file name where exception occurs
@@ -51,7 +57,8 @@ namespace Backtrace.Model
             }
             //get a current stack frame from an exception
             var stackTrace = new System.Diagnostics.StackTrace(exception, true);
-            var frame = stackTrace?.GetFrame(stackTrace.FrameCount - 1);
+            StackFrames = stackTrace.GetFrames();
+            var frame = StackFrames[stackTrace.FrameCount - 1];
             if (frame == null)
             {
                 return;
@@ -59,9 +66,16 @@ namespace Backtrace.Model
             FunctionName = frame.GetMethod().Name;
             Line = frame.GetFileLineNumber();
             Column = frame.GetFileColumnNumber();
-            SourceCode = frame.GetFileName();
+            SourceCodeFullPath = frame.GetFileName();
+            SourceCode = Path.GetFileName(SourceCodeFullPath);
+
             Library = exception.Source;
             CallstackState = exception.InnerException == null;
         }
+
+        /// <summary>
+        /// Get all stack frames from current exception
+        /// </summary>
+        public System.Diagnostics.StackFrame[] StackFrames;
     }
 }

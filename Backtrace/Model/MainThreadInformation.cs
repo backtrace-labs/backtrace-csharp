@@ -28,15 +28,6 @@ namespace Backtrace.Model
         }
 
         /// <summary>
-        /// Set an exception information to thread information
-        /// </summary>
-        /// <param name="exception">Exception occurs</param>
-        public void SetThreadExceptionInformation(Exception exception)
-        {
-            Stack = new ExceptionStack(exception);
-        }
-
-        /// <summary>
         /// Get current process thread based on main thread. Function use current process to get a ProcessThread
         /// </summary>
         /// <param name="thread">Main Thread</param>

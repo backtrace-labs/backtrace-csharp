@@ -1,4 +1,5 @@
-﻿namespace Backtrace.Examples
+﻿using System;
+namespace Backtrace.Examples
 {
     class Program
     {
@@ -10,6 +11,17 @@
 
             var credentials = new BacktraceCredentials("backtraceHostUrl", "accessToken");
             var backtraceClientWithCredentials = new BacktraceClient(credentials);
+
+            //Report a new exception from current application
+            try
+            {
+                var i = 0;
+                var result = i / i;
+            }
+            catch (Exception exception)
+            {
+                backtraceClient.Send(exception);
+            }
         }
     }
 }
