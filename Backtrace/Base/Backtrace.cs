@@ -11,10 +11,17 @@ namespace Backtrace.Base
     /// </summary>
     public class Backtrace<T>
     {
+
+        /// <summary>
+        /// Set an event executed before data send to Backtrace API
+        /// </summary>
+        public Action<BacktraceData<T>> BeforeSend = null;
+
         /// <summary>
         /// Get or set request timeout
         /// </summary>
-        public int Timeout {
+        public int Timeout
+        {
             get
             {
                 return _backtraceApi.Timeout;
@@ -83,6 +90,7 @@ namespace Backtrace.Base
         {
             //create a JSON payload instance
             var data = new BacktraceData<T>(report, Attributes);
+            BeforeSend?.Invoke(data);
             //Send it to API
             throw new NotImplementedException();
         }

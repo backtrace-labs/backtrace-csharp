@@ -14,14 +14,16 @@ namespace Backtrace
     /// Backtrace .NET Client 
     /// </summary>
     public class BacktraceClient : Backtrace<object>, IBacktraceClient<object>
-    {     
+    {
         /// <summary>
-        /// Set a event executed before data send to Backtrace API
+        /// Set an event executed when send function triggers
         /// </summary>
-        public Action<BacktraceReport<object>> BeforeSend = null;
+        public Action<BacktraceReport<object>> OnReportStart = null;
+
+      
 
         /// <summary>
-        /// Set a event executed after data send to Backtrace API
+        /// Set an event executed after data send to Backtrace API
         /// </summary>
         public Action<BacktraceReport<object>> AfterSend;
 
@@ -64,7 +66,7 @@ namespace Backtrace
         /// <param name="backtraceReport">report</param>
         public new void Send(BacktraceReport<object> backtraceReport)
         {
-            BeforeSend?.Invoke(backtraceReport);
+            OnReportStart?.Invoke(backtraceReport);
 
             base.Send(backtraceReport);
 

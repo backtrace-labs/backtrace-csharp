@@ -11,7 +11,7 @@ namespace Backtrace.Model
     /// Serializable Backtrace API data object
     /// </summary>
     [Serializable]
-    internal class BacktraceData<T>
+    public class BacktraceData<T>
     {
         /// <summary>
         /// 16 bytes of randomness in human readable UUID format
@@ -44,7 +44,7 @@ namespace Backtrace.Model
         /// <summary>
         /// Set an information about application main thread
         /// </summary>
-        public MainThreadInformation MainThread;
+        internal MainThreadInformation MainThread;
 
         /// <summary>
         /// Received BacktraceReport
