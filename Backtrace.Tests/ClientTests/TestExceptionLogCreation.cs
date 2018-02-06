@@ -35,12 +35,12 @@ namespace Backtrace.Tests.ClientTests
 
         [Test]
         public void TestExceptionAttributes([ValueSource("_exceptions")]Exception exception)
-        {
+        { 
             Dictionary<string, object> currentAttributes = new Dictionary<string, object>();
             _backtraceClient.BeforeSend =
                 (BacktraceData<object> model) =>
                 {
-                    currentAttributes = model.Attributes;
+                    currentAttributes = model.Annotations;
                 };
 
             foreach (var testAttributes in _testAttributes)

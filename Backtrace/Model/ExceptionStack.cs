@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Backtrace.Model
@@ -13,16 +15,19 @@ namespace Backtrace.Model
         /// <summary>
         /// Function where exception occurs
         /// </summary>
+        [JsonProperty(PropertyName = "funcName")]
         public string FunctionName { get; set; }
 
         /// <summary>
         /// Line number in source code where exception occurs
         /// </summary>
+        [JsonProperty(PropertyName = "line")]
         public int Line { get; set; }
 
         /// <summary>
         /// Column number in source code where exception occurs
         /// </summary>
+        [JsonProperty(PropertyName = "column")]
         public int Column { get; set; }
 
         /// <summary>
@@ -33,16 +38,19 @@ namespace Backtrace.Model
         /// <summary>
         /// Source code file name where exception occurs
         /// </summary>
+        [JsonProperty(PropertyName = "sourceCode")]
         public string SourceCode { get; set; }
 
         /// <summary>
         /// Library name where exception occurs
         /// </summary>
+        [JsonProperty(PropertyName = "library")]
         public string Library { get; set; }
 
         /// <summary>
         /// Check if there is an inner exception
         /// </summary>
+        [JsonProperty(PropertyName = "callstack_state")]
         public bool CallstackState { get; set; }
 
         /// <summary>
@@ -57,13 +65,16 @@ namespace Backtrace.Model
             }
             //get a current stack frame from an exception
             var stackTrace = new System.Diagnostics.StackTrace(exception, true);
-            StackFrames = stackTrace.GetFrames();
+            var stackFrames = stackTrace.GetFrames();
             //handle custom made exceptions 
-            if (StackFrames == null || StackFrames.Length == 0)
+            if (stackFrames == null || stackFrames.Length == 0)
             {
                 return;
             }
-            var frame = StackFrames[stackTrace.FrameCount - 1];
+            StackFrames = stackFrames
+                .Select(n => n.ToString()).ToList();
+
+            var frame = stackFrames[stackTrace.FrameCount - 1];
             if (frame == null)
             {
                 return;
@@ -81,6 +92,6 @@ namespace Backtrace.Model
         /// <summary>
         /// Get all stack frames from current exception
         /// </summary>
-        public System.Diagnostics.StackFrame[] StackFrames;
+        public List<string> StackFrames = new List<string>();
     }
 }

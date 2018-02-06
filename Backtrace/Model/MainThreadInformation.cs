@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Threading;
 using Diagnostics = System.Diagnostics;
 
@@ -7,12 +8,19 @@ namespace Backtrace.Model
     /// <summary>
     /// Generate information about appliaction threads
     /// </summary>
+    [Serializable]
     internal class MainThreadInformation
     {
+        [JsonProperty(PropertyName = "name")]
         public readonly string MainThreadName;
+
+        [JsonProperty(PropertyName = "fault")]
         public readonly bool Fault;
+        
+        [JsonProperty(PropertyName = "stackTrace")]
         public readonly string MainThreadStackTrace;
 
+        [JsonProperty(PropertyName = "stack")]
         public ExceptionStack Stack = null;
 
         /// <summary>

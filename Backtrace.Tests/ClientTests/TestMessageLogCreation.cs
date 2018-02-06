@@ -44,7 +44,7 @@ namespace Backtrace.Tests.ClientTests
             _backtraceClient.BeforeSend =
                 (Model.BacktraceData<object> model) =>
                 {
-                    currentAttributes = model.Attributes;
+                    currentAttributes = model.Annotations;
                 };
 
             foreach (var testAttributes in _testAttributes)

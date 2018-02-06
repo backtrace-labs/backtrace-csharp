@@ -3,6 +3,7 @@ using Backtrace.Model;
 using System.Collections.Generic;
 using System.Text;
 using Backtrace.Interfaces;
+using Newtonsoft.Json;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace
@@ -31,6 +32,7 @@ namespace Backtrace
 
         public void Send(BacktraceData<T> data)
         {
+            var json = JsonConvert.SerializeObject(data);
             throw new NotImplementedException();
         }
     }

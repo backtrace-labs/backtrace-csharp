@@ -28,9 +28,9 @@ namespace Backtrace.Model
         {
             _assembly = assembly;
             //A unique identifier to a machine
-            Attributes.Add("Guid", Guid.NewGuid().ToString());
+            Attributes.Add("guid", Guid.NewGuid().ToString());
             //Base name of application generating the report
-            Attributes.Add("Application", assembly.GetName().Name);
+            Attributes.Add("application", assembly.GetName().Name);
 
             SetProcessAttributes();
             SetMachineAttributes();
@@ -53,9 +53,9 @@ namespace Backtrace.Model
             {
                 return;
             }
-            Attributes.Add("Callstack", exception.StackTrace);
-            Attributes.Add("Classifier", exception.GetType().FullName);
-            Attributes.Add("Error.Message", exception.Message);
+            Attributes.Add("callstack", exception.StackTrace);
+            Attributes.Add("classifier", exception.GetType().FullName);
+            Attributes.Add("error.Message", exception.Message);
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace Backtrace.Model
 
             //How long the application has been running, in seconds.
             TimeSpan processTime = DateTime.Now - process.StartTime;
-            Attributes.Add("Process.Age", processTime.TotalSeconds.ToString());
+            Attributes.Add("process.age", processTime.TotalSeconds.ToString());
 
             //Resident memory usage.
             Attributes.Add("vm.rss.size", process.PagedMemorySize64.ToString());
@@ -94,22 +94,22 @@ namespace Backtrace.Model
         private void SetMachineAttributes()
         {
             //The processor architecture.
-            Attributes.Add("Uname.Machine", Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE"));
+            Attributes.Add("uname.machine", Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE"));
 
             //Operating system name, such as "windows"
-            Attributes.Add("Uname.Sysname", Environment.OSVersion.Platform.ToString());
+            Attributes.Add("uname.sysname", Environment.OSVersion.Platform.ToString());
 
             //The version of the operating system
-            Attributes.Add("Uname.Version", Environment.OSVersion.Version.ToString());
+            Attributes.Add("uname.version", Environment.OSVersion.Version.ToString());
             
             //The count of processors on the system
-            Attributes.Add("Cpu.Count", Environment.ProcessorCount.ToString());
+            Attributes.Add("cpu.count", Environment.ProcessorCount.ToString());
             
             //CPU brand string or type.
-            Attributes.Add("Cpu.Brand", Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER"));
+            Attributes.Add("cpu.brand", Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER"));
 
             //The hostname of the crashing system.
-            Attributes.Add("Hostname", Environment.MachineName);
+            Attributes.Add("hostname", Environment.MachineName);
         }
     }
 }

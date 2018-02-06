@@ -21,8 +21,12 @@ namespace Backtrace.Examples
                 Type = "Library"
             };
 
-            //Report a new message
-            backtraceClient.Send("Client message");
+            //Add your own handler to client API
+            backtraceClient.BeforeSend =
+               (Model.BacktraceData<object> model) =>
+               {
+                   var data = model;
+               };
 
             //Report a new exception from current application
             try
@@ -34,6 +38,9 @@ namespace Backtrace.Examples
             {
                 backtraceClient.Send(exception);
             }
+
+            //Report a new message
+            backtraceClient.Send("Client message");
         }
     }
 }
