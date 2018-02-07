@@ -28,6 +28,16 @@ namespace Backtrace
         }
 
         /// <summary>
+        /// Get an access token
+        /// </summary>
+        internal string Token
+        {
+            get
+            {
+                return Encoding.UTF8.GetString(_accessToken);
+            }
+        }
+        /// <summary>
         /// Initialize Backtrace credencials
         /// </summary>
         /// <param name="backtraceHostUri">Uri to Backtrace host</param>

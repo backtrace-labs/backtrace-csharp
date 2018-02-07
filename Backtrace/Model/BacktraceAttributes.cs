@@ -32,8 +32,8 @@ namespace Backtrace.Model
             //Base name of application generating the report
             Attributes.Add("application", assembly.GetName().Name);
 
-            SetProcessAttributes();
             SetMachineAttributes();
+            SetProcessAttributes();
         }
 
         /// <summary>
@@ -68,7 +68,11 @@ namespace Backtrace.Model
             //How long the application has been running, in seconds.
             TimeSpan processTime = DateTime.Now - process.StartTime;
             Attributes.Add("process.age", processTime.TotalSeconds.ToString());
-
+            
+            if(process.PagedMemorySize64 == null)
+            {
+                return;
+            }
             //Resident memory usage.
             Attributes.Add("vm.rss.size", process.PagedMemorySize64.ToString());
 
@@ -83,7 +87,7 @@ namespace Backtrace.Model
 
             //Available physical memory
             //Attributes.Add("vm.rss.available", process.memo)
-            
+
             //Available virtual memory.
             //Attributes.Add("vm.vma.available", )
         }
