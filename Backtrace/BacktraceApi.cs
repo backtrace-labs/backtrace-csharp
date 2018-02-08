@@ -26,7 +26,6 @@ namespace Backtrace
         public int Timeout { get; set; }
 
         private readonly string _serverurl;
-        private readonly bool _isHttps;
         private readonly BacktraceCredentials _credentials;
 
         /// <summary>
@@ -38,7 +37,12 @@ namespace Backtrace
         {
             _credentials = credentials;
             _serverurl = $"{_credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token=${_credentials.Token}";
-            _isHttps = _credentials.BacktraceHostUri.Scheme == "https";
+            bool isHttps = _credentials.BacktraceHostUri.Scheme == "https";
+            //prepare web client to send a data to ssl API
+            if (isHttps)
+            {
+                ServicePointManager.SecurityProtocol = Tls12;
+            }
         }
 
         /// <summary>
@@ -48,7 +52,6 @@ namespace Backtrace
         public void Send(BacktraceData<T> data)
         {
             var json = JsonConvert.SerializeObject(data);
-            ServicePointManager.SecurityProtocol = Tls12;
             using (var client = new WebClient())
             {
                 client.Encoding = Encoding.UTF8;

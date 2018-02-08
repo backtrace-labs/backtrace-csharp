@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace Backtrace.Model
@@ -62,6 +63,11 @@ namespace Backtrace.Model
         public Exception Exception => _exception;
 
         /// <summary>
+        /// Get an assembly where client called
+        /// </summary>
+        internal Assembly CallingAssembly;
+
+        /// <summary>
         /// Sending a report with custom message
         /// </summary>
         /// <param name="message">message about application state</param>
@@ -70,6 +76,7 @@ namespace Backtrace.Model
             string message,
             Dictionary<string, T> attributes = null)
         {
+            CallingAssembly = Assembly.GetCallingAssembly();
             _message = message;
             _attributes = attributes ?? new Dictionary<string, T>();
         }
@@ -82,10 +89,11 @@ namespace Backtrace.Model
         public BacktraceReport(
             Exception exception,
             Dictionary<string, T> attributes = null)
-        {            
+        {
+            CallingAssembly = Assembly.GetCallingAssembly();
             _attributes = attributes ?? new Dictionary<string, T>();
             //handle null value in exception parameter
-            if(exception == null)
+            if (exception == null)
             {
                 return;
             }

@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -19,8 +20,6 @@ namespace Backtrace
         /// Set an event executed when send function triggers
         /// </summary>
         public Action<BacktraceReport<object>> OnReportStart = null;
-
-      
 
         /// <summary>
         /// Set an event executed after data send to Backtrace API
@@ -80,7 +79,11 @@ namespace Backtrace
             Exception exception,
             Dictionary<string, object> attributes = null)
         {
-            Send(new BacktraceReport<object>(exception, attributes));
+            var report = new BacktraceReport<object>(exception, attributes)
+            {
+                CallingAssembly = Assembly.GetCallingAssembly()
+            };
+            Send(report);
         }
         /// <summary>
         /// Send a message to Backtrace API
@@ -91,7 +94,11 @@ namespace Backtrace
             string message,
             Dictionary<string, object> attributes = null)
         {
-            Send(new BacktraceReport<object>(message, attributes));
+            var report = new BacktraceReport<object>(message, attributes)
+            {
+                CallingAssembly = Assembly.GetCallingAssembly()
+            };
+            Send(report);
         }
     }
 }

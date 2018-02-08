@@ -1,5 +1,4 @@
-﻿
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +7,8 @@ using System.Text;
 
 namespace Backtrace.Model
 {
+    ///Todo : Add converter to string
+
     /// <summary>
     /// Serializable Backtrace API data object
     /// </summary>
@@ -55,7 +56,13 @@ namespace Backtrace.Model
         /// Set an information about application main thread
         /// </summary>
         [JsonProperty(PropertyName = "threads")]
-        internal MainThreadInformation MainThread;
+        internal MainThreadInformation ThreadInformations;
+
+        /// <summary>
+        /// Get a main thread name
+        /// </summary>
+        [JsonProperty(PropertyName = "mainThread")]
+        public string MainThread = System.Threading.Thread.CurrentThread.Name;
 
         /// <summary>
         /// Set an information about application main thread
@@ -83,7 +90,6 @@ namespace Backtrace.Model
         {
             get
             {
-
                 return _backtraceAttributes.Attributes;
             }
         }
@@ -91,7 +97,7 @@ namespace Backtrace.Model
         /// <summary>
         /// Get a Backtrace attributes
         /// </summary>
-        private readonly BacktraceAttributes _backtraceAttributes;
+        private readonly BacktraceAttributes<T> _backtraceAttributes;
 
         /// <summary>
         /// Merged scoped attributes and report attributes
@@ -100,14 +106,21 @@ namespace Backtrace.Model
         public Dictionary<string, T> Annotations;
 
         /// <summary>
+        /// Get an executed application dependencies
+        /// </summary>
+        [JsonProperty(PropertyName = "dependencies")]
+        internal readonly ApplicationDependencies ApplicationDependencies;
+
+        /// <summary>
+        /// Get system environment variables
+        /// </summary>
+        [JsonProperty(PropertyName = "variables")]
+        internal readonly EnvironmentVariables EnvironmentVariables;
+
+        /// <summary>
         /// Received BacktraceReport
         /// </summary>
         private readonly BacktraceReport<T> _report;
-
-        /// <summary>
-        /// Current assembly
-        /// </summary>
-        private readonly Assembly _currentAssembly;
 
         /// <summary>
         /// Create instance of report data class
@@ -118,9 +131,10 @@ namespace Backtrace.Model
         {
             Annotations = scopedAttributes;
             _report = report;
-            _currentAssembly = Assembly.GetExecutingAssembly();
-            _backtraceAttributes = new BacktraceAttributes(_currentAssembly);
-            MainThread = new MainThreadInformation();
+            EnvironmentVariables = new EnvironmentVariables();
+            _backtraceAttributes = new BacktraceAttributes<T>(report);
+            ThreadInformations = new MainThreadInformation();
+            ApplicationDependencies = new ApplicationDependencies(report.CallingAssembly);
             PrepareData();
         }
 
@@ -138,7 +152,7 @@ namespace Backtrace.Model
         /// </summary>
         internal void SetAssemblyInformation()
         {
-            var assemblyInformation = _currentAssembly.GetName();
+            var assemblyInformation = Assembly.GetExecutingAssembly().GetName();
             Agent = assemblyInformation.Name;
             AgentVersion = assemblyInformation.Version.ToString();
         }
@@ -154,7 +168,6 @@ namespace Backtrace.Model
             if (_report.ExceptionTypeReport)
             {
                 SetExceptionInformation();
-                _backtraceAttributes.SetExceptionAttributes(_report.Exception);
             }
         }
 
@@ -167,7 +180,7 @@ namespace Backtrace.Model
             var exceptionStack = _report.GetExceptionStack();
 
             //read exception stack
-            MainThread.Stack = exceptionStack;
+            ThreadInformations.Stack = exceptionStack;
             StackFrames = exceptionStack?.StackFrames;
         }
     }

@@ -11,39 +11,30 @@ namespace Backtrace.Model
     /// <summary>
     /// Class instance to get a built-in attributes from current application
     /// </summary>
-    internal class BacktraceAttributes
+    internal class BacktraceAttributes<T>
     {
         /// <summary>
         /// Get built-in attributes
         /// </summary>
         public Dictionary<string, string> Attributes = new Dictionary<string, string>();
 
-        private readonly Assembly _assembly;
-
         /// <summary>
         /// Create instance of Backtrace Attribute
         /// </summary>
-        /// <param name="assembly">Executed Assembly</param>
-        public BacktraceAttributes(Assembly assembly)
+        /// <param name="report">Received report</param>
+        public BacktraceAttributes(BacktraceReport<T> report)
         {
-            _assembly = assembly;
             //A unique identifier to a machine
             Attributes.Add("guid", Guid.NewGuid().ToString());
             //Base name of application generating the report
-            Attributes.Add("application", assembly.GetName().Name);
+            Attributes.Add("application", report.CallingAssembly.GetName().Name);
 
             SetMachineAttributes();
             SetProcessAttributes();
-        }
-
-        /// <summary>
-        /// Create instance of Backtrace Attribute
-        /// </summary>
-        public BacktraceAttributes()
-            : this(Assembly.GetExecutingAssembly())
-        {
+            SetExceptionAttributes(report.Exception);
 
         }
+
         /// <summary>
         /// Set attributes from exception
         /// </summary>
@@ -68,11 +59,7 @@ namespace Backtrace.Model
             //How long the application has been running, in seconds.
             TimeSpan processTime = DateTime.Now - process.StartTime;
             Attributes.Add("process.age", processTime.TotalSeconds.ToString());
-            
-            if(process.PagedMemorySize64 == null)
-            {
-                return;
-            }
+
             //Resident memory usage.
             Attributes.Add("vm.rss.size", process.PagedMemorySize64.ToString());
 
@@ -105,10 +92,10 @@ namespace Backtrace.Model
 
             //The version of the operating system
             Attributes.Add("uname.version", Environment.OSVersion.Version.ToString());
-            
+
             //The count of processors on the system
             Attributes.Add("cpu.count", Environment.ProcessorCount.ToString());
-            
+
             //CPU brand string or type.
             Attributes.Add("cpu.brand", Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER"));
 
