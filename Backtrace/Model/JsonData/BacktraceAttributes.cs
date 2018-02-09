@@ -4,10 +4,12 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using System.Runtime.CompilerServices;
+using System.Linq;
 
 [assembly: InternalsVisibleTo("Backtrace.Tests")]
-namespace Backtrace.Model
+namespace Backtrace.Model.JsonData
 {
+    //todo: Add custom converter to values
     /// <summary>
     /// Class instance to get a built-in attributes from current application
     /// </summary>
@@ -22,17 +24,20 @@ namespace Backtrace.Model
         /// Create instance of Backtrace Attribute
         /// </summary>
         /// <param name="report">Received report</param>
-        public BacktraceAttributes(BacktraceReport<T> report)
+        /// <param name="scopedAttributes">Client scoped attributes</param>
+        public BacktraceAttributes(BacktraceReport<T> report, Dictionary<string,T> scopedAttributes)
         {
-            //A unique identifier to a machine
-            Attributes.Add("guid", Guid.NewGuid().ToString());
-            //Base name of application generating the report
-            Attributes.Add("application", report.CallingAssembly.GetName().Name);
+            Attributes = BacktraceReport<T>.ConcatAttributes(report, scopedAttributes)
+                .ToDictionary(n => n.Key, v => v.Value.ToString());
 
+            //A unique identifier to a machine
+            //Environment attributes override user attributes
+            Attributes["guid"] = Guid.NewGuid().ToString();
+            //Base name of application generating the report
+            Attributes["application"] = report.CallingAssembly.GetName().Name;
             SetMachineAttributes();
             SetProcessAttributes();
             SetExceptionAttributes(report.Exception);
-
         }
 
         /// <summary>
@@ -44,9 +49,9 @@ namespace Backtrace.Model
             {
                 return;
             }
-            Attributes.Add("callstack", exception.StackTrace);
-            Attributes.Add("classifier", exception.GetType().FullName);
-            Attributes.Add("error.Message", exception.Message);
+            Attributes["callstack"] = exception.StackTrace;
+            Attributes["classifier"] = exception.GetType().FullName;
+            Attributes["error.Message"] = exception.Message;
         }
 
         /// <summary>
@@ -56,27 +61,27 @@ namespace Backtrace.Model
         {
             var process = Process.GetCurrentProcess();
 
-            //How long the application has been running, in seconds.
+            //How long the application has been running] = in seconds.
             TimeSpan processTime = DateTime.Now - process.StartTime;
-            Attributes.Add("process.age", processTime.TotalSeconds.ToString());
+            Attributes["process.age"] = processTime.TotalSeconds.ToString();
 
             //Resident memory usage.
-            Attributes.Add("vm.rss.size", process.PagedMemorySize64.ToString());
+            Attributes["vm.rss.size"] = process.PagedMemorySize64.ToString();
 
             //Peak resident memory usage.
-            Attributes.Add("vm.rss.peak", process.PeakPagedMemorySize64.ToString());
+            Attributes["vm.rss.peak"] = process.PeakPagedMemorySize64.ToString();
 
             //Virtual memory usage
-            Attributes.Add("vm.vma.size", process.VirtualMemorySize64.ToString());
+            Attributes["vm.vma.size"] = process.VirtualMemorySize64.ToString();
 
             //Peak virtual memory usage
-            Attributes.Add("vm.wma.peak", process.PeakVirtualMemorySize64.ToString());
+            Attributes["vm.wma.peak"] = process.PeakVirtualMemorySize64.ToString();
 
             //Available physical memory
-            //Attributes.Add("vm.rss.available", process.memo)
+            //Attributes["vm.rss.available"] = process.memo)
 
             //Available virtual memory.
-            //Attributes.Add("vm.vma.available", )
+            //Attributes["vm.vma.available"] = )
         }
 
         /// <summary>
@@ -85,22 +90,22 @@ namespace Backtrace.Model
         private void SetMachineAttributes()
         {
             //The processor architecture.
-            Attributes.Add("uname.machine", Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE"));
+            Attributes["uname.machine"] = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE");
 
-            //Operating system name, such as "windows"
-            Attributes.Add("uname.sysname", Environment.OSVersion.Platform.ToString());
+            //Operating system name] = such as "windows"
+            Attributes["uname.sysname"] = Environment.OSVersion.Platform.ToString();
 
             //The version of the operating system
-            Attributes.Add("uname.version", Environment.OSVersion.Version.ToString());
+            Attributes["uname.version"] = Environment.OSVersion.Version.ToString();
 
             //The count of processors on the system
-            Attributes.Add("cpu.count", Environment.ProcessorCount.ToString());
+            Attributes["cpu.count"] = Environment.ProcessorCount.ToString();
 
             //CPU brand string or type.
-            Attributes.Add("cpu.brand", Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER"));
+            Attributes["cpu.brand"] = Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER");
 
             //The hostname of the crashing system.
-            Attributes.Add("hostname", Environment.MachineName);
+            Attributes["hostname"] = Environment.MachineName;
         }
     }
 }

@@ -1,9 +1,11 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using Backtrace.Model.JsonData;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 
 namespace Backtrace.Model
 {
@@ -53,36 +55,6 @@ namespace Backtrace.Model
         public string AgentVersion;
 
         /// <summary>
-        /// Set an information about application main thread
-        /// </summary>
-        [JsonProperty(PropertyName = "threads")]
-        internal MainThreadInformation ThreadInformations;
-
-        /// <summary>
-        /// Get a main thread name
-        /// </summary>
-        [JsonProperty(PropertyName = "mainThread")]
-        public string MainThread = System.Threading.Thread.CurrentThread.Name;
-
-        /// <summary>
-        /// Set an information about application main thread
-        /// </summary>
-        [JsonProperty(PropertyName = "arch")]
-        internal Achitecture Architecture = new Achitecture();
-
-        /// <summary>
-        /// Exception stack frames
-        /// </summary>
-        [JsonProperty(PropertyName = "callstack.frames")]
-        public List<string> StackFrames;
-
-        /// <summary>
-        /// Get a report exepion type 
-        /// </summary>
-        [JsonProperty(PropertyName = "classifiers")]
-        public string Classifier { get; set; }
-
-        /// <summary>
         /// Get built-in attributes
         /// </summary>
         [JsonProperty(PropertyName = "attributes")]
@@ -93,29 +65,73 @@ namespace Backtrace.Model
                 return _backtraceAttributes.Attributes;
             }
         }
+        [JsonProperty(PropertyName = "annotations")]
+        internal readonly Annotations Annotations;
+
+        [JsonProperty(PropertyName = "threads")]
+        internal Dictionary<string, ThreadInformation> ThreadInformations
+        {
+            get
+            {
+                return ThreadData.ThreadInformations;
+            }
+        }
+
 
         /// <summary>
-        /// Get a Backtrace attributes
+        /// Set an information about application main thread
+        /// </summary>
+        internal ThreadData ThreadData;
+
+        /// <summary>
+        /// Get a main thread name
+        /// </summary>
+        [JsonProperty(PropertyName = "mainThread")]
+        public string MainThread
+        {
+            get
+            {
+                //we can't post to API 'null' value
+                string currentThread = Thread.CurrentThread.Name;
+                return string.IsNullOrEmpty(currentThread)
+                        ? Thread.CurrentThread.ManagedThreadId.ToString()
+                        : currentThread;
+            }
+        }
+
+
+        /// <summary>
+        /// Set an information about application main thread
+        /// </summary>
+        [JsonProperty(PropertyName = "arch")]
+        internal Achitecture Architecture = new Achitecture();
+
+        private List<string> _stackFrames;
+        /// <summary>
+        /// Exception stack frames
+        /// </summary>
+        [JsonProperty(PropertyName = "callstack")]
+        public Dictionary<string, List<string>> StackFrames
+        {
+            get
+            {
+                return new Dictionary<string, List<string>>()
+                {
+                    { "frames", _stackFrames }
+                };
+            }
+        }
+
+        /// <summary>
+        /// Get a report exepion type 
+        /// </summary>
+        [JsonProperty(PropertyName = "classifiers")]
+        public string[] Classifier { get; set; }
+
+        /// <summary>
+        /// Get a Backtrace attributes from client, report and system 
         /// </summary>
         private readonly BacktraceAttributes<T> _backtraceAttributes;
-
-        /// <summary>
-        /// Merged scoped attributes and report attributes
-        /// </summary>
-        [JsonProperty(PropertyName = "annotations")]
-        public Dictionary<string, T> Annotations;
-
-        /// <summary>
-        /// Get an executed application dependencies
-        /// </summary>
-        [JsonProperty(PropertyName = "dependencies")]
-        internal readonly ApplicationDependencies ApplicationDependencies;
-
-        /// <summary>
-        /// Get system environment variables
-        /// </summary>
-        [JsonProperty(PropertyName = "variables")]
-        internal readonly EnvironmentVariables EnvironmentVariables;
 
         /// <summary>
         /// Received BacktraceReport
@@ -129,12 +145,13 @@ namespace Backtrace.Model
         /// <param name="scopedAttributes">Scoped Attributes from BacktraceClient</param>
         public BacktraceData(BacktraceReport<T> report, Dictionary<string, T> scopedAttributes)
         {
-            Annotations = scopedAttributes;
             _report = report;
-            EnvironmentVariables = new EnvironmentVariables();
-            _backtraceAttributes = new BacktraceAttributes<T>(report);
-            ThreadInformations = new MainThreadInformation();
-            ApplicationDependencies = new ApplicationDependencies(report.CallingAssembly);
+            _backtraceAttributes = new BacktraceAttributes<T>(report, scopedAttributes);
+            //reading exception stack
+            ExceptionStack exceptionStack = _report.GetExceptionStack();
+            _stackFrames = exceptionStack?.StackFrames;
+            ThreadData = new ThreadData(exceptionStack);
+            Annotations = new Annotations(report.CallingAssembly);
             PrepareData();
         }
 
@@ -144,7 +161,7 @@ namespace Backtrace.Model
         internal void PrepareData()
         {
             SetAssemblyInformation();
-            SetReportInformation();
+            SetExceptionInformation();
         }
 
         /// <summary>
@@ -158,30 +175,16 @@ namespace Backtrace.Model
         }
 
         /// <summary>
-        /// Set information about current report 
-        /// </summary>
-        internal void SetReportInformation()
-        {
-            Annotations = BacktraceReport<T>.ConcatAttributes(_report, Annotations);
-
-            //Set exception type properties
-            if (_report.ExceptionTypeReport)
-            {
-                SetExceptionInformation();
-            }
-        }
-
-        /// <summary>
         /// Set properties based on exception information
         /// </summary>
         internal void SetExceptionInformation()
         {
-            Classifier = _report.Classifier;
-            var exceptionStack = _report.GetExceptionStack();
+            if (!_report.ExceptionTypeReport)
+            {
+                return;
+            }
+            Classifier = new[] { _report.Classifier };
 
-            //read exception stack
-            ThreadInformations.Stack = exceptionStack;
-            StackFrames = exceptionStack?.StackFrames;
         }
     }
 }

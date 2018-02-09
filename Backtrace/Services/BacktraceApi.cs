@@ -11,7 +11,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
-namespace Backtrace
+namespace Backtrace.Services
 {
     /// <summary>
     /// Create requests to Backtrace API
@@ -20,6 +20,7 @@ namespace Backtrace
     {
         public const SslProtocols _Tls12 = (SslProtocols)0x00000C00;
         public const SecurityProtocolType Tls12 = (SecurityProtocolType)_Tls12;
+
         /// <summary>
         /// Get or set request timeout value in milliseconds
         /// </summary>
@@ -36,7 +37,7 @@ namespace Backtrace
         public BacktraceApi(BacktraceCredentials credentials, int timeout = 5000)
         {
             _credentials = credentials;
-            _serverurl = $"{_credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token=${_credentials.Token}";
+            _serverurl = $"{_credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={_credentials.Token}";
             bool isHttps = _credentials.BacktraceHostUri.Scheme == "https";
             //prepare web client to send a data to ssl API
             if (isHttps)
@@ -54,7 +55,6 @@ namespace Backtrace
             var json = JsonConvert.SerializeObject(data);
             using (var client = new WebClient())
             {
-                client.Encoding = Encoding.UTF8;
                 client.Headers[HttpRequestHeader.ContentType] = "application/json";
                 var result = client.UploadString(address: _serverurl, method: "POST", data: json);
             }

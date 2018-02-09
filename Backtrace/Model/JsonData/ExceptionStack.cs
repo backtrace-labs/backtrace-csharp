@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Backtrace.Model
+namespace Backtrace.Model.JsonData
 {
     /// <summary>
     /// Parse exception information to Backtrace API format
@@ -48,10 +48,10 @@ namespace Backtrace.Model
         public string Library { get; set; }
 
         /// <summary>
-        /// Check if there is an inner exception
+        /// Check if this frame is known to have initiated an error
         /// </summary>
-        [JsonProperty(PropertyName = "callstack_state")]
-        public bool CallstackState { get; set; }
+        //[JsonProperty(PropertyName = "callstack_state")]
+        //public bool CallstackState { get; set; }
 
         /// <summary>
         /// Set exception information to thread
@@ -86,12 +86,13 @@ namespace Backtrace.Model
             SourceCode = Path.GetFileName(SourceCodeFullPath);
 
             Library = exception.Source;
-            CallstackState = exception.InnerException == null;
+            //CallstackState = exception.InnerException == null;
         }
 
         /// <summary>
         /// Get all stack frames from current exception
         /// </summary>
-        public List<string> StackFrames = new List<string>();
+        [JsonIgnore]
+        internal List<string> StackFrames = new List<string>();
     }
 }

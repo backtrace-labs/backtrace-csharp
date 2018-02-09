@@ -23,9 +23,10 @@ namespace Backtrace.Tests.ClientTests
         [Test(Author = "Konrad Dysput", Description = "Test invalid api url section")]
         public void TestInvalidUrlArgument(string sectionName)
         {
-            //constructor if programmer pass invalid url should throw UriFormatException
+            //if programmer pass invalid url should throw UriFormatException
             //if programmer pass null or empty string as token should throw ArgumentNullException
             Assert.Throws<UriFormatException>(() => new BacktraceClient(sectionName));
+            Assert.Throws<ArgumentException>(() => new BacktraceClient(new BacktraceCredentials("https://test.backtrace.io", string.Empty)));
         }
 
 

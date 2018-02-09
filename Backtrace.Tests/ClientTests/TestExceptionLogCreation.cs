@@ -35,12 +35,12 @@ namespace Backtrace.Tests.ClientTests
 
         [Test]
         public void TestExceptionAttributes([ValueSource("_exceptions")]Exception exception)
-        { 
-            Dictionary<string, object> currentAttributes = new Dictionary<string, object>();
+        {
+            Dictionary<string, string> currentAttributes = new Dictionary<string, string>();
             _backtraceClient.BeforeSend =
                 (BacktraceData<object> model) =>
                 {
-                    currentAttributes = model.Annotations;
+                    currentAttributes = model.Attributes;
                 };
 
             foreach (var testAttributes in _testAttributes)
@@ -50,7 +50,7 @@ namespace Backtrace.Tests.ClientTests
                 Assert.IsTrue(currentAttributes.ContainsKey("ScopedAttributes"));
                 int testAttributeCount = testAttributes?.Count ?? 0;
                 int totalAttributes = testAttributeCount + _backtraceClient.Attributes.Count;
-                Assert.AreEqual(totalAttributes, currentAttributes.Count);
+                Assert.IsTrue(totalAttributes <= currentAttributes.Count);
             }
         }
     }

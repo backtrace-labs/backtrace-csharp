@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
-namespace Backtrace.Model
+namespace Backtrace.Model.JsonData
 {
     /// <summary>
     /// Get all application dependencies

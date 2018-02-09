@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Backtrace.Model
+namespace Backtrace.Model.JsonData
 {
     [Serializable]
     internal class Achitecture

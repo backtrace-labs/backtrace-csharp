@@ -1,8 +1,10 @@
 ﻿using Backtrace.Extensions;
+using Backtrace.Model.JsonData;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Backtrace.Model
@@ -31,7 +33,7 @@ namespace Backtrace.Model
             {
                 if (ExceptionTypeReport)
                 {
-                    return _exception.GetType().FullName;
+                    return Exception.GetType().FullName;
                 }
                 return string.Empty;
             }
@@ -48,19 +50,15 @@ namespace Backtrace.Model
             }
         }
 
-        private readonly string _message;
-
         /// <summary>
         /// Get a message from report
         /// </summary>
-        public string Message => _message;
-
-        private readonly Exception _exception;
+        internal readonly string Message;
 
         /// <summary>
         /// Get an exception from report
         /// </summary>
-        public Exception Exception => _exception;
+        internal readonly Exception Exception;
 
         /// <summary>
         /// Get an assembly where client called
@@ -77,7 +75,7 @@ namespace Backtrace.Model
             Dictionary<string, T> attributes = null)
         {
             CallingAssembly = Assembly.GetCallingAssembly();
-            _message = message;
+            Message = message;
             _attributes = attributes ?? new Dictionary<string, T>();
         }
 
@@ -97,20 +95,9 @@ namespace Backtrace.Model
             {
                 return;
             }
-            _exception = exception;
-            var type = _exception?.GetType();
+            Exception = exception;
+            var type = Exception?.GetType();
             ExceptionTypeReport = true;
-        }
-
-        internal static Dictionary<string, T> ConcatAttributes(
-            BacktraceReport<T> report, Dictionary<string, T> attributes)
-        {
-            if (attributes == null)
-            {
-                return report._attributes;
-            }
-            var reportAttributes = report._attributes;
-            return reportAttributes.Merge(attributes);
         }
 
         /// <summary>
@@ -124,7 +111,18 @@ namespace Backtrace.Model
                 return new ExceptionStack(Exception);
             }
             return null;
-
         }
+
+        internal static Dictionary<string, T> ConcatAttributes(
+            BacktraceReport<T> report, Dictionary<string, T> attributes)
+        {
+            if (attributes == null)
+            {
+                return report._attributes;
+            }
+            var reportAttributes = report._attributes;
+            return reportAttributes.Merge(attributes);
+        }
+
     }
 }

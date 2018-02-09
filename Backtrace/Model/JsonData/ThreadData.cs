@@ -1,39 +1,37 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Diagnostics = System.Diagnostics;
 
-namespace Backtrace.Model
+namespace Backtrace.Model.JsonData
 {
     /// <summary>
     /// Generate information about appliaction threads
     /// </summary>
     [Serializable]
-    internal class MainThreadInformation
+    internal class ThreadData
     {
-        [JsonProperty(PropertyName = "name")]
-        public readonly string MainThreadName;
-
-        [JsonProperty(PropertyName = "fault")]
-        public readonly bool Fault;
-        
-        [JsonProperty(PropertyName = "stackTrace")]
-        public readonly string MainThreadStackTrace;
-
-        [JsonProperty(PropertyName = "stack")]
-        public ExceptionStack Stack = null;
-
+        internal Dictionary<string, ThreadInformation> ThreadInformations = new Dictionary<string, ThreadInformation>();
         /// <summary>
-        /// Create instance of AppThread class to get more information about thread information while debugging
+        /// Create instance of ThreadData class to get more information about threads used in application
         /// </summary>
-        public MainThreadInformation()
+        public ThreadData(ExceptionStack exceptionStack)
         {
-            var mainThread = Thread.CurrentThread;
-            MainThreadName = mainThread.Name;
-            Fault = (mainThread.ThreadState & ThreadState.Running) == ThreadState.Running;
-            MainThreadStackTrace = Environment.StackTrace;
-
+            var current = Thread.CurrentThread;
+            ThreadInformations.Add(current.ManagedThreadId.ToString(), new ThreadInformation(current, exceptionStack));
         }
+
+        //private void SetThreadInformations()
+        //{
+        //    var processThreads = Diagnostics.Process.GetCurrentProcess().Threads;
+
+        //    for (int index = 0; index < processThreads.Count; index++)
+        //    {
+        //        var current = processThreads[index];
+        //        ThreadInformations.Add(current.Id.ToString(), new ThreadInformation(current));
+        //    }
+        //}
 
         /// <summary>
         /// Get current process thread based on main thread. Function use current process to get a ProcessThread
@@ -55,6 +53,5 @@ namespace Backtrace.Model
             }
             return null;
         }
-
     }
 }

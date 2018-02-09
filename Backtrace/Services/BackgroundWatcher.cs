@@ -4,7 +4,7 @@ using System.Text;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Backtrace.Tests")]
-namespace Backtrace
+namespace Backtrace.Services
 {
     /// <summary>
     /// Create a Backtrace backgroud watcher. Use watcher to send a report to Backtrace api in a period defined in reportPerSec

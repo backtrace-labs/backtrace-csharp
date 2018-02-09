@@ -40,11 +40,11 @@ namespace Backtrace.Tests.ClientTests
         [Test(Author = "Konrad Dysput", Description = "Test messages with attributes")]
         public void TestMessageAttributes(string message)
         {
-            Dictionary<string, object> currentAttributes = new Dictionary<string, object>();
+            Dictionary<string, string> currentAttributes = new Dictionary<string, string>();
             _backtraceClient.BeforeSend =
                 (Model.BacktraceData<object> model) =>
                 {
-                    currentAttributes = model.Annotations;
+                    currentAttributes = model.Attributes;
                 };
 
             foreach (var testAttributes in _testAttributes)
@@ -54,7 +54,7 @@ namespace Backtrace.Tests.ClientTests
                 Assert.IsTrue(currentAttributes.ContainsKey("ScopedAttributes"));
                 int testAttributeCount = testAttributes?.Count ?? 0;
                 int totalAttributes = testAttributeCount + _backtraceClient.Attributes.Count;
-                Assert.AreEqual(totalAttributes, currentAttributes.Count);
+                Assert.IsTrue(totalAttributes <= currentAttributes.Count);
             }
         }
 
