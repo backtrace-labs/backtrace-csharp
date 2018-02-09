@@ -9,7 +9,6 @@ namespace Backtrace.Model.JsonData
     /// <summary>
     /// Generate information about appliaction threads
     /// </summary>
-    [Serializable]
     internal class ThreadData
     {
         internal Dictionary<string, ThreadInformation> ThreadInformations = new Dictionary<string, ThreadInformation>();
@@ -21,18 +20,6 @@ namespace Backtrace.Model.JsonData
             var current = Thread.CurrentThread;
             ThreadInformations.Add(current.ManagedThreadId.ToString(), new ThreadInformation(current, exceptionStack));
         }
-
-        //private void SetThreadInformations()
-        //{
-        //    var processThreads = Diagnostics.Process.GetCurrentProcess().Threads;
-
-        //    for (int index = 0; index < processThreads.Count; index++)
-        //    {
-        //        var current = processThreads[index];
-        //        ThreadInformations.Add(current.Id.ToString(), new ThreadInformation(current));
-        //    }
-        //}
-
         /// <summary>
         /// Get current process thread based on main thread. Function use current process to get a ProcessThread
         /// </summary>

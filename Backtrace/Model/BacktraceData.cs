@@ -14,7 +14,6 @@ namespace Backtrace.Model
     /// <summary>
     /// Serializable Backtrace API data object
     /// </summary>
-    [Serializable]
     public class BacktraceData<T>
     {
         /// <summary>
@@ -46,13 +45,26 @@ namespace Backtrace.Model
         /// Name of the client that is sending this error report.
         /// </summary>
         [JsonProperty(PropertyName = "agent")]
-        public string Agent;
+        public string Agent
+        {
+            get
+            {
+                return CurrentAssembly.Name;
+            }
+        }
 
         /// <summary>
         /// Version of the client that is sending this error report.
         /// </summary>
         [JsonProperty(PropertyName = "agentVersion")]
-        public string AgentVersion;
+        public string AgentVersion
+        {
+            get
+            {
+                return CurrentAssembly.Version.ToString();
+            }
+        }
+
 
         /// <summary>
         /// Get built-in attributes
@@ -65,6 +77,7 @@ namespace Backtrace.Model
                 return _backtraceAttributes.Attributes;
             }
         }
+
         [JsonProperty(PropertyName = "annotations")]
         internal readonly Annotations Annotations;
 
@@ -76,7 +89,6 @@ namespace Backtrace.Model
                 return ThreadData.ThreadInformations;
             }
         }
-
 
         /// <summary>
         /// Set an information about application main thread
@@ -99,14 +111,13 @@ namespace Backtrace.Model
             }
         }
 
-
         /// <summary>
         /// Set an information about application main thread
         /// </summary>
         [JsonProperty(PropertyName = "arch")]
         internal Achitecture Architecture = new Achitecture();
 
-        private List<string> _stackFrames;
+        private readonly List<string> _stackFrames;
         /// <summary>
         /// Exception stack frames
         /// </summary>
@@ -125,8 +136,18 @@ namespace Backtrace.Model
         /// <summary>
         /// Get a report exepion type 
         /// </summary>
-        [JsonProperty(PropertyName = "classifiers")]
-        public string[] Classifier { get; set; }
+        [JsonProperty(PropertyName = "classifiers", NullValueHandling = NullValueHandling.Ignore)]
+        public string[] Classifier
+        {
+            get
+            {
+                if (_report.ExceptionTypeReport)
+                {
+                    return new[] { _report.Classifier };
+                }
+                return null;
+            }
+        }
 
         /// <summary>
         /// Get a Backtrace attributes from client, report and system 
@@ -138,6 +159,8 @@ namespace Backtrace.Model
         /// </summary>
         private readonly BacktraceReport<T> _report;
 
+        private readonly AssemblyName CurrentAssembly = Assembly.GetExecutingAssembly().GetName();
+
         /// <summary>
         /// Create instance of report data class
         /// </summary>
@@ -146,45 +169,12 @@ namespace Backtrace.Model
         public BacktraceData(BacktraceReport<T> report, Dictionary<string, T> scopedAttributes)
         {
             _report = report;
-            _backtraceAttributes = new BacktraceAttributes<T>(report, scopedAttributes);
+            _backtraceAttributes = new BacktraceAttributes<T>(_report, scopedAttributes);
             //reading exception stack
             ExceptionStack exceptionStack = _report.GetExceptionStack();
             _stackFrames = exceptionStack?.StackFrames;
             ThreadData = new ThreadData(exceptionStack);
-            Annotations = new Annotations(report.CallingAssembly);
-            PrepareData();
-        }
-
-        /// <summary>
-        /// Prepare all data to JSON file
-        /// </summary>
-        internal void PrepareData()
-        {
-            SetAssemblyInformation();
-            SetExceptionInformation();
-        }
-
-        /// <summary>
-        /// Set an assembly information about current program
-        /// </summary>
-        internal void SetAssemblyInformation()
-        {
-            var assemblyInformation = Assembly.GetExecutingAssembly().GetName();
-            Agent = assemblyInformation.Name;
-            AgentVersion = assemblyInformation.Version.ToString();
-        }
-
-        /// <summary>
-        /// Set properties based on exception information
-        /// </summary>
-        internal void SetExceptionInformation()
-        {
-            if (!_report.ExceptionTypeReport)
-            {
-                return;
-            }
-            Classifier = new[] { _report.Classifier };
-
+            Annotations = new Annotations(_report.CallingAssembly);
         }
     }
 }

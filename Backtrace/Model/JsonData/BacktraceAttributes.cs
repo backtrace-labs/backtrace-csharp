@@ -10,6 +10,8 @@ using System.Linq;
 namespace Backtrace.Model.JsonData
 {
     //todo: Add custom converter to values
+    // Add if condition for universal windows platform
+
     /// <summary>
     /// Class instance to get a built-in attributes from current application
     /// </summary>
@@ -76,12 +78,6 @@ namespace Backtrace.Model.JsonData
 
             //Peak virtual memory usage
             Attributes["vm.wma.peak"] = process.PeakVirtualMemorySize64.ToString();
-
-            //Available physical memory
-            //Attributes["vm.rss.available"] = process.memo)
-
-            //Available virtual memory.
-            //Attributes["vm.vma.available"] = )
         }
 
         /// <summary>

@@ -6,6 +6,8 @@ using System.Text;
 
 namespace Backtrace.Model.JsonData
 {
+    //TODO: get installed version of dependency
+
     /// <summary>
     /// Get all application dependencies
     /// </summary>
@@ -24,16 +26,6 @@ namespace Backtrace.Model.JsonData
         public ApplicationDependencies(Assembly assembly)
         {
             ReadDependencies(assembly);
-        }
-
-
-        /// <summary>
-        /// Create new instance of application dependecies object
-        /// </summary>
-        public ApplicationDependencies()
-            : this(Assembly.GetExecutingAssembly())
-        {
-
         }
 
         /// <summary>

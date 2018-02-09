@@ -49,6 +49,7 @@ namespace Backtrace.Model.JsonData
 
         /// <summary>
         /// Check if this frame is known to have initiated an error
+        /// This flag is experimental
         /// </summary>
         //[JsonProperty(PropertyName = "callstack_state")]
         //public bool CallstackState { get; set; }
@@ -86,7 +87,6 @@ namespace Backtrace.Model.JsonData
             SourceCode = Path.GetFileName(SourceCodeFullPath);
 
             Library = exception.Source;
-            //CallstackState = exception.InnerException == null;
         }
 
         /// <summary>
