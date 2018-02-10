@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using System.Collections.Specialized;
 
 namespace Backtrace.Model
 {
@@ -21,25 +22,50 @@ namespace Backtrace.Model
         /// server will reject request if uuid is already found
         /// </summary>
         [JsonProperty(PropertyName = "uuid")]
-        public Guid Uuid = Guid.NewGuid();
+        public Guid Uuid
+        {
+            get
+            {
+                return Guid.NewGuid();
+            }
+        }
+
 
         /// <summary>
         /// UTC timestamp in seconds
         /// </summary>
         [JsonProperty(PropertyName = "timestamp")]
-        public long Timestamp = (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+        public long Timestamp
+        {
+            get
+            {
+                return (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+            }
+        }
 
         /// <summary>
         /// Name of programming language/environment this error comes from.
         /// </summary>
         [JsonProperty(PropertyName = "lang")]
-        public string Lang = "csharp";
+        public string Lang
+        {
+            get
+            {
+                return "csharp";
+            }
+        }
 
         /// <summary>
         /// Get a C# language version
         /// </summary>
         [JsonProperty(PropertyName = "langVersion")]
-        public string LangVersion = typeof(string).Assembly.ImageRuntimeVersion;
+        public string LangVersion
+        {
+            get
+            {
+                return typeof(string).Assembly.ImageRuntimeVersion;
+            }
+        }
 
         /// <summary>
         /// Name of the client that is sending this error report.
@@ -79,7 +105,13 @@ namespace Backtrace.Model
         }
 
         [JsonProperty(PropertyName = "annotations")]
-        internal readonly Annotations Annotations;
+        internal Annotations Annotations
+        {
+            get
+            {
+                return new Annotations(_report.CallingAssembly);
+            }
+        }
 
         [JsonProperty(PropertyName = "threads")]
         internal Dictionary<string, ThreadInformation> ThreadInformations
@@ -93,7 +125,7 @@ namespace Backtrace.Model
         /// <summary>
         /// Set an information about application main thread
         /// </summary>
-        internal ThreadData ThreadData;
+        internal ThreadData ThreadData { get; set; }
 
         /// <summary>
         /// Get a main thread name
@@ -115,7 +147,7 @@ namespace Backtrace.Model
         /// Set an information about application main thread
         /// </summary>
         [JsonProperty(PropertyName = "arch")]
-        internal Achitecture Architecture = new Achitecture();
+        internal Achitecture Architecture { get { return new Achitecture(); } }
 
         private readonly List<string> _stackFrames;
         /// <summary>
@@ -174,7 +206,42 @@ namespace Backtrace.Model
             ExceptionStack exceptionStack = _report.GetExceptionStack();
             _stackFrames = exceptionStack?.StackFrames;
             ThreadData = new ThreadData(exceptionStack);
-            Annotations = new Annotations(_report.CallingAssembly);
+            //Annotations = new Annotations(_report.CallingAssembly);
+            var temp = ToDictionary();
+        }
+
+        public Dictionary<string, object> ToDictionary()
+        {
+            Type t = GetType();
+            PropertyInfo[] props = t.GetProperties();
+            Dictionary<string, object> dict = new Dictionary<string, object>();
+            foreach (PropertyInfo prp in props)
+            {
+                object value = prp.GetValue(this, new object[] { });
+                dict.Add(prp.Name, value);
+            }
+            return dict;
+        }
+
+        public Dictionary<string, object> GetJsonData()
+        {
+            var collection = new Dictionary<string, object>();
+            collection["uuid"] = Uuid.ToString();
+            collection["timestamp"] = Timestamp.ToString();
+            collection["lang"] = Lang;
+            collection["langVersion"] = LangVersion;
+            collection["agent"] = Agent;
+            collection["agentVersion"] = AgentVersion;
+            collection["mainThread"] = MainThread;
+            collection["threads"] = new
+            {
+                mainThread = new {
+                    name = "main thread",
+                    fault = true,
+                    stack = new string[0]
+                }
+            };
+            return collection;
         }
     }
 }
