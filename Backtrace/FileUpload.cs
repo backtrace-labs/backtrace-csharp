@@ -10,39 +10,33 @@ namespace Backtrace
     public static class FileUpload
     {
         private static readonly Encoding encoding = Encoding.UTF8;
-        public static HttpWebResponse MultipartFormDataPost(string postUrl, Dictionary<string, object> postParameters)
+        public static HttpWebResponse MultipartFormDataPost(string postUrl, string userAgent, Dictionary<string, object> postParameters)
         {
             string formDataBoundary = String.Format("----------{0:N}", Guid.NewGuid());
             string contentType = "multipart/form-data; boundary=" + formDataBoundary;
 
             byte[] formData = GetMultipartFormData(postParameters, formDataBoundary);
 
-            return PostForm(postUrl, contentType, formData);
+            return PostForm(postUrl, userAgent, contentType, formData);
         }
-        private static HttpWebResponse PostForm(string postUrl, string contentType, byte[] formData)
+        private static HttpWebResponse PostForm(string postUrl, string userAgent, string contentType, byte[] formData)
         {
+            SslProtocols _Tls12 = (SslProtocols)0x00000C00;
+            SecurityProtocolType Tls12 = (SecurityProtocolType)_Tls12;
+
+            ServicePointManager.SecurityProtocol = Tls12;
             HttpWebRequest request = WebRequest.Create(postUrl) as HttpWebRequest;
 
             if (request == null)
             {
                 throw new NullReferenceException("request is not a http request");
             }
-
-            SslProtocols _Tls12 = (SslProtocols)0x00000C00;
-            SecurityProtocolType Tls12 = (SecurityProtocolType)_Tls12;
-            ServicePointManager.SecurityProtocol = Tls12;
             // Set up the request properties.
             request.Method = "POST";
             request.ContentType = "application/json";
-            request.UserAgent = "Backtrace csharp";
+            request.UserAgent = userAgent;
+            request.CookieContainer = new CookieContainer();
             request.ContentLength = formData.Length;
-
-            // You could add authentication here as well if needed:
-            // request.PreAuthenticate = true;
-            // request.AuthenticationLevel = System.Net.Security.AuthenticationLevel.MutualAuthRequested;
-            // request.Headers.Add("Authorization", "Basic " + Convert.ToBase64String(System.Text.Encoding.Default.GetBytes("username" + ":" + "password")));
-
-            // Send the form data to the request.
             using (Stream requestStream = request.GetRequestStream())
             {
                 requestStream.Write(formData, 0, formData.Length);

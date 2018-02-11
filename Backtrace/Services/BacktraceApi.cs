@@ -52,10 +52,11 @@ namespace Backtrace.Services
         /// Send a backtrace data to server API. 
         /// </summary>
         /// <param name="data">Collected backtrace data</param>
-        public void Send(BacktraceData<T> data)
+        public bool Send(BacktraceData<T> data)
         {
 
             var json = JsonConvert.SerializeObject(data);
+            //var tempServerUrl = $"{_credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={_credentials.Token}";
             //using (var client = new WebClient())
             //{
             //    var tempServerUrl = $"{_credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={_credentials.Token}";
@@ -71,11 +72,12 @@ namespace Backtrace.Services
 
             collection["file"] = fileParameter;
 
-            var webResponse = FileUpload.MultipartFormDataPost(_serverurl, collection);
+            var webResponse = FileUpload.MultipartFormDataPost(_serverurl, "backtrace cshapr", collection);
 
             StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
             string fullResponse = responseReader.ReadToEnd();
             webResponse.Close();
+            return true;
 
             //var json = JsonConvert.SerializeObject(data);
 

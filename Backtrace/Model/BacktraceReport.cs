@@ -15,6 +15,18 @@ namespace Backtrace.Model
     public class BacktraceReport<T>
     {
         /// <summary>
+        /// 16 bytes of randomness in human readable UUID format
+        /// server will reject request if uuid is already found
+        /// </summary>s
+        public readonly Guid Uuid = Guid.NewGuid();
+
+        /// <summary>
+        /// UTC timestamp in seconds
+        /// </summary>
+        public readonly long Timestamp = (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+
+        /// <summary>
+        /// 
         /// Get an information aboout report type. If value is true the BacktraceReport has an error information
         /// </summary>
         public bool ExceptionTypeReport = false;

@@ -26,7 +26,7 @@ namespace Backtrace.Model
         {
             get
             {
-                return Guid.NewGuid();
+                return _report.Uuid;
             }
         }
 
@@ -39,7 +39,7 @@ namespace Backtrace.Model
         {
             get
             {
-                return (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+                return _report.Timestamp;
             }
         }
 

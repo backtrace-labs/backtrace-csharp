@@ -62,7 +62,9 @@ namespace Backtrace.Base
         /// <summary>
         /// Background watcher
         /// </summary>
-        private readonly BackgroundWatcher _backgroundWatcher;
+        private readonly ReportWatcher<T> _backgroundWatcher;
+
+        private Func<BacktraceReport<T>, bool> _validate;
 
         /// <summary>
         /// Initialize client with BacktraceCredentials
@@ -70,17 +72,22 @@ namespace Backtrace.Base
         /// <param name="backtraceCredentials">Backtrace credentials to access Backtrace API</param>
         /// <param name="attributes">Attributes scoped for every report</param>
         /// <param name="databaseDirectory">Database path</param>
-        /// <param name="reportPerSec">Numbers of records senden per one sec.</param>
+        /// <param name="reportPerMin">Numbers of report send per one sec. If value is equal to zero, there is no request send to API. Value have to be greater than or equal to 0</param>
         public Backtrace(
             BacktraceCredentials backtraceCredentials,
             Dictionary<string, T> attributes = null,
             string databaseDirectory = "",
-            int reportPerSec = 3)
+            int reportPerMin = 3)
         {
             _attributes = attributes ?? new Dictionary<string, T>();
-            _database = new BacktraceDatabase(databaseDirectory);
-            _backgroundWatcher = new BackgroundWatcher(reportPerSec);
-            _backtraceApi = new BacktraceApi<T>(backtraceCredentials);
+            _database = new BacktraceDatabase(databaseDirectory); _backtraceApi = new BacktraceApi<T>(backtraceCredentials);
+            //if (reportPerMin != 0)
+            //{
+            //    _backgroundWatcher = new ReportWatcher<T>(2);
+            //    _validate = _backgroundWatcher.WatchReport;
+            //}
+
+
         }
 
         /// <summary>
@@ -89,10 +96,11 @@ namespace Backtrace.Base
         /// <param name="report">Report to send</param>
         public virtual void Send(BacktraceReport<T> report)
         {
+            _validate?.Invoke(report);
             //create a JSON payload instance
             var data = new BacktraceData<T>(report, Attributes);
             BeforeSend?.Invoke(data);
-            _backtraceApi.Send(data);
+            bool validRequest = _backtraceApi.Send(data);
         }
     }
 }
