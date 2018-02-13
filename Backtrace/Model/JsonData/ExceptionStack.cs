@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Backtrace.Model.JsonData
 {
     /// <summary>
     /// Parse exception information to Backtrace API format
+    /// missing values - address, guessed_frame, callstack_state
     /// </summary>
     internal class ExceptionStack
     {
@@ -72,8 +74,9 @@ namespace Backtrace.Model.JsonData
             {
                 return;
             }
+            Library = exception.Source;
             StackFrames = stackFrames
-                .Select(n => n.ToString()).ToList();
+                .Select(n => Regex.Escape(n.ToString())).ToList();
 
             var frame = stackFrames[stackTrace.FrameCount - 1];
             if (frame == null)
@@ -86,7 +89,6 @@ namespace Backtrace.Model.JsonData
             SourceCodeFullPath = frame.GetFileName();
             SourceCode = Path.GetFileName(SourceCodeFullPath);
 
-            Library = exception.Source;
         }
 
         /// <summary>

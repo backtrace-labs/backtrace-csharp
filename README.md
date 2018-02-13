@@ -52,3 +52,38 @@ var credentials = new BacktraceCredentials("backtraceHostUrl", "accessToken");
 var backtraceClient = new BacktraceClient(credentials);
 ```
 
+
+### Sending a report
+
+To send a new report to Backtrace API you have to use instance of `BacktraceClient`. Use `Send` method to send a new report. You can use overrided versions of `Send` method. See examples below to learn how to send a new `BacktraceReport` to server:
+
+Use BacktraceReport
+
+You can send a report to server by using `BacktraceReport` class. `BacktraceReport` is a generic class. `T` argument is used to determinate type of values in attributes dictionary. 
+```csharp
+try
+{
+  //throw exception here
+}
+catch (Exception exception)
+{
+  var backtraceReport = new BacktraceReport<object>(
+        exception: exception
+  );
+  backtraceClient.Send(backtraceReport);
+}
+```
+
+`BacktraceClient` can create report for you. You can use overrided `Send` methods and pass string messsage or received exception. 
+
+```csharp
+try
+{
+  //throw exception here
+}
+catch (Exception exception)
+{
+  backtraceClient.Send(exception);
+  backtraceClient.Send("Message");
+}
+```

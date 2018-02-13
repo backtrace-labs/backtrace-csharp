@@ -45,6 +45,7 @@ namespace Backtrace.Services
             {
                 return false;
             }
+            //clear all reports older than _queReportTime
             Clear();
             if (_reportQue.Count + 1 > _reportPerSec)
             {

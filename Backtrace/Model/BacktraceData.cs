@@ -182,6 +182,18 @@ namespace Backtrace.Model
         }
 
         /// <summary>
+        /// Get a path to attachments
+        /// </summary>
+        [JsonIgnore]
+        public List<string> Attachments
+        {
+            get
+            {
+                return _report._attachmentPaths;
+            }
+        }
+
+        /// <summary>
         /// Get a Backtrace attributes from client, report and system 
         /// </summary>
         private readonly BacktraceAttributes<T> _backtraceAttributes;
@@ -206,42 +218,6 @@ namespace Backtrace.Model
             ExceptionStack exceptionStack = _report.GetExceptionStack();
             _stackFrames = exceptionStack?.StackFrames;
             ThreadData = new ThreadData(exceptionStack);
-            //Annotations = new Annotations(_report.CallingAssembly);
-            var temp = ToDictionary();
-        }
-
-        public Dictionary<string, object> ToDictionary()
-        {
-            Type t = GetType();
-            PropertyInfo[] props = t.GetProperties();
-            Dictionary<string, object> dict = new Dictionary<string, object>();
-            foreach (PropertyInfo prp in props)
-            {
-                object value = prp.GetValue(this, new object[] { });
-                dict.Add(prp.Name, value);
-            }
-            return dict;
-        }
-
-        public Dictionary<string, object> GetJsonData()
-        {
-            var collection = new Dictionary<string, object>();
-            collection["uuid"] = Uuid.ToString();
-            collection["timestamp"] = Timestamp.ToString();
-            collection["lang"] = Lang;
-            collection["langVersion"] = LangVersion;
-            collection["agent"] = Agent;
-            collection["agentVersion"] = AgentVersion;
-            collection["mainThread"] = MainThread;
-            collection["threads"] = new
-            {
-                mainThread = new {
-                    name = "main thread",
-                    fault = true,
-                    stack = new string[0]
-                }
-            };
-            return collection;
         }
     }
 }

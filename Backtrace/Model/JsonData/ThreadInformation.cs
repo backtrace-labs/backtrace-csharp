@@ -27,17 +27,21 @@ namespace Backtrace.Model.JsonData
         //public readonly string MainThreadStackTrace;
 
         [JsonProperty(PropertyName = "stack")]
-        internal ExceptionStack[] Stack = null;
+        internal List<ExceptionStack> Stack = new List<ExceptionStack>();
 
         /// <summary>
         /// Create new instance of ThreadInformation
         /// </summary>
         /// <param name="thread">Thread to analyse</param>
+        /// <param name="stack">Exception stack information</param>
         public ThreadInformation(Thread thread, ExceptionStack stack)
         {
-            Stack = new[] { stack };
+            if(stack != null)
+            {
+                Stack.Add(stack);
+            }
             var mainThread = Thread.CurrentThread;
-            Name = string.IsNullOrEmpty(mainThread.Name) ? "mainThread" : mainThread.Name;
+            Name = string.IsNullOrEmpty(mainThread.Name) ? mainThread.ManagedThreadId.ToString() : mainThread.Name;
             Fault = (mainThread.ThreadState & ThreadState.Running) == ThreadState.Running;
             //MainThreadStackTrace = Environment.StackTrace;
         }

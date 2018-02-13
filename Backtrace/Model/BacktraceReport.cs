@@ -78,17 +78,25 @@ namespace Backtrace.Model
         internal Assembly CallingAssembly;
 
         /// <summary>
+        /// Get all paths to attachments
+        /// </summary>
+        internal List<string> _attachmentPaths;
+
+        /// <summary>
         /// Sending a report with custom message
         /// </summary>
         /// <param name="message">message about application state</param>
         /// <param name="attributes">Report additional information</param>
+        /// <param name="attachmentPaths">Path to all report attachments</param>
         public BacktraceReport(
             string message,
-            Dictionary<string, T> attributes = null)
+            Dictionary<string, T> attributes = null,
+            List<string> attachmentPaths = null)
         {
             CallingAssembly = Assembly.GetCallingAssembly();
             Message = message;
             _attributes = attributes ?? new Dictionary<string, T>();
+            _attachmentPaths = attachmentPaths ?? new List<string>();
         }
 
         /// <summary>
@@ -96,12 +104,15 @@ namespace Backtrace.Model
         /// </summary>
         /// <param name="exception">Occur exception</param>
         /// <param name="attributes">Report additional information</param>
+        /// <param name="attachmentPaths">Path to all report attachments</param>
         public BacktraceReport(
             Exception exception,
-            Dictionary<string, T> attributes = null)
+            Dictionary<string, T> attributes = null,
+            List<string> attachmentPaths = null)
         {
             CallingAssembly = Assembly.GetCallingAssembly();
             _attributes = attributes ?? new Dictionary<string, T>();
+            _attachmentPaths = attachmentPaths ?? new List<string>();
             //handle null value in exception parameter
             if (exception == null)
             {

@@ -10,6 +10,8 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
 using static Backtrace.FileUpload;
+using System.Text.RegularExpressions;
+using System.Linq;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Services
@@ -39,11 +41,13 @@ namespace Backtrace.Services
         {
             _credentials = credentials;
             //_serverurl = $"{_credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={_credentials.Token}";
-            _serverurl = $"{_credentials.BacktraceHostUri.AbsoluteUri}post?format=minidump&token={_credentials.Token}";
+            _serverurl = $"{_credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={_credentials.Token}";
             bool isHttps = _credentials.BacktraceHostUri.Scheme == "https";
             //prepare web client to send a data to ssl API
             if (isHttps)
             {
+                SslProtocols _Tls12 = (SslProtocols)0x00000C00;
+                SecurityProtocolType Tls12 = (SecurityProtocolType)_Tls12;
                 ServicePointManager.SecurityProtocol = Tls12;
             }
         }
@@ -54,42 +58,56 @@ namespace Backtrace.Services
         /// <param name="data">Collected backtrace data</param>
         public bool Send(BacktraceData<T> data)
         {
+            string json = JsonConvert.SerializeObject(data);
+            List<string> attachments = data.Attachments;
+            return attachments.Any()
+                ? SendAttachments(json, data.Attachments)
+                : SendJson(json);
+        }
 
-            var json = JsonConvert.SerializeObject(data);
-            //var tempServerUrl = $"{_credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={_credentials.Token}";
-            //using (var client = new WebClient())
-            //{
-            //    var tempServerUrl = $"{_credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={_credentials.Token}";
-            //    client.Headers[HttpRequestHeader.ContentType] = "application/json";
-            //    var result = client.UploadString(address: tempServerUrl , method: "POST", data: json);
-            //}
-
-            //var json = JsonConvert.SerializeObject(data);
-            string filePath = @"D:\data\attachment_data.ldf";
+        /// <summary>
+        /// Send a request to API with file attachments
+        /// </summary>
+        /// <param name="json">Diagnostics json</param>
+        /// <param name="attachmentPaths">Attachments path</param>
+        /// <returns></returns>
+        private bool SendAttachments(string json, List<string> attachmentPaths)
+        {
+            string filePath = @"D:\data\minidump.dmp";
             FileParameter fileParameter = new FileParameter(System.IO.File.ReadAllBytes(filePath), System.IO.Path.GetFileName(filePath));
             //var collection = data.GetJsonData();
-            var collection = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+            //var collection = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+            var collection = new Dictionary<string, object>();
+            collection["upload_file"] = Encoding.UTF8.GetBytes(json);
+            collection["attachment"] = fileParameter;
 
-            collection["file"] = fileParameter;
 
-            var webResponse = FileUpload.MultipartFormDataPost(_serverurl, "backtrace cshapr", collection);
+            var webResponse = FileUpload.MultipartFormDataPost(_serverurl, "backtrace sharp", collection);
 
             StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
             string fullResponse = responseReader.ReadToEnd();
             webResponse.Close();
             return true;
+        }
 
-            //var json = JsonConvert.SerializeObject(data);
+        private bool SendJson(string json)
+        {
+            using (var client = new WebClient())
+            {
+                ServicePointManager.SecurityProtocol = Tls12;
+                client.Headers[HttpRequestHeader.ContentType] = "application/json";
+                try
+                {
+                    var response = client.UploadString(address: _serverurl, method: "POST", data: json);
+                }
+                catch (Exception)
+                {
+                    //if there is any exception return false because operation fail
+                    return false;
+                }
+            }
+            return true;
 
-            //using (var client = new WebClient())
-            //{
-            //client.Encoding = Encoding.UTF8;
-            //client.Headers[HttpRequestHeader.ContentType] = "application/json";
-            //var result = client.UploadValues(address: _serverurl, method: "POST", data: collection);
-            //var result = client.UploadString(address: _serverurl, method: "POST", data: json);
-            //client.
-            //client.UploadFile()
-            //}
         }
 
     }

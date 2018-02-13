@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+
 namespace Backtrace.Examples
 {
     class Program
@@ -9,8 +11,8 @@ namespace Backtrace.Examples
             //Client will be initialized with values stored in default section name "BacktraceCredentials"
             var backtraceClient = new BacktraceClient();
 
-            //var credentials = new BacktraceCredentials("https://yourHostUrl.com", "accessToken");
-            //var backtraceClientWithCredentials = new BacktraceClient(credentials);
+            var credentials = new BacktraceCredentials("https://yourHostUrl.com", "accessToken");
+            var backtraceClientWithCredentials = new BacktraceClient(credentials);
 
             //Add new scoped attributes
             backtraceClient.Attributes["ClientAttributeNumber"] = 1;
@@ -36,11 +38,14 @@ namespace Backtrace.Examples
             }
             catch (Exception exception)
             {
-                backtraceClient.Send(exception);
+                backtraceClient.Send(
+                    exception: exception,
+                    attachmentPaths: new List<string>() { @"D:\data\minidump.dmp" }
+                );
             }
 
             //Report a new message
-            //backtraceClient.Send("Client message");
+            backtraceClient.Send("Client message");
         }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Backtrace.Model.JsonData
 {
@@ -30,7 +31,7 @@ namespace Backtrace.Model.JsonData
         {
             foreach (DictionaryEntry variable in Environment.GetEnvironmentVariables())
             {
-                Variables.Add(variable.Key.ToString(), variable.Value.ToString());
+                Variables.Add(variable.Key.ToString(), Regex.Escape(variable.Value.ToString()));
             }
         }
     }

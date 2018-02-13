@@ -2,12 +2,8 @@
 using Backtrace.Interfaces;
 using Backtrace.Model;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Backtrace
 {
@@ -19,7 +15,7 @@ namespace Backtrace
         /// <summary>
         /// Set an event executed when send function triggers
         /// </summary>
-        public Action<BacktraceReport<object>> OnReportStart = null;
+        public Action<BacktraceReport<object>> OnReportStart;
 
         /// <summary>
         /// Set an event executed after data send to Backtrace API
@@ -32,15 +28,15 @@ namespace Backtrace
         /// <param name="sectionName">Backtrace configuration section in App.config or Web.config file. Default section is BacktraceCredentials</param>
         /// <param name="attributes">Attributes scoped for every report</param>
         /// <param name="databaseDirectory">Database path</param>
-        /// <param name="reportPerSec">Numbers of records senden per one sec.</param>
+        /// <param name="reportPerMin">Numbers of records send per one min</param>
         public BacktraceClient(
                 string sectionName = "BacktraceCredentials",
                 Dictionary<string, object> attributes = null,
                 string databaseDirectory = "",
-                int reportPerSec = 3
+                uint reportPerMin = 3
             )
             : base(BacktraceCredentials.ReadConfigurationSection(sectionName),
-                  attributes, databaseDirectory, reportPerSec)
+                  attributes, databaseDirectory, reportPerMin)
         {
         }
 
@@ -50,13 +46,13 @@ namespace Backtrace
         /// <param name="backtraceCredentials">Backtrace credentials to access Backtrace API</param>
         /// <param name="attributes">Attributes scoped for every report</param>
         /// <param name="databaseDirectory">Database path</param>
-        /// <param name="reportPerSec">Numbers of records senden per one sec.</param>
+        /// <param name="reportPerMin">Numbers of records send per one minute</param>
         public BacktraceClient(
             BacktraceCredentials backtraceCredentials,
             Dictionary<string, object> attributes = null,
             string databaseDirectory = "",
-            int reportPerSec = 3)
-            : base(backtraceCredentials, attributes, databaseDirectory, reportPerSec)
+            uint reportPerMin = 3)
+            : base(backtraceCredentials, attributes, databaseDirectory, reportPerMin)
         { }
 
         /// <summary>
@@ -75,11 +71,13 @@ namespace Backtrace
         /// </summary>
         /// <param name="exception">Exception</param>
         /// <param name="attributes">Additional information about application state</param>
+        /// <param name="attachmentPaths">Path to all report attachments</param>
         public virtual void Send(
             Exception exception,
-            Dictionary<string, object> attributes = null)
+            Dictionary<string, object> attributes = null,
+            List<string> attachmentPaths = null)
         {
-            var report = new BacktraceReport<object>(exception, attributes)
+            var report = new BacktraceReport<object>(exception, attributes, attachmentPaths)
             {
                 CallingAssembly = Assembly.GetCallingAssembly()
             };
@@ -90,11 +88,13 @@ namespace Backtrace
         /// </summary>
         /// <param name="message">Message</param>
         /// <param name="attributes">Additional information about application state</param>
+        /// <param name="attachmentPaths">Path to all report attachments</param>
         public virtual void Send(
             string message,
-            Dictionary<string, object> attributes = null)
+            Dictionary<string, object> attributes = null,
+            List<string> attachmentPaths = null)
         {
-            var report = new BacktraceReport<object>(message, attributes)
+            var report = new BacktraceReport<object>(message, attributes, attachmentPaths)
             {
                 CallingAssembly = Assembly.GetCallingAssembly()
             };
