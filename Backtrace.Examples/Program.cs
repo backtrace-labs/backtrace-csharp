@@ -39,8 +39,8 @@ namespace Backtrace.Examples
             catch (Exception exception)
             {
                 backtraceClient.Send(
-                    exception: exception
-                    //attachmentPaths: new List<string>() { @"path to file attachment", @"patch to another file attachment" }
+                    exception: exception,
+                    attachmentPaths: new List<string>() { @"path to file attachment", @"patch to another file attachment" }
                 );
             }
 

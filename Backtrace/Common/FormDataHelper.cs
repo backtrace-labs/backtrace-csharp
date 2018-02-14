@@ -59,6 +59,10 @@ namespace Backtrace.Common
 
             foreach (var attachmentPath in attachments)
             {
+                if(!File.Exists(attachmentPath))
+                {
+                    continue;
+                }
                 Write(formDataStream, File.ReadAllBytes(attachmentPath), "attachment_" + Path.GetFileName(attachmentPath), boundary);
             }
 

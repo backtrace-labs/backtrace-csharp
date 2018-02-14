@@ -56,18 +56,16 @@ namespace Backtrace.Services
         {
             string json = JsonConvert.SerializeObject(data);
             List<string> attachments = data.Attachments;
-            return attachments.Any()
-                ? SendAttachments(json, data.Attachments)
-                : SendJson(json);
+            return Send(json, attachments);
         }
 
         /// <summary>
-        /// Send request to API with file attachments
+        /// Send a backtrace data to server API. 
         /// </summary>
         /// <param name="json">Diagnostics json</param>
         /// <param name="attachmentPaths">Attachments path</param>
         /// <returns>False if operation fail or true if API return OK</returns>
-        private bool SendAttachments(string json, List<string> attachmentPaths)
+        private bool Send(string json, List<string> attachmentPaths)
         {
             Guid requestId = Guid.NewGuid();
             var formData = FormDataHelper.GetFormData(json, attachmentPaths, requestId);
@@ -90,31 +88,5 @@ namespace Backtrace.Services
             webResponse.Close();
             return true;
         }
-
-        /// <summary>
-        /// Send request to API with single diagnostic JSON
-        /// </summary>
-        /// <param name="json">Generated diagnostic json</param>
-        /// <returns>False if operation fail or true if API return OK</returns>
-        private bool SendJson(string json)
-        {
-            using (var client = new WebClient())
-            {
-                ServicePointManager.SecurityProtocol = Tls12;
-                client.Headers[HttpRequestHeader.ContentType] = "application/json";
-                try
-                {
-                    var response = client.UploadString(address: _serverurl, method: "POST", data: json);
-                }
-                catch (Exception)
-                {
-                    //if there is any exception return false because operation fail
-                    return false;
-                }
-            }
-            return true;
-
-        }
-
     }
 }
