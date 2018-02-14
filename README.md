@@ -52,6 +52,20 @@ var credentials = new BacktraceCredentials("backtraceHostUrl", "accessToken");
 var backtraceClient = new BacktraceClient(credentials);
 ```
 
+Additionally `BacktraceClient` constructor accepts report attributes, database directory path and maximum number of report send per minute. These arguments are optional.
+
+```csharp
+var backtraceClient = new BacktraceClient(
+    sectionName: "BacktraceCredentials",
+    attributes: new Dictionary<string, object>() { { "Attribute", "attribute" } },
+    databaseDirectory: "pathToDirectoryPath",
+    reportPerMin: 0
+);
+```
+
+If parameter `reportPerMin` is equal to 0, there is no limit for report send per minute. If you want to send more reports than `reportPerMin` value, `Send` method will return false.
+
+`DatabaseDirectory` parameter is optional. Make sure that there are no files in directory passed in `databaseDirectory`. BacktraceClient will use this directory to save additional information about executed program.
 
 ### Sending a report
 
@@ -87,3 +101,27 @@ catch (Exception exception)
   backtraceClient.Send("Message");
 }
 ```
+
+Additionally `BacktraceReport` constructor accepts report attributes and attachment paths. These arguments are optional.
+```csharp
+ var report = new BacktraceReport<string>(
+    exception: exception,
+    attributes: new Dictionary<string, string>() { { "AttributeString", "string" } },
+    attachmentPaths: new List<string>() { "path to file attachment", "another path" }
+);
+```
+If you add path to files stored on hard drive, send report will attach all files from variable attachmentPaths.
+
+
+### Events
+
+`BacktraceClient` allows you to add your custom events. You can add methods that will trigger event before `Send` method, after `Send` method or to check report information before sending.
+ 
+```csharp
+ //Add your own handler to client API
+backtraceClient.BeforeSend =
+    (Model.BacktraceData<object> model) =>
+    {
+        var data = model;
+    };
+```           

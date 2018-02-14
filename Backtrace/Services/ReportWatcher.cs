@@ -43,7 +43,7 @@ namespace Backtrace.Services
             System.Diagnostics.Trace.WriteLine($"{report.Message} : {report.Timestamp}");
             if (!_watcherEnable)
             {
-                return false;
+                return true;
             }
             //clear all reports older than _queReportTime
             Clear();
