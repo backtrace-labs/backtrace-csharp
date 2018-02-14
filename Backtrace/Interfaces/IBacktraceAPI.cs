@@ -17,10 +17,6 @@ namespace Backtrace.Interfaces
         /// <param name="data">Data to send </param>
         /// <returns>True if report was sended to Backtrace API without any exception</returns>
         bool Send(Model.BacktraceData<T> data);
-
-        /// <summary>
-        /// Request timeout
-        /// </summary>
-        int Timeout { get; set; }
+        
     }
 }

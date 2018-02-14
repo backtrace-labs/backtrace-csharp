@@ -48,14 +48,7 @@ namespace Backtrace.Model.JsonData
         /// </summary>
         [JsonProperty(PropertyName = "library")]
         public string Library { get; set; }
-
-        /// <summary>
-        /// Check if this frame is known to have initiated an error
-        /// This flag is experimental
-        /// </summary>
-        //[JsonProperty(PropertyName = "callstack_state")]
-        //public bool CallstackState { get; set; }
-
+        
         /// <summary>
         /// Set exception information to thread
         /// </summary>

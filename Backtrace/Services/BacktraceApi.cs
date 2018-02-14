@@ -9,9 +9,9 @@ using System.IO;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
-using static Backtrace.FileUpload;
 using System.Text.RegularExpressions;
 using System.Linq;
+using Backtrace.Common;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Services
@@ -23,11 +23,6 @@ namespace Backtrace.Services
     {
         public const SslProtocols _Tls12 = (SslProtocols)0x00000C00;
         public const SecurityProtocolType Tls12 = (SecurityProtocolType)_Tls12;
-
-        /// <summary>
-        /// Get or set request timeout value in milliseconds
-        /// </summary>
-        public int Timeout { get; set; }
 
         private readonly string _serverurl;
         private readonly BacktraceCredentials _credentials;
@@ -56,6 +51,7 @@ namespace Backtrace.Services
         /// Send a backtrace data to server API. 
         /// </summary>
         /// <param name="data">Collected backtrace data</param>
+        /// <returns>False if operation fail or true if API return OK</returns>
         public bool Send(BacktraceData<T> data)
         {
             string json = JsonConvert.SerializeObject(data);
@@ -66,30 +62,40 @@ namespace Backtrace.Services
         }
 
         /// <summary>
-        /// Send a request to API with file attachments
+        /// Send request to API with file attachments
         /// </summary>
         /// <param name="json">Diagnostics json</param>
         /// <param name="attachmentPaths">Attachments path</param>
-        /// <returns></returns>
+        /// <returns>False if operation fail or true if API return OK</returns>
         private bool SendAttachments(string json, List<string> attachmentPaths)
         {
-            string filePath = @"D:\data\minidump.dmp";
-            FileParameter fileParameter = new FileParameter(System.IO.File.ReadAllBytes(filePath), System.IO.Path.GetFileName(filePath));
-            //var collection = data.GetJsonData();
-            //var collection = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
-            var collection = new Dictionary<string, object>();
-            collection["upload_file"] = Encoding.UTF8.GetBytes(json);
-            collection["attachment"] = fileParameter;
+            Guid requestId = Guid.NewGuid();
+            var formData = FormDataHelper.GetFormData(json, attachmentPaths, requestId);
+            HttpWebRequest request = WebRequest.Create(_serverurl) as HttpWebRequest;
 
+            //Set up the request properties.
+            request.Method = "POST";
+            request.ContentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
+            request.ContentLength = formData.Length;
+            //Send the form data to the request.
+            using (Stream requestStream = request.GetRequestStream())
+            {
+                requestStream.Write(formData, 0, formData.Length);
+                requestStream.Close();
+            }
 
-            var webResponse = FileUpload.MultipartFormDataPost(_serverurl, "backtrace sharp", collection);
-
+            var webResponse = request.GetResponse() as HttpWebResponse;
             StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
             string fullResponse = responseReader.ReadToEnd();
             webResponse.Close();
             return true;
         }
 
+        /// <summary>
+        /// Send request to API with single diagnostic JSON
+        /// </summary>
+        /// <param name="json">Generated diagnostic json</param>
+        /// <returns>False if operation fail or true if API return OK</returns>
         private bool SendJson(string json)
         {
             using (var client = new WebClient())
