@@ -1,5 +1,6 @@
 ﻿using Backtrace.Common;
 using Backtrace.Model;
+using Backtrace.Types;
 using Newtonsoft.Json;
 using System;
 using System.IO;
@@ -55,10 +56,18 @@ namespace Backtrace.Services
         /// <summary>
         /// Create new minidump file in database directory path. Minidump file name is a random Guid
         /// </summary>
-        public void GenerateMiniDump()
+        /// <param name="exceptionTypeReport">True if you need to send information about exception to Backtrace API. On other way client want to send a message</param>
+        public void GenerateMiniDump(bool exceptionTypeReport)
         {
             string minidumpDestinationPath = Path.Combine(_directoryPath, $"{Guid.NewGuid()}.dmp");
-            MinidumpHelper.Write(minidumpDestinationPath);
+            MinidumpException minidumpExceptionType = exceptionTypeReport
+                ? MinidumpException.Present
+                : MinidumpException.None;
+
+            MinidumpHelper.Write(
+                filePath: minidumpDestinationPath,
+                options: MiniDumpOptions.Normal,
+                exceptionType: minidumpExceptionType);
         }
 
         /// <summary>
