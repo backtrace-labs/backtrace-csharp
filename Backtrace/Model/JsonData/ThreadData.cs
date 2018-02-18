@@ -1,6 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿#if NETSTANDARD2_0
+using Microsoft.Diagnostics.Runtime;
+#endif
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using Diagnostics = System.Diagnostics;
 
@@ -18,6 +23,10 @@ namespace Backtrace.Model.JsonData
         public ThreadData(ExceptionStack exceptionStack)
         {
             var current = Thread.CurrentThread;
+
+#if NETSTANDARD2_0
+            DiagnoseThreads();
+#endif
             ThreadInformations.Add(current.ManagedThreadId.ToString(), new ThreadInformation(current, exceptionStack));
         }
         /// <summary>
@@ -39,6 +48,42 @@ namespace Backtrace.Model.JsonData
                 }
             }
             return null;
+        }
+
+        private void DiagnoseThreads()
+        {
+
+#if NETSTANDARD2_0
+
+            var task = System.Threading.Tasks.Task.Run(
+               () =>
+               {
+                   Thread.CurrentThread.Name = "BacktraceTests";
+                   Thread.Sleep(TimeSpan.FromDays(1));
+
+               });
+            string startOfThisNamespace = this.GetType().Namespace.ToString().Split('.')[0];
+            using (DataTarget target = DataTarget.AttachToProcess(Process.GetCurrentProcess().Id, 5000, AttachFlag.Passive))
+            {
+                ClrRuntime runtime = target.ClrVersions[0].CreateRuntime();
+
+                foreach (ClrThread thread in runtime.Threads)
+                {
+
+                    Console.WriteLine("### Thread {0}", thread.OSThreadId);
+                    Console.WriteLine("Thread type: {0}",
+                                            thread.IsBackground ? "Background"
+                                          : thread.IsGC ? "GC"
+                                          : "Foreground");
+                    Console.WriteLine("");
+                    Console.WriteLine("Stack trace:");
+                    foreach (var stackFrame in thread.EnumerateStackTrace())
+                    {
+                        Console.WriteLine("* {0}", stackFrame.DisplayString);
+                    }                    
+                }
+            }
+#endif
         }
     }
 }

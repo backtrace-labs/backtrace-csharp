@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Backtrace.Model;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -9,13 +12,13 @@ namespace Backtrace.Services
     /// Backtrace Database 
     /// Before start: Be sure that used directory is empty!
     /// </summary>
-    internal class BacktraceDatabase
+    internal class BacktraceDatabase<T>
     {
         /// <summary>
         /// Path to a database directory
         /// </summary>
         private readonly string _directoryPath;
-
+        private readonly bool _enable;
         /// <summary>
         /// Create Backtrace database instance
         /// </summary>
@@ -24,6 +27,7 @@ namespace Backtrace.Services
         {
             _directoryPath = directoryPath;
             ValidateDatabaseDirectory();
+            _enable = !string.IsNullOrEmpty(_directoryPath);
         }
 
         /// <summary>
@@ -43,11 +47,40 @@ namespace Backtrace.Services
             }
 
             //check if directory is empty
-            if (System.IO.Directory.GetFiles(_directoryPath).Any())
+            //if (System.IO.Directory.GetFiles(_directoryPath).Any())
+            //{
+            //    throw new InvalidOperationException("Database directory should be empty before Backtrace library start");
+            //}
+        }
+        
+        /// <summary>
+        /// Save diagnostic report on disc
+        /// </summary>
+        /// <param name="backtraceReport"></param>
+        /// <returns></returns>
+        public bool SaveReport(BacktraceData<T> backtraceReport)
+        {
+            if (!_enable)
             {
-                throw new InvalidOperationException("Database directory should be empty before Backtrace library start");
+                return true;
             }
 
+            string json = JsonConvert.SerializeObject(backtraceReport);
+            byte[] file = Encoding.UTF8.GetBytes(json);
+            string filename = $"Backtrace_{backtraceReport.Timestamp}";
+            string filePath = Path.Combine(_directoryPath, filename);
+            try
+            {
+                using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                {
+                    fs.Write(file, 0, file.Length);
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

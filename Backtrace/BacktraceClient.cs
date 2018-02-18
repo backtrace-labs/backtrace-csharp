@@ -59,11 +59,12 @@ namespace Backtrace
         /// Send a backtrace report to Backtrace API
         /// </summary>
         /// <param name="backtraceReport">report</param>
-        public new void Send(BacktraceReport<object> backtraceReport)
+        public new bool Send(BacktraceReport<object> backtraceReport)
         {
             OnReportStart?.Invoke(backtraceReport);
-            base.Send(backtraceReport);
+            var result = base.Send(backtraceReport);
             AfterSend?.Invoke(backtraceReport);
+            return result;
         }
 
         /// <summary>
@@ -89,7 +90,7 @@ namespace Backtrace
         /// <param name="message">Message</param>
         /// <param name="attributes">Additional information about application state</param>
         /// <param name="attachmentPaths">Path to all report attachments</param>
-        public virtual void Send(
+        public virtual bool Send(
             string message,
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null)
@@ -98,7 +99,7 @@ namespace Backtrace
             {
                 CallingAssembly = Assembly.GetCallingAssembly()
             };
-            Send(report);
+            return Send(report);
         }
     }
 }

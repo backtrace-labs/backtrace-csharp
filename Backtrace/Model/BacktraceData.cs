@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Collections.Specialized;
+using static Backtrace.Model.JsonData.SourceCodeData;
 
 namespace Backtrace.Model
 {
@@ -143,12 +144,6 @@ namespace Backtrace.Model
             }
         }
 
-        /// <summary>
-        /// Set an information about application main thread
-        /// </summary>
-        [JsonProperty(PropertyName = "arch")]
-        internal Achitecture Architecture { get { return new Achitecture(); } }
-
         private readonly List<string> _stackFrames;
         /// <summary>
         /// Exception stack frames
@@ -181,6 +176,20 @@ namespace Backtrace.Model
             }
         }
 
+        [JsonProperty(PropertyName = "sourceCode", NullValueHandling = NullValueHandling.Ignore)]
+        internal Dictionary<string, SourceCode> SourceCode
+        {
+            get
+            {
+                var sourceCode = new SourceCodeData(_exceptionStack);
+                if (sourceCode.data.Any())
+                {
+                    return sourceCode.data;
+                }
+                return null;
+            }
+        }
+
         /// <summary>
         /// Get a path to attachments
         /// </summary>
@@ -205,6 +214,8 @@ namespace Backtrace.Model
 
         private readonly AssemblyName CurrentAssembly = Assembly.GetExecutingAssembly().GetName();
 
+        private readonly ExceptionStack _exceptionStack;
+
         /// <summary>
         /// Create instance of report data class
         /// </summary>
@@ -215,9 +226,9 @@ namespace Backtrace.Model
             _report = report;
             _backtraceAttributes = new BacktraceAttributes<T>(_report, scopedAttributes);
             //reading exception stack
-            ExceptionStack exceptionStack = _report.GetExceptionStack();
-            _stackFrames = exceptionStack?.StackFrames;
-            ThreadData = new ThreadData(exceptionStack);
+            _exceptionStack = _report.GetExceptionStack();
+            _stackFrames = _exceptionStack?.StackFrames;
+            ThreadData = new ThreadData(_exceptionStack);
         }
     }
 }

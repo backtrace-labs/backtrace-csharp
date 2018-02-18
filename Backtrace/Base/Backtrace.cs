@@ -42,7 +42,7 @@ namespace Backtrace.Base
         /// <summary>
         /// Backtrace database
         /// </summary>
-        private readonly BacktraceDatabase _database;
+        private readonly BacktraceDatabase<T> _database;
 
         /// <summary>
         /// Control available request send per minute
@@ -63,7 +63,7 @@ namespace Backtrace.Base
             uint reportPerMin = 3)
         {
             _attributes = attributes ?? new Dictionary<string, T>();
-            _database = new BacktraceDatabase(databaseDirectory); _backtraceApi = new BacktraceApi<T>(backtraceCredentials);
+            _database = new BacktraceDatabase<T>(databaseDirectory); _backtraceApi = new BacktraceApi<T>(backtraceCredentials);
             _reportWatcher = new ReportWatcher<T>(reportPerMin);
         }
 
@@ -71,17 +71,18 @@ namespace Backtrace.Base
         /// Send a report to Backtrace
         /// </summary>
         /// <param name="report">Report to send</param>
-        public virtual void Send(BacktraceReport<T> report)
+        public virtual bool Send(BacktraceReport<T> report)
         {
             bool watcherValidation = _reportWatcher.WatchReport(report);
-            if (!watcherValidation)
-            {
-                return;
-            }
             //create a JSON payload instance
             var data = new BacktraceData<T>(report, Attributes);
+            if (!watcherValidation)
+            {
+                _database.SaveReport(data);
+                return false;
+            }
             BeforeSend?.Invoke(data);
-            bool validRequest = _backtraceApi.Send(data);
+            return _backtraceApi.Send(data);
         }
     }
 }

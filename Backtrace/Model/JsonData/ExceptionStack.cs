@@ -48,7 +48,7 @@ namespace Backtrace.Model.JsonData
         /// </summary>
         [JsonProperty(PropertyName = "library")]
         public string Library { get; set; }
-        
+
         /// <summary>
         /// Set exception information to thread
         /// </summary>

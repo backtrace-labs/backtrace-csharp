@@ -51,7 +51,6 @@ namespace Backtrace.Model.JsonData
             {
                 return;
             }
-            Attributes["callstack"] = exception.StackTrace;
             Attributes["classifier"] = exception.GetType().FullName;
             Attributes["error.Message"] = exception.Message;
         }

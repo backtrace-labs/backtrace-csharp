@@ -37,7 +37,6 @@ namespace Backtrace.Model.JsonData
             var referencedAssemblies = assembly.GetReferencedAssemblies();
             foreach (var refAssembly in referencedAssemblies)
             {
-                ///todo: solve installed version assembly information  - versioncompatibility
                 var dependency = new Dependency()
                 {
                     RequestedVersion = refAssembly.Version.ToString(),

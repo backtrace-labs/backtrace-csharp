@@ -12,6 +12,6 @@ namespace Backtrace.Interfaces
         /// Send a new report to a Backtrace service
         /// </summary>
         /// <param name="report">New backtrace report</param>
-        void Send(BacktraceReport<T> report);
+        bool Send(BacktraceReport<T> report);
     }
 }

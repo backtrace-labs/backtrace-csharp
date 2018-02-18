@@ -1,16 +1,11 @@
 ﻿using System;
 using Backtrace.Model;
 using System.Collections.Generic;
-using System.Text;
 using Backtrace.Interfaces;
 using Newtonsoft.Json;
 using System.Net;
 using System.IO;
 using System.Security.Authentication;
-using System.Security.Cryptography.X509Certificates;
-using System.Net.Security;
-using System.Text.RegularExpressions;
-using System.Linq;
 using Backtrace.Common;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
