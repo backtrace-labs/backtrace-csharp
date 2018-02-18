@@ -39,11 +39,12 @@ namespace Backtrace.Examples
             }
             catch (Exception exception)
             {
-                var report = new BacktraceReport<string>(
+                var report = new BacktraceReport<object>(
                     exception: exception,
-                    attributes: new Dictionary<string, string>() { { "AttributeString", "string" } },
+                    attributes: new Dictionary<string, object>() { { "AttributeString", "string" } },
                     attachmentPaths: new List<string>() { @"path to file attachment", @"patch to another file attachment" }
                 );
+                backtraceClient.Send(report);
             }
 
             //Report a new message

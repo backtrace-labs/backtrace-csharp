@@ -1,9 +1,8 @@
-﻿using Backtrace.Model;
+﻿using Backtrace.Common;
+using Backtrace.Model;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace Backtrace.Services
@@ -41,7 +40,7 @@ namespace Backtrace.Services
                 return;
             }
             //check if directory exists 
-            if (!System.IO.Directory.Exists(_directoryPath))
+            if (!Directory.Exists(_directoryPath))
             {
                 throw new ArgumentException("databasePath");
             }
@@ -52,7 +51,16 @@ namespace Backtrace.Services
             //    throw new InvalidOperationException("Database directory should be empty before Backtrace library start");
             //}
         }
-        
+
+        /// <summary>
+        /// Create new minidump file in database directory path. Minidump file name is a random Guid
+        /// </summary>
+        public void GenerateMiniDump()
+        {
+            string minidumpDestinationPath = Path.Combine(_directoryPath, $"{Guid.NewGuid()}.dmp");
+            MinidumpHelper.Write(minidumpDestinationPath);
+        }
+
         /// <summary>
         /// Save diagnostic report on disc
         /// </summary>

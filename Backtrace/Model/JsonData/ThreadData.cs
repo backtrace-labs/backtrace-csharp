@@ -1,11 +1,9 @@
-﻿#if NETSTANDARD2_0
+﻿#if !NET35
 using Microsoft.Diagnostics.Runtime;
 #endif
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using Diagnostics = System.Diagnostics;
 
@@ -23,8 +21,7 @@ namespace Backtrace.Model.JsonData
         public ThreadData(ExceptionStack exceptionStack)
         {
             var current = Thread.CurrentThread;
-
-#if NETSTANDARD2_0
+#if !NET35
             DiagnoseThreads();
 #endif
             ThreadInformations.Add(current.ManagedThreadId.ToString(), new ThreadInformation(current, exceptionStack));
@@ -34,7 +31,7 @@ namespace Backtrace.Model.JsonData
         /// </summary>
         /// <param name="thread">Main Thread</param>
         /// <returns>Process thread with Id equal to managed thread Id</returns>
-        private Diagnostics.ProcessThread GetCurrentProcessThread(Thread thread)
+        private ProcessThread GetCurrentProcessThread(Thread thread)
         {
             var managedThreadId = thread.ManagedThreadId;
 
@@ -53,7 +50,7 @@ namespace Backtrace.Model.JsonData
         private void DiagnoseThreads()
         {
 
-#if NETSTANDARD2_0
+#if !NET35
 
             var task = System.Threading.Tasks.Task.Run(
                () =>

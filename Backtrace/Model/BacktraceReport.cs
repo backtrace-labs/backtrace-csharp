@@ -1,4 +1,5 @@
-﻿using Backtrace.Extensions;
+﻿using Backtrace.Common;
+using Backtrace.Extensions;
 using Backtrace.Model.JsonData;
 using System;
 using System.Collections.Generic;
