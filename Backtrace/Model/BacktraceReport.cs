@@ -128,13 +128,13 @@ namespace Backtrace.Model
         /// Convert exception to ExceptionStack
         /// </summary>
         /// <returns>Exception stack based on exception</returns>
-        internal ExceptionStack GetExceptionStack()
+        internal IEnumerable<ExceptionStack> GetExceptionStack()
         {
-            if (ExceptionTypeReport)
+            if (!ExceptionTypeReport)
             {
-                return new ExceptionStack(Exception);
+                return null;
             }
-            return null;
+            return ExceptionStack.Convert(Exception);
         }
 
         internal static Dictionary<string, T> ConcatAttributes(

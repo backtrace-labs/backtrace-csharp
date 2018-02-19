@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -12,22 +13,16 @@ namespace Backtrace.Model.JsonData
         internal class SourceCode
         {
             /// <summary>
-            /// Function where exception occurs
-            /// </summary>
-            [JsonProperty(PropertyName = "funcName")]
-            public string FunctionName { get; set; }
-
-            /// <summary>
             /// Line number in source code where exception occurs
             /// </summary>
-            //[JsonProperty(PropertyName = "startLine")]
-            //public int StartLine { get; set; }
+            [JsonProperty(PropertyName = "startLine")]
+            public int StartLine { get; set; }
 
             /// <summary>
             /// Column number in source code where exception occurs
             /// </summary>
-            //[JsonProperty(PropertyName = "startColumn")]
-            //public int StartColumn { get; set; }
+            [JsonProperty(PropertyName = "startColumn")]
+            public int StartColumn { get; set; }
 
             private string _sourceCodeFullPath { get; set; }
             /// <summary>
@@ -46,39 +41,35 @@ namespace Backtrace.Model.JsonData
                 }
             }
 
-
-            /// <summary>
-            /// Full path to source code where exception occurs
-            /// </summary>
-            //[JsonProperty(PropertyName = "text")]
-            //public string Text
-            //{
-            //    get
-            //    {
-            //        if (!string.IsNullOrEmpty(_sourceCodeFullPath) && File.Exists(_sourceCodeFullPath))
-            //        {
-            //            return Regex.Escape(File.ReadAllText(_sourceCodeFullPath));
-            //        }
-            //        return string.Empty;
-            //    }
-            //}
+            public static SourceCode FromExceptionStack(ExceptionStack exceptionStack)
+            {
+                return new SourceCode()
+                {
+                    StartColumn = exceptionStack.Column,
+                    StartLine = exceptionStack.Line,
+                    SourceCodeFullPath = exceptionStack.SourceCodeFullPath
+                };
+            }
         }
 
         internal Dictionary<string, SourceCode> data = new Dictionary<string, SourceCode>();
-        public SourceCodeData(ExceptionStack exceptionStack)
+        public SourceCodeData(IEnumerable<ExceptionStack> exceptionStack)
         {
-            if(exceptionStack == null)
+            SetStack(exceptionStack);
+        }
+
+        private void SetStack(IEnumerable<ExceptionStack> exceptionStack)
+        {
+            if (exceptionStack == null || exceptionStack.Count() == 0)
             {
                 return;
             }
-            SourceCode code = new SourceCode()
+            foreach (var exception in exceptionStack)
             {
-                //FunctionName = exceptionStack.FunctionName,
-                SourceCodeFullPath = exceptionStack.SourceCodeFullPath,
-                //StartColumn = exceptionStack.Column,
-                //StartLine = exceptionStack.Line
-            };
-            data.Add(exceptionStack.FunctionName, code);
+                string key = Guid.NewGuid().ToString();
+                var value = SourceCode.FromExceptionStack(exception);
+                data.Add(key, value);
+            }
         }
     }
 }

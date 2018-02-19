@@ -43,12 +43,12 @@ namespace Backtrace.Common
         /// <param name="libraries">Library name to check</param>
         internal static bool IsLibraryAvailable(string[] libraries)
         {
-            if (libraries.Length == 0)
+            if (libraries == null || libraries.Length == 0)
             {
                 return true;
             }
             return libraries.Any(n => !IsLibraryAvailable(n));
-            
+
         }
 
 

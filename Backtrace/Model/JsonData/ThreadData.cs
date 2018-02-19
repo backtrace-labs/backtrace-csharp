@@ -5,7 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using System.Linq;
 using Diagnostics = System.Diagnostics;
+using System.Reflection;
+using System.Collections;
+using Backtrace.Extensions;
 
 namespace Backtrace.Model.JsonData
 {
@@ -18,69 +22,42 @@ namespace Backtrace.Model.JsonData
         /// <summary>
         /// Create instance of ThreadData class to get more information about threads used in application
         /// </summary>
-        public ThreadData(ExceptionStack exceptionStack)
+        public ThreadData(Assembly callingAssembly, IEnumerable<ExceptionStack> exceptionStack)
         {
             var current = Thread.CurrentThread;
-#if !NET35
-            DiagnoseThreads();
-#endif
             ThreadInformations.Add(current.ManagedThreadId.ToString(), new ThreadInformation(current, exceptionStack));
-        }
-        /// <summary>
-        /// Get current process thread based on main thread. Function use current process to get a ProcessThread
-        /// </summary>
-        /// <param name="thread">Main Thread</param>
-        /// <returns>Process thread with Id equal to managed thread Id</returns>
-        private ProcessThread GetCurrentProcessThread(Thread thread)
-        {
-            var managedThreadId = thread.ManagedThreadId;
-
-            var processThreads = Diagnostics.Process.GetCurrentProcess().Threads;
-            for (int index = 0; index < processThreads.Count; index++)
-            {
-                var current = processThreads[index];
-                if (current.Id == managedThreadId)
-                {
-                    return current;
-                }
-            }
-            return null;
+#if !NET35
+            GetUsedThreads(callingAssembly, current.ManagedThreadId);
+#endif
         }
 
-        private void DiagnoseThreads()
-        {
 
 #if !NET35
-
-            var task = System.Threading.Tasks.Task.Run(
-               () =>
-               {
-                   Thread.CurrentThread.Name = "BacktraceTests";
-                   Thread.Sleep(TimeSpan.FromDays(1));
-
-               });
-            string startOfThisNamespace = this.GetType().Namespace.ToString().Split('.')[0];
+        /// <summary>
+        /// Get all used threads in calling assembly. Function ignore current thread Id 
+        /// </summary>
+        /// <param name="callingAssembly">Calling assembly</param>
+        /// <param name="ignoreId">Main thread Id</param>
+        private void GetUsedThreads(Assembly callingAssembly, int ignoreId)
+        {
             using (DataTarget target = DataTarget.AttachToProcess(Process.GetCurrentProcess().Id, 5000, AttachFlag.Passive))
             {
-                ClrRuntime runtime = target.ClrVersions[0].CreateRuntime();
+                ClrRuntime runtime = target.ClrVersions.First().CreateRuntime();
 
                 foreach (ClrThread thread in runtime.Threads)
                 {
-
-                    Console.WriteLine("### Thread {0}", thread.OSThreadId);
-                    Console.WriteLine("Thread type: {0}",
-                                            thread.IsBackground ? "Background"
-                                          : thread.IsGC ? "GC"
-                                          : "Foreground");
-                    Console.WriteLine("");
-                    Console.WriteLine("Stack trace:");
-                    foreach (var stackFrame in thread.EnumerateStackTrace())
+                    if(thread.ManagedThreadId == ignoreId)
                     {
-                        Console.WriteLine("* {0}", stackFrame.DisplayString);
-                    }                    
+                        //main thread catched
+                        continue;
+                    }
+                    //ClrThread doesn't have any information about thread name
+                    string threadName = thread.ManagedThreadId.ToString();
+                    var frames = ExceptionStack.Convert(thread.StackTrace);
+                    ThreadInformations.Add(threadName, new ThreadInformation(threadName, false, frames));
                 }
             }
-#endif
         }
+#endif
     }
 }

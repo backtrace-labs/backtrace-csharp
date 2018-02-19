@@ -144,22 +144,6 @@ namespace Backtrace.Model
             }
         }
 
-        private readonly List<string> _stackFrames;
-        /// <summary>
-        /// Exception stack frames
-        /// </summary>
-        [JsonProperty(PropertyName = "callstack")]
-        public Dictionary<string, List<string>> StackFrames
-        {
-            get
-            {
-                return new Dictionary<string, List<string>>()
-                {
-                    { "frames", _stackFrames }
-                };
-            }
-        }
-
         /// <summary>
         /// Get a report exepion type 
         /// </summary>
@@ -214,7 +198,7 @@ namespace Backtrace.Model
 
         private readonly AssemblyName CurrentAssembly = Assembly.GetExecutingAssembly().GetName();
 
-        private readonly ExceptionStack _exceptionStack;
+        private readonly IEnumerable<ExceptionStack> _exceptionStack;
 
         /// <summary>
         /// Create instance of report data class
@@ -227,8 +211,7 @@ namespace Backtrace.Model
             _backtraceAttributes = new BacktraceAttributes<T>(_report, scopedAttributes);
             //reading exception stack
             _exceptionStack = _report.GetExceptionStack();
-            _stackFrames = _exceptionStack?.StackFrames;
-            ThreadData = new ThreadData(_exceptionStack);
+            ThreadData = new ThreadData(report.CallingAssembly,_exceptionStack);
         }
     }
 }

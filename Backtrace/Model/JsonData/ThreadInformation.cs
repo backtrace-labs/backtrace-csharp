@@ -27,23 +27,37 @@ namespace Backtrace.Model.JsonData
         //public readonly string MainThreadStackTrace;
 
         [JsonProperty(PropertyName = "stack")]
-        internal List<ExceptionStack> Stack = new List<ExceptionStack>();
+        internal IEnumerable<ExceptionStack> Stack = new List<ExceptionStack>();
+
+        /// <summary>
+        /// Create new instance of ThreadInformation
+        /// </summary>
+        /// <param name="threadName">Thread name</param>
+        /// <param name="fault">Denotes whether a thread is a faulting thread</param>
+        /// <param name="stack">Exception stack information</param>
+        public ThreadInformation(string threadName, bool fault, IEnumerable<ExceptionStack> stack)
+        {
+            if (stack != null)
+            {
+                Stack = stack;
+            }
+            Name = threadName;
+            Fault = fault;
+            //Name = string.IsNullOrEmpty(mainThread.Name) ? mainThread.ManagedThreadId.ToString() : mainThread.Name;
+            //Fault = (mainThread.ThreadState & ThreadState.Running) == ThreadState.Running;
+        }
 
         /// <summary>
         /// Create new instance of ThreadInformation
         /// </summary>
         /// <param name="thread">Thread to analyse</param>
         /// <param name="stack">Exception stack information</param>
-        public ThreadInformation(Thread thread, ExceptionStack stack)
+        public ThreadInformation(Thread thread, IEnumerable<ExceptionStack> stack)
+            : this(
+                 threadName: string.IsNullOrEmpty(thread.Name) ? thread.ManagedThreadId.ToString() : thread.Name,
+                 fault: (thread.ThreadState & ThreadState.Running) == ThreadState.Running,
+                 stack: stack)
         {
-            if(stack != null)
-            {
-                Stack.Add(stack);
-            }
-            var mainThread = Thread.CurrentThread;
-            Name = string.IsNullOrEmpty(mainThread.Name) ? mainThread.ManagedThreadId.ToString() : mainThread.Name;
-            Fault = (mainThread.ThreadState & ThreadState.Running) == ThreadState.Running;
-            //MainThreadStackTrace = Environment.StackTrace;
         }
 
     }

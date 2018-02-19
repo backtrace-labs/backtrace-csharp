@@ -1,6 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿#if !NET35
+using Microsoft.Diagnostics.Runtime;
+#endif
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -49,45 +53,68 @@ namespace Backtrace.Model.JsonData
         [JsonProperty(PropertyName = "library")]
         public string Library { get; set; }
 
+
         /// <summary>
-        /// Set exception information to thread
+        /// Convert stackframe to ExceptionStack used in diagnose JSON
         /// </summary>
-        /// <param name="exception"></param>
-        public ExceptionStack(Exception exception)
+        /// <param name="stackFrame">Current Stack frame</param>
+        /// <param name="libraryName">Library name</param>
+        /// <returns>ExceptionStack instance</returns>
+        internal static ExceptionStack Convert(StackFrame stackFrame, string libraryName)
+        {
+            if (stackFrame == null)
+            {
+                return null;
+            }
+            return new ExceptionStack()
+            {
+                Column = stackFrame.GetFileColumnNumber(),
+                Library = libraryName,
+                FunctionName = stackFrame.GetMethod().Name,
+                Line = stackFrame.GetFileLineNumber(),
+                SourceCode = Path.GetFileName(stackFrame.GetFileName()),
+                SourceCodeFullPath = stackFrame.GetFileName()
+            };
+        }
+
+        internal static IEnumerable<ExceptionStack> Convert(Exception exception)
         {
             if (exception == null)
             {
-                return;
+                return null;
             }
-            //get a current stack frame from an exception
-            var stackTrace = new System.Diagnostics.StackTrace(exception, true);
+
+            var stackTrace = new StackTrace(exception, true);
             var stackFrames = stackTrace.GetFrames();
-            //handle custom made exceptions 
+            string source = exception.Source;
             if (stackFrames == null || stackFrames.Length == 0)
             {
-                return;
+                return new List<ExceptionStack>();
             }
-            Library = exception.Source;
-            StackFrames = stackFrames
-                .Select(n => Regex.Escape(n.ToString())).ToList();
-
-            var frame = stackFrames[stackTrace.FrameCount - 1];
-            if (frame == null)
-            {
-                return;
-            }
-            FunctionName = frame.GetMethod().Name;
-            Line = frame.GetFileLineNumber();
-            Column = frame.GetFileColumnNumber();
-            SourceCodeFullPath = frame.GetFileName();
-            SourceCode = Path.GetFileName(SourceCodeFullPath);
-
+            return stackFrames.Select(n => Convert(n, source));
         }
-
-        /// <summary>
-        /// Get all stack frames from current exception
-        /// </summary>
-        [JsonIgnore]
-        internal List<string> StackFrames = new List<string>();
+#if !NET35
+        internal static IEnumerable<ExceptionStack> Convert(IEnumerable<ClrStackFrame> clrStackFrames)
+        {
+            var result = new List<ExceptionStack>();
+            if (clrStackFrames == null || clrStackFrames.Count() == 0)
+            {
+                return result;
+            }
+            foreach (var clrStackFrame in clrStackFrames)
+            {
+                if (clrStackFrame.Method == null)
+                {
+                    continue;
+                }
+                result.Add(new ExceptionStack()
+                {
+                    FunctionName = clrStackFrame.Method.Name,
+                    Library = clrStackFrame.ModuleName
+                });
+            }
+            return result;
+        }
+#endif
     }
 }

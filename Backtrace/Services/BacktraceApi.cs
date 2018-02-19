@@ -43,13 +43,27 @@ namespace Backtrace.Services
         }
 
         /// <summary>
+        /// Get serialization settings
+        /// </summary>
+        /// <returns></returns>
+        private JsonSerializerSettings GetSerializerSettings()
+        {
+            var settings = new JsonSerializerSettings();
+
+            settings.NullValueHandling = NullValueHandling.Ignore;
+            settings.DefaultValueHandling = DefaultValueHandling.Ignore;
+
+            return settings;
+        }
+
+        /// <summary>
         /// Send a backtrace data to server API. 
         /// </summary>
         /// <param name="data">Collected backtrace data</param>
         /// <returns>False if operation fail or true if API return OK</returns>
         public bool Send(BacktraceData<T> data)
         {
-            string json = JsonConvert.SerializeObject(data);
+            string json = JsonConvert.SerializeObject(data, GetSerializerSettings());
             List<string> attachments = data.Attachments;
             return Send(json, attachments);
         }
@@ -77,10 +91,11 @@ namespace Backtrace.Services
                 requestStream.Close();
             }
 
-            var webResponse = request.GetResponse() as HttpWebResponse;
-            StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
-            string fullResponse = responseReader.ReadToEnd();
-            webResponse.Close();
+            using(WebResponse webResponse = request.GetResponse() as HttpWebResponse)
+            {
+                StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
+                string fullResponse = responseReader.ReadToEnd();
+            }
             return true;
         }
     }
