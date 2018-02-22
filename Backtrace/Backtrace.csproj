@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net35;net461</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net461;net35</TargetFrameworks>
     <Product>Backtrace</Product>
     <Description>Backtrace C# client to Backtrace API</Description>
     <PackageProjectUrl>https://github.com/backtrace-labs/backtrace-csharp</PackageProjectUrl>
@@ -10,9 +10,7 @@
   </PropertyGroup>
 
   <!-- Need to conditionally bring in references for the .NET Framework 3.5 target -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'NETSTANDARD2_0'">
-    <Reference Include="System.Configuration" />
-  </ItemGroup>
+
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DocumentationFile>bin\Debug\netstandard2.0\Backtrace.xml</DocumentationFile>
@@ -21,15 +19,8 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <Reference Include="System.Configuration" />
-  </ItemGroup>
-  
+
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="Microsoft.Diagnostics.Runtime">
-      <Version>0.9.170809.3</Version>
-    </PackageReference>
     <PackageReference Include="System.Configuration.ConfigurationManager">
       <Version>4.4.1</Version>
     </PackageReference>
@@ -37,17 +28,21 @@
       <Version>4.4.1</Version>
     </PackageReference>
   </ItemGroup>
-  
-  <ItemGroup Condition="'$(TargetFramework)' == 'net471'">
-    <PackageReference Include="Microsoft.Diagnostics.Runtime">
-      <Version>0.9.170809.3</Version>
-    </PackageReference>
-  </ItemGroup>
-  
+
   <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
     <PackageReference Include="Microsoft.Diagnostics.Runtime">
       <Version>0.9.170809.3</Version>
     </PackageReference>
+  </ItemGroup>
+
+
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
+    <Reference Include="System.Configuration" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
+    <Reference Include="System.Configuration" />
   </ItemGroup>
 
 </Project>

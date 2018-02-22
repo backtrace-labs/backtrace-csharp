@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Configuration;
 using System.Text;
 
 namespace Backtrace
@@ -125,7 +126,7 @@ namespace Backtrace
             }
             string backtraceHostUri = "";
             string accessToken = "";
-            var applicationSettings = System.Configuration.ConfigurationManager.GetSection(sectionName) as NameValueCollection;
+            var applicationSettings = ConfigurationManager.GetSection(sectionName) as NameValueCollection;
 
             if (applicationSettings == null || applicationSettings.Count == 0)
             {

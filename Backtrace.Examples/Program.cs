@@ -1,16 +1,35 @@
 ﻿using Backtrace.Model;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Backtrace.Examples
 {
     class Program
     {
+        private static BacktraceClient backtraceClient = new BacktraceClient();
+        private static void DoSomething(int i = 0)
+        {
+            if (i == 2)
+            {
+                throw new ArgumentException("i");
+            }
+            Thread.Sleep(20);
+            try
+            {
+                DoSomething(++i);
+
+            }
+            catch (Exception e)
+            {
+                backtraceClient.Send(e);
+            }
+        }
         static void Main(string[] args)
         {
             //initialize new BacktraceClient with custom configuration section readed from file App.config
             //Client will be initialized with values stored in default section name "BacktraceCredentials"
-            var backtraceClient = new BacktraceClient();
+            //var backtraceClient = new BacktraceClient();
 
             var credentials = new BacktraceCredentials("https://yourHostUrl.com", "accessToken");
             var backtraceClientWithCredentials = new BacktraceClient(credentials);
@@ -34,8 +53,11 @@ namespace Backtrace.Examples
             //Report a new exception from current application
             try
             {
+                Thread thread = new Thread(new ThreadStart(() => { DoSomething(0); }));
+                thread.Start();
+                thread.Join();
                 var i = 0;
-                var result = i / i;
+                var result = i / i;                
             }
             catch (Exception exception)
             {

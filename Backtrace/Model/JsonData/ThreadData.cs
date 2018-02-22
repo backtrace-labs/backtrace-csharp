@@ -1,4 +1,4 @@
-﻿#if !NET35
+﻿#if NET461
 using Microsoft.Diagnostics.Runtime;
 #endif
 using System;
@@ -25,28 +25,54 @@ namespace Backtrace.Model.JsonData
         public ThreadData(Assembly callingAssembly, IEnumerable<ExceptionStack> exceptionStack)
         {
             var current = Thread.CurrentThread;
-            ThreadInformations.Add(current.ManagedThreadId.ToString(), new ThreadInformation(current, exceptionStack));
-#if !NET35
-            GetUsedThreads(callingAssembly, current.ManagedThreadId);
+            var managedThreadId = current.ManagedThreadId;
+            //ProcessThreads(managedThreadId);
+            bool mainThreadIncluded = false;
+#if NET461
+            mainThreadIncluded = !(exceptionStack != null && exceptionStack.Any());
+            GetUsedThreads(callingAssembly, mainThreadIncluded);
 #endif
+            if (mainThreadIncluded)
+            {
+                return;
+            }
+            ThreadInformations.Add(current.ManagedThreadId.ToString(), new ThreadInformation(current, exceptionStack));
+        }
+
+        private void ProcessThreads(int managedThreadId)
+        {
+            ProcessThreadCollection currentThreads = Process.GetCurrentProcess().Threads;
+
+            foreach (ProcessThread thread in currentThreads)
+            {
+                if (thread.Id == managedThreadId)
+                {
+                    Trace.WriteLine(thread);
+                }
+                if (thread.ThreadState == Diagnostics.ThreadState.Running)
+                {
+                    Trace.WriteLine(thread);
+                }
+            }
         }
 
 
-#if !NET35
+#if NET461
         /// <summary>
         /// Get all used threads in calling assembly. Function ignore current thread Id 
         /// </summary>
         /// <param name="callingAssembly">Calling assembly</param>
-        /// <param name="ignoreId">Main thread Id</param>
-        private void GetUsedThreads(Assembly callingAssembly, int ignoreId)
+        /// <param name="mainThreadIncluded">If true, method wont generate stacktrace for main thread</param>
+        private void GetUsedThreads(Assembly callingAssembly, bool mainThreadIncluded)
         {
+            var mainThreadId = Thread.CurrentThread.ManagedThreadId;
             using (DataTarget target = DataTarget.AttachToProcess(Process.GetCurrentProcess().Id, 5000, AttachFlag.Passive))
             {
                 ClrRuntime runtime = target.ClrVersions.First().CreateRuntime();
 
                 foreach (ClrThread thread in runtime.Threads)
                 {
-                    if(thread.ManagedThreadId == ignoreId)
+                    if (!mainThreadIncluded && thread.ManagedThreadId == mainThreadId)
                     {
                         //main thread catched
                         continue;

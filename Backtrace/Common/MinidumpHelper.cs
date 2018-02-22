@@ -28,7 +28,7 @@ namespace Backtrace.Common
 #endif
             //if we other platform than Windows libraries aren't available
             //check if libraries are availbale in system
-            return !result || SystemHelper.IsLibraryAvailable(Libraries);
+            return result && SystemHelper.IsLibraryAvailable(Libraries);
         }
 
         /// <summary>

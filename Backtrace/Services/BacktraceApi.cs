@@ -7,6 +7,7 @@ using System.Net;
 using System.IO;
 using System.Security.Authentication;
 using Backtrace.Common;
+using System.Diagnostics;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Services
@@ -48,10 +49,11 @@ namespace Backtrace.Services
         /// <returns></returns>
         private JsonSerializerSettings GetSerializerSettings()
         {
-            var settings = new JsonSerializerSettings();
-
-            settings.NullValueHandling = NullValueHandling.Ignore;
-            settings.DefaultValueHandling = DefaultValueHandling.Ignore;
+            var settings = new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore,
+                DefaultValueHandling = DefaultValueHandling.Ignore
+            };
 
             return settings;
         }
@@ -64,6 +66,7 @@ namespace Backtrace.Services
         public bool Send(BacktraceData<T> data)
         {
             string json = JsonConvert.SerializeObject(data, GetSerializerSettings());
+            Trace.WriteLine(json);
             List<string> attachments = data.Attachments;
             return Send(json, attachments);
         }
@@ -84,17 +87,25 @@ namespace Backtrace.Services
             request.Method = "POST";
             request.ContentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
             request.ContentLength = formData.Length;
-            //Send the form data to the request.
-            using (Stream requestStream = request.GetRequestStream())
-            {
-                requestStream.Write(formData, 0, formData.Length);
-                requestStream.Close();
-            }
 
-            using(WebResponse webResponse = request.GetResponse() as HttpWebResponse)
+            try
             {
-                StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
-                string fullResponse = responseReader.ReadToEnd();
+                //Send the form data to the request.
+                using (Stream requestStream = request.GetRequestStream())
+                {
+                    requestStream.Write(formData, 0, formData.Length);
+                    requestStream.Close();
+                }
+                using (WebResponse webResponse = request.GetResponse() as HttpWebResponse)
+                {
+                    StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
+                    string fullResponse = responseReader.ReadToEnd();
+                }
+            }
+            catch(Exception exception)
+            {
+                Trace.TraceWarning($"Backtrace C# Library: {exception.Message}");
+                return false;
             }
             return true;
         }

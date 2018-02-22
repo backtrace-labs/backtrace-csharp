@@ -33,7 +33,11 @@ namespace Backtrace.Model.JsonData
             {
                 get
                 {
-                    return Regex.Escape(_sourceCodeFullPath);
+                    if (!string.IsNullOrEmpty(_sourceCodeFullPath))
+                    {
+                        return Regex.Escape(_sourceCodeFullPath);
+                    }
+                    return string.Empty;
                 }
                 set
                 {
