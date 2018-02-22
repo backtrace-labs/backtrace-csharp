@@ -49,13 +49,11 @@ namespace Backtrace.Services
         /// <returns></returns>
         private JsonSerializerSettings GetSerializerSettings()
         {
-            var settings = new JsonSerializerSettings
+            return new JsonSerializerSettings
             {
                 NullValueHandling = NullValueHandling.Ignore,
                 DefaultValueHandling = DefaultValueHandling.Ignore
             };
-
-            return settings;
         }
 
         /// <summary>

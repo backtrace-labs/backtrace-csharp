@@ -56,18 +56,27 @@ namespace Backtrace.Services
         /// <summary>
         /// Create new minidump file in database directory path. Minidump file name is a random Guid
         /// </summary>
-        /// <param name="exceptionTypeReport">True if you need to send information about exception to Backtrace API. On other way client want to send a message</param>
-        public void GenerateMiniDump(bool exceptionTypeReport)
+        /// <param name="backtraceReport">Current report</param>
+        public void GenerateMiniDump(BacktraceReport<T> backtraceReport)
         {
+            if (!_enable)
+            {
+                return;
+            }
             string minidumpDestinationPath = Path.Combine(_directoryPath, $"{Guid.NewGuid()}.dmp");
-            MinidumpException minidumpExceptionType = exceptionTypeReport
+            MinidumpException minidumpExceptionType = backtraceReport.ExceptionTypeReport
                 ? MinidumpException.Present
                 : MinidumpException.None;
 
-            MinidumpHelper.Write(
+            bool minidumpSaved = MinidumpHelper.Write(
                 filePath: minidumpDestinationPath,
                 options: MiniDumpOptions.Normal,
                 exceptionType: minidumpExceptionType);
+
+            if (minidumpSaved)
+            {
+                backtraceReport._attachmentPaths.Add(minidumpDestinationPath);
+            }
         }
 
         /// <summary>

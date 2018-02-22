@@ -74,7 +74,7 @@ namespace Backtrace.Base
         public virtual bool Send(BacktraceReport<T> report)
         {
             bool watcherValidation = _reportWatcher.WatchReport(report);
-            _database.GenerateMiniDump(report.ExceptionTypeReport);
+            _database.GenerateMiniDump(report);
             //create a JSON payload instance
             var data = new BacktraceData<T>(report, Attributes);
             if (!watcherValidation)
