@@ -73,7 +73,7 @@ To send a new report to Backtrace API you have to use instance of `BacktraceClie
 
 Use BacktraceReport
 
-You can send a report to server by using `BacktraceReport` class. `BacktraceReport` is a generic class. `T` argument is used to determinate type of values in attributes dictionary. 
+You can send a report to server by using `BacktraceReport` class. `BacktraceReport` is override a generic class `BacktraceReportBase`. `T` argument is used to determinate type of values in attributes dictionary. 
 ```csharp
 try
 {
@@ -81,7 +81,7 @@ try
 }
 catch (Exception exception)
 {
-  var backtraceReport = new BacktraceReport<object>(
+  var backtraceReport = new BacktraceReport(
         exception: exception
   );
   backtraceClient.Send(backtraceReport);
