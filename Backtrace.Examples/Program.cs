@@ -1,13 +1,14 @@
 ﻿using Backtrace.Model;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 
 namespace Backtrace.Examples
 {
     class Program
     {
-        private static BacktraceClient backtraceClient = new BacktraceClient();
+        private static BacktraceClient backtraceClient = new BacktraceClient(databaseDirectory: @"D:\data\Backtracelogs");
         private static void DoSomething(int i = 0)
         {
             if (i == 2)
@@ -55,22 +56,31 @@ namespace Backtrace.Examples
             //Report a new exception from current application
             try
             {
-                //Thread thread = new Thread(new ThreadStart(() => { DoSomething(0); }));
-                //thread.Start();
-                //thread.Join();
-                var i = 0;
-                var result = i / i;                
+                try
+                {
+                    var num = int.Parse("abc");
+                }
+                catch (Exception inner)
+                {
+                    try
+                    {
+                        var openLog = File.Open("DoesNotExist", FileMode.Open);
+                    }
+                    catch
+                    {
+                        throw new FileNotFoundException("OutterException", inner);
+                    }
+                }
             }
-            catch (Exception exception)
+            catch (Exception e)
             {
                 var report = new BacktraceReport(
-                    exception: exception,
-                    attributes: new Dictionary<string, object>() { { "AttributeString", "string" } },
-                    attachmentPaths: new List<string>() { @"path to file attachment", @"patch to another file attachment" }
-                );
+                exception: e,
+                attributes: new Dictionary<string, object>() { { "AttributeString", "string" } },
+                attachmentPaths: new List<string>() { @"path to file attachment", @"patch to another file attachment" }
+            );
                 backtraceClient.Send(report);
             }
-
             //Report a new message
             backtraceClient.Send("Client message");
         }

@@ -68,7 +68,7 @@ namespace Backtrace.Base
         /// <summary>
         /// Get an exception from report
         /// </summary>
-        internal readonly Exception Exception;
+        internal Exception Exception;
 
         /// <summary>
         /// Get an assembly where client called

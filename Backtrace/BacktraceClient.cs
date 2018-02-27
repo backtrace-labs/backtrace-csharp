@@ -59,12 +59,37 @@ namespace Backtrace
         /// Send a backtrace report to Backtrace API
         /// </summary>
         /// <param name="backtraceReport">report</param>
-        public new bool Send(BacktraceReport backtraceReport)
+        public bool Send(BacktraceReport backtraceReport)
         {
             OnReportStart?.Invoke(backtraceReport);
             var result = base.Send(backtraceReport);
             AfterSend?.Invoke(backtraceReport);
+
+            //check if there is more errors to send 
+            HandleInnerException(backtraceReport);
             return result;
+        }
+
+        /// <summary>
+        /// Handle inner exception in current backtrace report
+        /// if inner exception exists, we should send report twice
+        /// </summary>
+        /// <param name="report">current report</param>
+        private void HandleInnerException(BacktraceReport report)
+        {
+            if (!report.ExceptionTypeReport)
+            {
+                return;
+            }
+            //there is no additional exception
+            if (report.Exception.InnerException == null)
+            {
+                return;
+            }
+            //we have to create a copy of an inner exception report
+            //to have the same calling assembly property
+            var innerExceptionReport = report.CreateInnerReport();            
+            Send(innerExceptionReport);
         }
 
         /// <summary>
@@ -83,6 +108,7 @@ namespace Backtrace
                 CallingAssembly = Assembly.GetCallingAssembly()
             };
             Send(report);
+            HandleInnerException(report);
         }
         /// <summary>
         /// Send a message to Backtrace API

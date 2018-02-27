@@ -41,6 +41,7 @@ namespace Backtrace.Tests.ClientTests
                 (BacktraceData<object> model) =>
                 {
                     currentAttributes = model.Attributes;
+                    return model;
                 };
 
             foreach (var testAttributes in _testAttributes)

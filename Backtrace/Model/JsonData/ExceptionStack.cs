@@ -60,6 +60,7 @@ namespace Backtrace.Model.JsonData
         /// </summary>
         /// <param name="stackFrame">Current Stack frame</param>
         /// <param name="libraryName">Library name</param>
+        /// <param name="generateId">If true sourceCode is generated</param>
         /// <returns>ExceptionStack instance</returns>
         internal static ExceptionStack Convert(StackFrame stackFrame, string libraryName, bool generateId = false)
         {
@@ -73,7 +74,7 @@ namespace Backtrace.Model.JsonData
                 Library = libraryName,
                 FunctionName = stackFrame.GetMethod().Name,
                 Line = stackFrame.GetFileLineNumber(),
-                SourceCode = generateId ? Guid.NewGuid().ToString().Replace("-",string.Empty) : string.Empty,
+                SourceCode = generateId ? Guid.NewGuid().ToString() : string.Empty,
                 SourceCodeFullPath = stackFrame.GetFileName()
             };
         }

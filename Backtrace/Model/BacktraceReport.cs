@@ -44,5 +44,11 @@ namespace Backtrace.Model
         {
 
         }
+        public BacktraceReport CreateInnerReport()
+        {
+            var copy = (BacktraceReport)this.MemberwiseClone();
+            copy.Exception = this.Exception.InnerException;
+            return copy;
+        }
     }
 }
