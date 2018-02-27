@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using Backtrace.Base;
 using Backtrace.Model;
 using Backtrace.Model.JsonData;
 using NUnit.Framework;
@@ -16,7 +17,7 @@ namespace Backtrace.Tests.EnvironmentTests
         [Test]
         public void TestAttributesCreation()
         {
-            var report = new BacktraceReport<string>("testMessage");
+            var report = new BacktraceReportBase<string>("testMessage");
             //test object creation
             Assert.DoesNotThrow(() => new BacktraceAttributes<string>(report, null));
 

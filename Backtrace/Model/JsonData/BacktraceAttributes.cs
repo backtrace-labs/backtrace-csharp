@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Runtime.CompilerServices;
 using System.Linq;
+using Backtrace.Base;
 
 [assembly: InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Model.JsonData
@@ -27,9 +28,9 @@ namespace Backtrace.Model.JsonData
         /// </summary>
         /// <param name="report">Received report</param>
         /// <param name="scopedAttributes">Client scoped attributes</param>
-        public BacktraceAttributes(BacktraceReport<T> report, Dictionary<string, T> scopedAttributes)
+        public BacktraceAttributes(BacktraceReportBase<T> report, Dictionary<string, T> scopedAttributes)
         {
-            Attributes = BacktraceReport<T>.ConcatAttributes(report, scopedAttributes)
+            Attributes = BacktraceReportBase<T>.ConcatAttributes(report, scopedAttributes)
                 .ToDictionary(n => n.Key, v => v.Value.ToString());
 
             //A unique identifier to a machine

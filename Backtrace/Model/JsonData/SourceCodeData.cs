@@ -70,9 +70,9 @@ namespace Backtrace.Model.JsonData
             }
             foreach (var exception in exceptionStack)
             {
-                string key = Guid.NewGuid().ToString();
+                string id = exception.SourceCode;      
                 var value = SourceCode.FromExceptionStack(exception);
-                data.Add(key, value);
+                data.Add(id, value);
             }
         }
     }

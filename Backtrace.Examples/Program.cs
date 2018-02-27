@@ -48,20 +48,22 @@ namespace Backtrace.Examples
                (Model.BacktraceData<object> model) =>
                {
                    var data = model;
+                   data.Attributes.Add("eventAtrtibute", "EventAttributeValue");
+                   return data;
                };
 
             //Report a new exception from current application
             try
             {
-                Thread thread = new Thread(new ThreadStart(() => { DoSomething(0); }));
-                thread.Start();
-                thread.Join();
+                //Thread thread = new Thread(new ThreadStart(() => { DoSomething(0); }));
+                //thread.Start();
+                //thread.Join();
                 var i = 0;
                 var result = i / i;                
             }
             catch (Exception exception)
             {
-                var report = new BacktraceReport<object>(
+                var report = new BacktraceReport(
                     exception: exception,
                     attributes: new Dictionary<string, object>() { { "AttributeString", "string" } },
                     attachmentPaths: new List<string>() { @"path to file attachment", @"patch to another file attachment" }

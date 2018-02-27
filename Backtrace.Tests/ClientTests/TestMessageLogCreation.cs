@@ -30,7 +30,7 @@ namespace Backtrace.Tests.ClientTests
         public void TestLogCreation(string message)
         {
             Assert.DoesNotThrow(() => _backtraceClient.Send(message: message));
-            Assert.DoesNotThrow(() => _backtraceClient.Send(new BacktraceReport<object>(message)));
+            Assert.DoesNotThrow(() => _backtraceClient.Send(new BacktraceReport(message)));
         }
 
         [TestCase("")]

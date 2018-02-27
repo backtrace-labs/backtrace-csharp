@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Collections.Specialized;
 using static Backtrace.Model.JsonData.SourceCodeData;
+using Backtrace.Base;
 
 namespace Backtrace.Model
 {
@@ -194,7 +195,7 @@ namespace Backtrace.Model
         /// <summary>
         /// Received BacktraceReport
         /// </summary>
-        private readonly BacktraceReport<T> _report;
+        private readonly BacktraceReportBase<T> _report;
 
         private readonly AssemblyName CurrentAssembly = Assembly.GetExecutingAssembly().GetName();
 
@@ -205,7 +206,7 @@ namespace Backtrace.Model
         /// </summary>
         /// <param name="report">Received report</param>
         /// <param name="scopedAttributes">Scoped Attributes from BacktraceClient</param>
-        public BacktraceData(BacktraceReport<T> report, Dictionary<string, T> scopedAttributes)
+        public BacktraceData(BacktraceReportBase<T> report, Dictionary<string, T> scopedAttributes)
         {
             _report = report;
             _backtraceAttributes = new BacktraceAttributes<T>(_report, scopedAttributes);

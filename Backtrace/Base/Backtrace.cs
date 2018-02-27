@@ -16,7 +16,7 @@ namespace Backtrace.Base
         /// <summary>
         /// Set an event executed before data send to Backtrace API
         /// </summary>
-        public Action<BacktraceData<T>> BeforeSend = null;
+        public Func<BacktraceData<T>, BacktraceData<T>> BeforeSend = null;
 
         /// <summary>
         /// Get scoped attributes from Backtrace client. Every argument stored in dictionary will be send to a Backtrace service
@@ -71,7 +71,7 @@ namespace Backtrace.Base
         /// Send a report to Backtrace
         /// </summary>
         /// <param name="report">Report to send</param>
-        public virtual bool Send(BacktraceReport<T> report)
+        public virtual bool Send(BacktraceReportBase<T> report)
         {
             bool watcherValidation = _reportWatcher.WatchReport(report);
             _database.GenerateMiniDump(report);
@@ -82,7 +82,7 @@ namespace Backtrace.Base
                 _database.SaveReport(data);
                 return false;
             }
-            BeforeSend?.Invoke(data);
+            data = BeforeSend?.Invoke(data) ?? data;
             return _backtraceApi.Send(data);
         }
     }

@@ -1,4 +1,5 @@
-﻿using Backtrace.Common;
+﻿using Backtrace.Base;
+using Backtrace.Common;
 using Backtrace.Model;
 using Backtrace.Types;
 using Newtonsoft.Json;
@@ -57,7 +58,7 @@ namespace Backtrace.Services
         /// Create new minidump file in database directory path. Minidump file name is a random Guid
         /// </summary>
         /// <param name="backtraceReport">Current report</param>
-        public void GenerateMiniDump(BacktraceReport<T> backtraceReport)
+        public void GenerateMiniDump(BacktraceReportBase<T> backtraceReport)
         {
             if (!_enable)
             {

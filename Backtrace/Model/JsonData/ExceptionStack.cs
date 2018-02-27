@@ -31,15 +31,16 @@ namespace Backtrace.Model.JsonData
         public int Line { get; set; }
 
         /// <summary>
+        /// Full path to source code where exception occurs
+        /// </summary>
+        [JsonIgnore]
+        public string SourceCodeFullPath { get; set; }
+
+        /// <summary>
         /// Column number in source code where exception occurs
         /// </summary>
         [JsonProperty(PropertyName = "column")]
         public int Column { get; set; }
-
-        /// <summary>
-        /// Full path to source code where exception occurs
-        /// </summary>
-        public string SourceCodeFullPath { get; set; }
 
         /// <summary>
         /// Source code file name where exception occurs
@@ -60,7 +61,7 @@ namespace Backtrace.Model.JsonData
         /// <param name="stackFrame">Current Stack frame</param>
         /// <param name="libraryName">Library name</param>
         /// <returns>ExceptionStack instance</returns>
-        internal static ExceptionStack Convert(StackFrame stackFrame, string libraryName)
+        internal static ExceptionStack Convert(StackFrame stackFrame, string libraryName, bool generateId = false)
         {
             if (stackFrame == null)
             {
@@ -72,12 +73,12 @@ namespace Backtrace.Model.JsonData
                 Library = libraryName,
                 FunctionName = stackFrame.GetMethod().Name,
                 Line = stackFrame.GetFileLineNumber(),
-                SourceCode = Path.GetFileName(stackFrame.GetFileName()),
+                SourceCode = generateId ? Guid.NewGuid().ToString().Replace("-",string.Empty) : string.Empty,
                 SourceCodeFullPath = stackFrame.GetFileName()
             };
         }
 
-        internal static IEnumerable<ExceptionStack> Convert(Exception exception)
+        internal static List<ExceptionStack> Convert(Exception exception)
         {
             if (exception == null)
             {
@@ -91,7 +92,8 @@ namespace Backtrace.Model.JsonData
             {
                 return new List<ExceptionStack>();
             }
-            return stackFrames.Select(n => Convert(n, source));
+            int stackFramesLength = stackFrames.Length;
+            return stackFrames.Select(n => Convert(n, source, true)).ToList();
         }
 #if NET461
         internal static IEnumerable<ExceptionStack> Convert(IEnumerable<ClrStackFrame> clrStackFrames)

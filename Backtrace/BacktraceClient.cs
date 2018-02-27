@@ -15,12 +15,12 @@ namespace Backtrace
         /// <summary>
         /// Set an event executed when send function triggers
         /// </summary>
-        public Action<BacktraceReport<object>> OnReportStart;
+        public Action<BacktraceReport> OnReportStart;
 
         /// <summary>
         /// Set an event executed after data send to Backtrace API
         /// </summary>
-        public Action<BacktraceReport<object>> AfterSend;
+        public Action<BacktraceReport> AfterSend;
 
         /// <summary>
         /// Initialize Backtrace report client
@@ -59,7 +59,7 @@ namespace Backtrace
         /// Send a backtrace report to Backtrace API
         /// </summary>
         /// <param name="backtraceReport">report</param>
-        public new bool Send(BacktraceReport<object> backtraceReport)
+        public new bool Send(BacktraceReport backtraceReport)
         {
             OnReportStart?.Invoke(backtraceReport);
             var result = base.Send(backtraceReport);
@@ -78,7 +78,7 @@ namespace Backtrace
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null)
         {
-            var report = new BacktraceReport<object>(exception, attributes, attachmentPaths)
+            var report = new BacktraceReport(exception, attributes, attachmentPaths)
             {
                 CallingAssembly = Assembly.GetCallingAssembly()
             };
@@ -95,7 +95,7 @@ namespace Backtrace
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null)
         {
-            var report = new BacktraceReport<object>(message, attributes, attachmentPaths)
+            var report = new BacktraceReport(message, attributes, attachmentPaths)
             {
                 CallingAssembly = Assembly.GetCallingAssembly()
             };
