@@ -23,7 +23,7 @@ namespace Backtrace.Model.JsonData
         /// Get built-in attributes
         /// </summary>
         public Dictionary<string, string> Attributes = new Dictionary<string, string>();
-        
+
         /// <summary>
         /// Create instance of Backtrace Attribute
         /// </summary>
@@ -48,7 +48,12 @@ namespace Backtrace.Model.JsonData
         /// Set attributes from exception
         /// </summary>
         internal void SetExceptionAttributes(BacktraceReportBase<T> report)
-        {            
+        {
+            //there is no information to analyse
+            if (report == null)
+            {
+                return;
+            }
             if (!report.ExceptionTypeReport)
             {
                 Attributes["error.Message"] = report.Message;

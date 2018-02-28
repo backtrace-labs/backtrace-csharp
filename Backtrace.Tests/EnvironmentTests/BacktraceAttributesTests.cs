@@ -25,7 +25,7 @@ namespace Backtrace.Tests.EnvironmentTests
             Assert.DoesNotThrow(() =>
             {
                 var backtraceAttributes = new BacktraceAttributes<string>(report,new Dictionary<string, string>());
-                backtraceAttributes.SetExceptionAttributes(new Exception());
+                backtraceAttributes.SetExceptionAttributes(new BacktraceReportBase<string>("message"));
             });
             //test null
             Assert.DoesNotThrow(() =>
