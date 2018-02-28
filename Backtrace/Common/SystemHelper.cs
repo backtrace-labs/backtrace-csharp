@@ -20,7 +20,7 @@ namespace Backtrace.Common
         /// Check if library exists
         /// </summary>
         /// <param name="lpFileName">Library name</param>
-        [DllImport("kernel32", SetLastError = true)]
+        [DllImport("kernel32.dll", SetLastError = true)]
         static extern IntPtr LoadLibrary(string lpFileName);
 
         /// <summary>
@@ -29,10 +29,10 @@ namespace Backtrace.Common
         /// <param name="libraryName">library name</param>
         internal static bool IsLibraryAvailable(string libraryName)
         {
-            bool result = LoadLibrary(libraryName) == IntPtr.Zero;
+            bool result = LoadLibrary(libraryName) != IntPtr.Zero;
             if (!result)
             {
-                Trace.WriteLine($"Library {libraryName} is not available in your project");
+                Trace.TraceWarning($"Library {libraryName} is not available in your project");
             }
             return result;
         }
@@ -47,7 +47,7 @@ namespace Backtrace.Common
             {
                 return true;
             }
-            return libraries.Any(n => !IsLibraryAvailable(n));
+            return !libraries.Any(n => !IsLibraryAvailable(n));
 
         }
 
