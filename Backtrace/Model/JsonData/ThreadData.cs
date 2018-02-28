@@ -8,8 +8,6 @@ using System.Threading;
 using System.Linq;
 using Diagnostics = System.Diagnostics;
 using System.Reflection;
-using System.Collections;
-using Backtrace.Extensions;
 
 namespace Backtrace.Model.JsonData
 {

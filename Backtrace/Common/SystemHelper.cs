@@ -21,7 +21,7 @@ namespace Backtrace.Common
         /// </summary>
         /// <param name="lpFileName">Library name</param>
         [DllImport("kernel32.dll", SetLastError = true)]
-        static extern IntPtr LoadLibrary(string lpFileName);
+        internal static extern IntPtr LoadLibrary(string lpFileName);
 
         /// <summary>
         /// Check if library is available

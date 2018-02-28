@@ -8,7 +8,7 @@ namespace Backtrace.Extensions
     /// <summary>
     /// Extensions method to dictionary data structure
     /// </summary>
-    public static class DictionaryExtensions
+    internal static class DictionaryExtensions
     {
         /// <summary>
         /// Merge two dictionaries
@@ -17,7 +17,7 @@ namespace Backtrace.Extensions
         /// <param name="source">Source dictionary (dictionary from report)</param>
         /// <param name="toMerge">merged dictionary (</param>
         /// <returns>Merged dictionary</returns>
-        public static Dictionary<string, T> Merge<T>(
+        internal static Dictionary<string, T> Merge<T>(
             this Dictionary<string, T> source, Dictionary<string, T> toMerge)
         {
             if(source == null)

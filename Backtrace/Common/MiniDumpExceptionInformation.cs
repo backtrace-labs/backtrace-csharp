@@ -17,22 +17,22 @@ namespace Backtrace.Common
     /// Pack=4 is important! So it works also for x64!
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    public struct MiniDumpExceptionInformation
+    internal struct MiniDumpExceptionInformation
     {
         /// <summary>
         /// current thread id
         /// </summary>
-        public uint ThreadId;
+        internal uint ThreadId;
         /// <summary>
         /// pointer to current exception
         /// </summary>
-        public IntPtr ExceptionPointers;
+        internal IntPtr ExceptionPointers;
 
         /// <summary>
         /// Check who generate a pointer
         /// </summary>
         [MarshalAs(UnmanagedType.Bool)]
-        public bool ClientPointers;
+        internal bool ClientPointers;
 
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Backtrace.Common
         /// </summary>
         /// <param name="exceptionInfo">Type to check if exception exists</param>
         /// <returns>New instance of MiniDumpExceptionInformation</returns>
-        public static MiniDumpExceptionInformation GetInstance(MinidumpException exceptionInfo)
+        internal static MiniDumpExceptionInformation GetInstance(MinidumpException exceptionInfo)
         {
             MiniDumpExceptionInformation exp;
             exp.ThreadId = SystemHelper.GetCurrentThreadId();

@@ -7,7 +7,7 @@ namespace Backtrace.Types
     /// <summary>
     /// Set information if exception present
     /// </summary>
-    public enum MinidumpException
+    internal enum MinidumpException
     {
         /// <summary>
         /// There is no exception in current context - sending message

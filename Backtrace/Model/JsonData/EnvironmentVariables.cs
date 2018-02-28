@@ -10,7 +10,7 @@ namespace Backtrace.Model.JsonData
     /// <summary>
     /// Get Environment variables stored in system
     /// </summary>
-    public class EnvironmentVariables
+    internal class EnvironmentVariables
     {
         /// <summary>
         /// Dictionary with system environment values 

@@ -6,8 +6,6 @@ using System.Text;
 
 namespace Backtrace.Model.JsonData
 {
-    //TODO: get installed version of dependency
-
     /// <summary>
     /// Get all application dependencies
     /// </summary>

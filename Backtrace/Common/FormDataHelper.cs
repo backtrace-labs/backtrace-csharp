@@ -38,7 +38,7 @@ namespace Backtrace.Common
         /// <param name="attachments">file attachments</param>
         /// <param name="boundaryId">Current request id</param>
         /// <returns>Form data bytes</returns>
-        public static byte[] GetFormData(string json, List<string> attachments, Guid boundaryId)
+        internal static byte[] GetFormData(string json, List<string> attachments, Guid boundaryId)
         {
             return GetFormData(json, attachments, GetBoundary(boundaryId));
         }
@@ -50,7 +50,7 @@ namespace Backtrace.Common
         /// <param name="attachments">file attachments</param>
         /// <param name="boundary">Current request id</param>
         /// <returns>Form data bytes</returns>
-        public static byte[] GetFormData(string json, List<string> attachments, string boundary)
+        internal static byte[] GetFormData(string json, List<string> attachments, string boundary)
         {
             Stream formDataStream = new MemoryStream();
 

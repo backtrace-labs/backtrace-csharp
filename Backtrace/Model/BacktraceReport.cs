@@ -40,11 +40,16 @@ namespace Backtrace.Model
             Exception exception,
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null)
-            : base (exception, attributes, attachmentPaths)
+            : base(exception, attributes, attachmentPaths)
         {
 
         }
-        public BacktraceReport CreateInnerReport()
+
+        /// <summary>
+        /// create a copy of BacktraceReport for inner exception object inside exception
+        /// </summary>
+        /// <returns>BacktraceReport for InnerExceptionObject</returns>
+        internal BacktraceReport CreateInnerReport()
         {
             var copy = (BacktraceReport)this.MemberwiseClone();
             copy.Exception = this.Exception.InnerException;

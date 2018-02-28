@@ -11,9 +11,6 @@ using Newtonsoft.Json;
 [assembly: InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Model.JsonData
 {
-    //todo: Add custom converter to values
-    //missing information about: context switches, idle cpu time, iowait, kernel, nice, 
-
     /// <summary>
     /// Class instance to get a built-in attributes from current application
     /// </summary>

@@ -5,6 +5,7 @@ using Backtrace.Types;
 using Newtonsoft.Json;
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace Backtrace.Services
@@ -48,10 +49,10 @@ namespace Backtrace.Services
             }
 
             //check if directory is empty
-            //if (System.IO.Directory.GetFiles(_directoryPath).Any())
-            //{
-            //    throw new InvalidOperationException("Database directory should be empty before Backtrace library start");
-            //}
+            if (System.IO.Directory.GetFiles(_directoryPath).Any())
+            {
+                throw new InvalidOperationException("Database directory should be empty before Backtrace library start");
+            }
         }
 
         /// <summary>
