@@ -25,12 +25,12 @@ namespace Backtrace.Model.JsonData
         public ThreadData(Assembly callingAssembly, IEnumerable<ExceptionStack> exceptionStack)
         {
             var current = Thread.CurrentThread;
-            var managedThreadId = current.ManagedThreadId;
-            ProcessThreads(managedThreadId);
             bool mainThreadIncluded = false;
 #if NET461
             mainThreadIncluded = !(exceptionStack != null && exceptionStack.Any());
             GetUsedThreads(callingAssembly, mainThreadIncluded);
+#else
+            ProcessThreads();
 #endif
             if (mainThreadIncluded)
             {
@@ -39,20 +39,23 @@ namespace Backtrace.Model.JsonData
             ThreadInformations.Add(current.ManagedThreadId.ToString(), new ThreadInformation(current, exceptionStack));
         }
 
-        private void ProcessThreads(int managedThreadId)
+        private void ProcessThreads()
         {
-            ProcessThreadCollection currentThreads = Process.GetCurrentProcess().Threads;
-
+            ProcessThreadCollection currentThreads = null;
+            try
+            {
+                currentThreads = Process.GetCurrentProcess().Threads;
+            }
+            catch
+            {
+                //handle UWP
+                return;
+            }
             foreach (ProcessThread thread in currentThreads)
             {
-                if (thread.Id == managedThreadId)
-                {
-                    Trace.WriteLine(thread);
-                }
-                if (thread.ThreadState == Diagnostics.ThreadState.Running)
-                {
-                    Trace.WriteLine(thread);
-                }
+                //you can't retrieve stack trace for processthread
+                string threadId = thread.Id.ToString();
+                ThreadInformations.Add(threadId, new ThreadInformation(threadId, false, null));
             }
         }
 
