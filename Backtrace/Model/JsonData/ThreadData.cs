@@ -26,7 +26,7 @@ namespace Backtrace.Model.JsonData
         {
             var current = Thread.CurrentThread;
             var managedThreadId = current.ManagedThreadId;
-            //ProcessThreads(managedThreadId);
+            ProcessThreads(managedThreadId);
             bool mainThreadIncluded = false;
 #if NET461
             mainThreadIncluded = !(exceptionStack != null && exceptionStack.Any());

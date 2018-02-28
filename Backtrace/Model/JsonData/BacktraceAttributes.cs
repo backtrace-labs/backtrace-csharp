@@ -6,6 +6,7 @@ using System.Text;
 using System.Runtime.CompilerServices;
 using System.Linq;
 using Backtrace.Base;
+using Newtonsoft.Json;
 
 [assembly: InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Model.JsonData
@@ -22,7 +23,7 @@ namespace Backtrace.Model.JsonData
         /// Get built-in attributes
         /// </summary>
         public Dictionary<string, string> Attributes = new Dictionary<string, string>();
-
+        
         /// <summary>
         /// Create instance of Backtrace Attribute
         /// </summary>
@@ -31,7 +32,7 @@ namespace Backtrace.Model.JsonData
         public BacktraceAttributes(BacktraceReportBase<T> report, Dictionary<string, T> scopedAttributes)
         {
             Attributes = BacktraceReportBase<T>.ConcatAttributes(report, scopedAttributes)
-                .ToDictionary(n => n.Key, v => v.Value.ToString());
+                .ToDictionary(n => n.Key, v => JsonConvert.SerializeObject(v.Value));
 
             //A unique identifier to a machine
             //Environment attributes override user attributes
@@ -40,18 +41,20 @@ namespace Backtrace.Model.JsonData
             Attributes["application"] = report.CallingAssembly.GetName().Name;
             SetMachineAttributes();
             SetProcessAttributes();
-            SetExceptionAttributes(report.Exception);
+            SetExceptionAttributes(report);
         }
 
         /// <summary>
         /// Set attributes from exception
         /// </summary>
-        internal void SetExceptionAttributes(Exception exception)
-        {
-            if (exception == null)
+        internal void SetExceptionAttributes(BacktraceReportBase<T> report)
+        {            
+            if (!report.ExceptionTypeReport)
             {
+                Attributes["error.Message"] = report.Message;
                 return;
             }
+            var exception = report.Exception;
             Attributes["classifier"] = exception.GetType().FullName;
             Attributes["error.Message"] = exception.Message;
         }

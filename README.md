@@ -123,5 +123,7 @@ backtraceClient.BeforeSend =
     (Model.BacktraceData<object> model) =>
     {
         var data = model;
+		//do something with data
+		return data;
     };
 ```           
