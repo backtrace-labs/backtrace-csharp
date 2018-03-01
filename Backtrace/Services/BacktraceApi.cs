@@ -64,7 +64,6 @@ namespace Backtrace.Services
         public bool Send(BacktraceData<T> data)
         {
             string json = JsonConvert.SerializeObject(data, GetSerializerSettings());
-            Trace.WriteLine(json);
             List<string> attachments = data.Attachments;
             return Send(json, attachments);
         }

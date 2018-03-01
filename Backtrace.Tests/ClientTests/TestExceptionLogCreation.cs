@@ -30,7 +30,7 @@ namespace Backtrace.Tests.ClientTests
         public void TestLogCreation([ValueSource("_exceptions")]Exception exception)
         {
             Assert.DoesNotThrow(() => _backtraceClient.Send(exception: exception));
-            Assert.DoesNotThrow(() => _backtraceClient.Send(new BacktraceReport<object>(exception)));
+            Assert.DoesNotThrow(() => _backtraceClient.Send(new BacktraceReport(exception)));
         }
 
         [Test]
@@ -41,6 +41,7 @@ namespace Backtrace.Tests.ClientTests
                 (BacktraceData<object> model) =>
                 {
                     currentAttributes = model.Attributes;
+                    return model;
                 };
 
             foreach (var testAttributes in _testAttributes)

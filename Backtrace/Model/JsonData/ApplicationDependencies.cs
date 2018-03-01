@@ -6,18 +6,16 @@ using System.Text;
 
 namespace Backtrace.Model.JsonData
 {
-    //TODO: get installed version of dependency
-
     /// <summary>
     /// Get all application dependencies
     /// </summary>
-    internal class ApplicationDependencies
+    public class ApplicationDependencies
     {
         /// <summary>
         /// All listed dependencies
         /// </summary>
         [JsonProperty(PropertyName = "dependencies")]
-        internal Dictionary<string, Dependency> AvailableDependencies = new Dictionary<string, Dependency>();
+        public Dictionary<string, Dependency> AvailableDependencies = new Dictionary<string, Dependency>();
 
         /// <summary>
         /// Create new instance of application dependecies object

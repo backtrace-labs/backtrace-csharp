@@ -5,17 +5,16 @@ using System.Reflection;
 using System.Text;
 using System.Runtime.CompilerServices;
 using System.Linq;
+using Backtrace.Base;
+using Newtonsoft.Json;
 
 [assembly: InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Model.JsonData
 {
-    //todo: Add custom converter to values
-    //missing information about: context switches, idle cpu time, iowait, kernel, nice, 
-
     /// <summary>
     /// Class instance to get a built-in attributes from current application
     /// </summary>
-    internal class BacktraceAttributes<T>
+    public class BacktraceAttributes<T>
     {
         /// <summary>
         /// Get built-in attributes
@@ -27,10 +26,10 @@ namespace Backtrace.Model.JsonData
         /// </summary>
         /// <param name="report">Received report</param>
         /// <param name="scopedAttributes">Client scoped attributes</param>
-        public BacktraceAttributes(BacktraceReport<T> report, Dictionary<string, T> scopedAttributes)
+        public BacktraceAttributes(BacktraceReportBase<T> report, Dictionary<string, T> scopedAttributes)
         {
-            Attributes = BacktraceReport<T>.ConcatAttributes(report, scopedAttributes)
-                .ToDictionary(n => n.Key, v => v.Value.ToString());
+            Attributes = BacktraceReportBase<T>.ConcatAttributes(report, scopedAttributes)
+                .ToDictionary(n => n.Key, v => JsonConvert.SerializeObject(v.Value));
 
             //A unique identifier to a machine
             //Environment attributes override user attributes
@@ -39,18 +38,25 @@ namespace Backtrace.Model.JsonData
             Attributes["application"] = report.CallingAssembly.GetName().Name;
             SetMachineAttributes();
             SetProcessAttributes();
-            SetExceptionAttributes(report.Exception);
+            SetExceptionAttributes(report);
         }
 
         /// <summary>
         /// Set attributes from exception
         /// </summary>
-        internal void SetExceptionAttributes(Exception exception)
+        internal void SetExceptionAttributes(BacktraceReportBase<T> report)
         {
-            if (exception == null)
+            //there is no information to analyse
+            if (report == null)
             {
                 return;
             }
+            if (!report.ExceptionTypeReport)
+            {
+                Attributes["error.Message"] = report.Message;
+                return;
+            }
+            var exception = report.Exception;
             Attributes["classifier"] = exception.GetType().FullName;
             Attributes["error.Message"] = exception.Message;
         }
@@ -110,14 +116,9 @@ namespace Backtrace.Model.JsonData
 
             //Time when system was booted
             Attributes["cpu.boottime"] = Environment.TickCount.ToString();
-
-
-            //Time when system was booted
-
+            
             //The hostname of the crashing system.
             Attributes["hostname"] = Environment.MachineName;
-
-
         }
     }
 }

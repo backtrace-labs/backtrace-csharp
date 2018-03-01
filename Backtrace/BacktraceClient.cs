@@ -15,12 +15,12 @@ namespace Backtrace
         /// <summary>
         /// Set an event executed when send function triggers
         /// </summary>
-        public Action<BacktraceReport<object>> OnReportStart;
+        public Action<BacktraceReport> OnReportStart;
 
         /// <summary>
         /// Set an event executed after data send to Backtrace API
         /// </summary>
-        public Action<BacktraceReport<object>> AfterSend;
+        public Action<BacktraceReport> AfterSend;
 
         /// <summary>
         /// Initialize Backtrace report client
@@ -59,12 +59,37 @@ namespace Backtrace
         /// Send a backtrace report to Backtrace API
         /// </summary>
         /// <param name="backtraceReport">report</param>
-        public new bool Send(BacktraceReport<object> backtraceReport)
+        public bool Send(BacktraceReport backtraceReport)
         {
             OnReportStart?.Invoke(backtraceReport);
             var result = base.Send(backtraceReport);
             AfterSend?.Invoke(backtraceReport);
+
+            //check if there is more errors to send 
+            HandleInnerException(backtraceReport);
             return result;
+        }
+
+        /// <summary>
+        /// Handle inner exception in current backtrace report
+        /// if inner exception exists, we should send report twice
+        /// </summary>
+        /// <param name="report">current report</param>
+        private bool HandleInnerException(BacktraceReport report)
+        {
+            if (!report.ExceptionTypeReport)
+            {
+                return true;
+            }
+            //there is no additional exception
+            if (report.Exception.InnerException == null)
+            {
+                return true;
+            }
+            //we have to create a copy of an inner exception report
+            //to have the same calling assembly property
+            var innerExceptionReport = report.CreateInnerReport();
+            return Send(innerExceptionReport);
         }
 
         /// <summary>
@@ -73,16 +98,17 @@ namespace Backtrace
         /// <param name="exception">Exception</param>
         /// <param name="attributes">Additional information about application state</param>
         /// <param name="attachmentPaths">Path to all report attachments</param>
-        public virtual void Send(
+        public virtual bool Send(
             Exception exception,
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null)
         {
-            var report = new BacktraceReport<object>(exception, attributes, attachmentPaths)
+            var report = new BacktraceReport(exception, attributes, attachmentPaths)
             {
                 CallingAssembly = Assembly.GetCallingAssembly()
             };
-            Send(report);
+            bool result = Send(report);
+            return result &&  HandleInnerException(report);
         }
         /// <summary>
         /// Send a message to Backtrace API
@@ -95,7 +121,7 @@ namespace Backtrace
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null)
         {
-            var report = new BacktraceReport<object>(message, attributes, attachmentPaths)
+            var report = new BacktraceReport(message, attributes, attachmentPaths)
             {
                 CallingAssembly = Assembly.GetCallingAssembly()
             };

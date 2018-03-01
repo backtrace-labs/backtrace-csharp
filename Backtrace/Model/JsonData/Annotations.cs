@@ -9,14 +9,14 @@ namespace Backtrace.Model.JsonData
     /// <summary>
     /// Get report annotations - environment variables and application dependencies
     /// </summary>
-    internal class Annotations
+    public class Annotations
     {
 
         /// <summary>
         /// Get system environment variables
         /// </summary>
         [JsonProperty(PropertyName = "Environment Variables")]
-        internal Dictionary<string, string> EnvironmentVariables
+        public Dictionary<string, string> EnvironmentVariables
         {
             get
             {
@@ -28,7 +28,7 @@ namespace Backtrace.Model.JsonData
         /// Get application dependencies
         /// </summary>
         [JsonProperty(PropertyName = "Dependencies")]
-        internal Dictionary<string, Dependency> Dependencies
+        public Dictionary<string, Dependency> Dependencies
         {
             get
             {

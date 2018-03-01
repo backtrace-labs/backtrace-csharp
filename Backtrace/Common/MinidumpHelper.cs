@@ -35,13 +35,13 @@ namespace Backtrace.Common
         /// Save minidump file with exception informations
         /// </summary>
         [DllImport("dbghelp.dll", EntryPoint = "MiniDumpWriteDump", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
-        static extern bool MiniDumpWriteDump(IntPtr hProcess, uint processId, SafeHandle hFile, uint dumpType, ref MiniDumpExceptionInformation expParam, IntPtr userStreamParam, IntPtr callbackParam);
+        internal static extern bool MiniDumpWriteDump(IntPtr hProcess, uint processId, SafeHandle hFile, uint dumpType, ref MiniDumpExceptionInformation expParam, IntPtr userStreamParam, IntPtr callbackParam);
 
         /// <summary>
         /// Save minidump file with exception informations. This function supporting MiniDumpExceptionInformation == NULL
         /// </summary>
         [DllImport("dbghelp.dll", EntryPoint = "MiniDumpWriteDump", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
-        static extern bool MiniDumpWriteDump(IntPtr hProcess, uint processId, SafeHandle hFile, uint dumpType, IntPtr expParam, IntPtr userStreamParam, IntPtr callbackParam);
+        internal static extern bool MiniDumpWriteDump(IntPtr hProcess, uint processId, SafeHandle hFile, uint dumpType, IntPtr expParam, IntPtr userStreamParam, IntPtr callbackParam);
 
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace Backtrace.Common
         /// <param name="filePath">The path where the minidump file will be saved</param>
         /// <param name="options">Minidump save options</param>
         /// <param name="exceptionType">Type to check if exception exists</param>
-        public static bool Write(string filePath, MiniDumpOptions options = MiniDumpOptions.WithFullMemory, MinidumpException exceptionType = MinidumpException.None)
+        internal static bool Write(string filePath, MiniDumpOptions options = MiniDumpOptions.WithFullMemory, MinidumpException exceptionType = MinidumpException.None)
         {
             bool miniDumpAvailable = IsMemoryDumpAvailable();
             if (!miniDumpAvailable)

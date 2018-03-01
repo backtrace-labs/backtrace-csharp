@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Runtime.CompilerServices;
 using Backtrace.Model;
+using Backtrace.Base;
 
 [assembly: InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Services
@@ -38,7 +39,7 @@ namespace Backtrace.Services
         /// </summary>
         /// <param name="report">Current report</param>
         /// <returns>true if user can add a new report</returns>
-        public bool WatchReport(BacktraceReport<T> report)
+        public bool WatchReport(BacktraceReportBase<T> report)
         {
             System.Diagnostics.Trace.WriteLine($"{report.Message} : {report.Timestamp}");
             if (!_watcherEnable)

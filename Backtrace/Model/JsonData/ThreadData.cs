@@ -8,51 +8,47 @@ using System.Threading;
 using System.Linq;
 using Diagnostics = System.Diagnostics;
 using System.Reflection;
-using System.Collections;
-using Backtrace.Extensions;
 
 namespace Backtrace.Model.JsonData
 {
     /// <summary>
     /// Generate information about appliaction threads
     /// </summary>
-    internal class ThreadData
+    public class ThreadData
     {
-        internal Dictionary<string, ThreadInformation> ThreadInformations = new Dictionary<string, ThreadInformation>();
+        public Dictionary<string, ThreadInformation> ThreadInformations = new Dictionary<string, ThreadInformation>();
         /// <summary>
         /// Create instance of ThreadData class to get more information about threads used in application
         /// </summary>
-        public ThreadData(Assembly callingAssembly, IEnumerable<ExceptionStack> exceptionStack)
+        internal ThreadData(Assembly callingAssembly, IEnumerable<ExceptionStack> exceptionStack)
         {
             var current = Thread.CurrentThread;
-            var managedThreadId = current.ManagedThreadId;
-            //ProcessThreads(managedThreadId);
-            bool mainThreadIncluded = false;
 #if NET461
-            mainThreadIncluded = !(exceptionStack != null && exceptionStack.Any());
-            GetUsedThreads(callingAssembly, mainThreadIncluded);
+            GetUsedThreads(callingAssembly);
+#else
+            ProcessThreads();
 #endif
-            if (mainThreadIncluded)
-            {
-                return;
-            }
-            ThreadInformations.Add(current.ManagedThreadId.ToString(), new ThreadInformation(current, exceptionStack));
+            var currentThreadStackTrace = ExceptionStack.FromCurrentThread(callingAssembly.GetName().Name, exceptionStack);
+            ThreadInformations.Add(current.ManagedThreadId.ToString(), new ThreadInformation(current,currentThreadStackTrace));
         }
 
-        private void ProcessThreads(int managedThreadId)
+        private void ProcessThreads()
         {
-            ProcessThreadCollection currentThreads = Process.GetCurrentProcess().Threads;
-
+            ProcessThreadCollection currentThreads = null;
+            try
+            {
+                currentThreads = Process.GetCurrentProcess().Threads;
+            }
+            catch
+            {
+                //handle UWP
+                return;
+            }
             foreach (ProcessThread thread in currentThreads)
             {
-                if (thread.Id == managedThreadId)
-                {
-                    Trace.WriteLine(thread);
-                }
-                if (thread.ThreadState == Diagnostics.ThreadState.Running)
-                {
-                    Trace.WriteLine(thread);
-                }
+                //you can't retrieve stack trace for processthread
+                string threadId = thread.Id.ToString();
+                ThreadInformations.Add(threadId, new ThreadInformation(threadId, false, null));
             }
         }
 
@@ -62,8 +58,7 @@ namespace Backtrace.Model.JsonData
         /// Get all used threads in calling assembly. Function ignore current thread Id 
         /// </summary>
         /// <param name="callingAssembly">Calling assembly</param>
-        /// <param name="mainThreadIncluded">If true, method wont generate stacktrace for main thread</param>
-        private void GetUsedThreads(Assembly callingAssembly, bool mainThreadIncluded)
+        private void GetUsedThreads(Assembly callingAssembly)
         {
             var mainThreadId = Thread.CurrentThread.ManagedThreadId;
             using (DataTarget target = DataTarget.AttachToProcess(Process.GetCurrentProcess().Id, 5000, AttachFlag.Passive))
@@ -72,7 +67,7 @@ namespace Backtrace.Model.JsonData
 
                 foreach (ClrThread thread in runtime.Threads)
                 {
-                    if (!mainThreadIncluded && thread.ManagedThreadId == mainThreadId)
+                    if (thread.ManagedThreadId == mainThreadId)
                     {
                         //main thread catched
                         continue;

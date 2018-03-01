@@ -8,14 +8,14 @@ namespace Backtrace.Extensions
     /// <summary>
     /// Assembly Extensions used in Backtrace Library
     /// </summary>
-    public static class AssemblyExtensions
+    internal static class AssemblyExtensions
     {
         /// <summary>
         /// Get all namesaces from assembly
         /// </summary>
         /// <param name="assembly">Calling assembly</param>
         /// <returns>Available namespaces in assembly</returns>
-        public static IEnumerable<string> GetNamespaces(this Assembly assembly)
+        internal static IEnumerable<string> GetNamespaces(this Assembly assembly)
         {
             HashSet<string> result = new HashSet<string>();
             if (assembly == null)
