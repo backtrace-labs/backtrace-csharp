@@ -43,7 +43,7 @@ namespace Backtrace.Base
             {
                 if (ExceptionTypeReport)
                 {
-                    return Exception.GetType().FullName;
+                    return Exception.GetType().Name;
                 }
                 return string.Empty;
             }
