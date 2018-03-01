@@ -58,7 +58,7 @@ Additionally `BacktraceClient` constructor accepts report attributes, database d
 var backtraceClient = new BacktraceClient(
     sectionName: "BacktraceCredentials",
     attributes: new Dictionary<string, object>() { { "Attribute", "attribute" } },
-    databaseDirectory: "pathToDirectoryPath",
+    databaseDirectory: "pathToDatabaseDirectory",
     reportPerMin: 0
 );
 ```
@@ -71,7 +71,7 @@ If parameter `reportPerMin` is equal to 0, there is no limit for report send per
 
 To send a new report to Backtrace API you have to use instance of `BacktraceClient`. Use `Send` method to send a new report. You can use overrided versions of `Send` method. See examples below to learn how to send a new `BacktraceReport` to server:
 
-Use BacktraceReport
+#### Use BacktraceReport
 
 You can send a report to server by using `BacktraceReport` class. `BacktraceReport` override a generic class `BacktraceReportBase`. `T` argument is used to determinate type of values in attributes dictionary. 
 ```csharp
@@ -123,7 +123,7 @@ backtraceClient.BeforeSend =
     (Model.BacktraceData<object> model) =>
     {
         var data = model;
-		//do something with data
-		return data;
+        //do something with data
+        return data;
     };
 ```           

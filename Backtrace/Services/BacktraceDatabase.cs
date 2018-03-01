@@ -47,12 +47,13 @@ namespace Backtrace.Services
             {
                 throw new ArgumentException("databasePath");
             }
-
+#if RELEASE
             //check if directory is empty
             if (System.IO.Directory.GetFiles(_directoryPath).Any())
             {
                 throw new InvalidOperationException("Database directory should be empty before Backtrace library start");
             }
+#endif
         }
 
         /// <summary>

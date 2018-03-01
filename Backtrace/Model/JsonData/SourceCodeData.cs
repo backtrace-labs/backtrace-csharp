@@ -8,9 +8,9 @@ using System.Text.RegularExpressions;
 
 namespace Backtrace.Model.JsonData
 {
-    internal class SourceCodeData
+    public class SourceCodeData
     {
-        internal class SourceCode
+        public class SourceCode
         {
             /// <summary>
             /// Line number in source code where exception occurs
@@ -56,8 +56,8 @@ namespace Backtrace.Model.JsonData
             }
         }
 
-        internal Dictionary<string, SourceCode> data = new Dictionary<string, SourceCode>();
-        public SourceCodeData(IEnumerable<ExceptionStack> exceptionStack)
+        public Dictionary<string, SourceCode> data = new Dictionary<string, SourceCode>();
+        internal SourceCodeData(IEnumerable<ExceptionStack> exceptionStack)
         {
             SetStack(exceptionStack);
         }

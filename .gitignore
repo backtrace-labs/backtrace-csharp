@@ -322,4 +322,5 @@ ASALocalRun/
 # MSBuild Binary and Structured Log
 *.binlog
 
-Backtrace.Sample/*
+/Backtrace/Backtrace.nuspec
+/Backtrace/nuget.exe

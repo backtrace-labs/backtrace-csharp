@@ -212,7 +212,7 @@ namespace Backtrace.Model
             _backtraceAttributes = new BacktraceAttributes<T>(_report, scopedAttributes);
             //reading exception stack
             _exceptionStack = _report.GetExceptionStack();
-            ThreadData = new ThreadData(report.CallingAssembly,_exceptionStack);
+            ThreadData = new ThreadData(report.CallingAssembly, _exceptionStack);
         }
     }
 }

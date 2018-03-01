@@ -8,29 +8,11 @@ namespace Backtrace.Examples
 {
     class Program
     {
-        private static BacktraceClient backtraceClient = new BacktraceClient(databaseDirectory: @"D:\data\Backtracelogs");
-        private static void DoSomething(int i = 0)
-        {
-            if (i == 2)
-            {
-                throw new ArgumentException("i");
-            }
-            Thread.Sleep(20);
-            try
-            {
-                DoSomething(++i);
-
-            }
-            catch (Exception e)
-            {
-                backtraceClient.Send(e);
-            }
-        }
         static void Main(string[] args)
         {
             //initialize new BacktraceClient with custom configuration section readed from file App.config
             //Client will be initialized with values stored in default section name "BacktraceCredentials"
-            //var backtraceClient = new BacktraceClient();
+            BacktraceClient backtraceClient = new BacktraceClient();
 
             var credentials = new BacktraceCredentials("https://yourHostUrl.com", "accessToken");
             var backtraceClientWithCredentials = new BacktraceClient(credentials);
@@ -46,7 +28,7 @@ namespace Backtrace.Examples
 
             //Add your own handler to client API
             backtraceClient.BeforeSend =
-               (Model.BacktraceData<object> model) =>
+               (BacktraceData<object> model) =>
                {
                    var data = model;
                    data.Attributes.Add("eventAtrtibute", "EventAttributeValue");
@@ -58,7 +40,7 @@ namespace Backtrace.Examples
             {
                 try
                 {
-                    var num = int.Parse("abc");
+                    int.Parse("abc");
                 }
                 catch (Exception inner)
                 {

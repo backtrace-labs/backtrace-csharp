@@ -9,7 +9,7 @@ namespace Backtrace.Model.JsonData
     /// <summary>
     /// Get an information about single thread passed in constructor
     /// </summary>
-    internal class ThreadInformation
+    public class ThreadInformation
     {
         /// <summary>
         /// Thread Name

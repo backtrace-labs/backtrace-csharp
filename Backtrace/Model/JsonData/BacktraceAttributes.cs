@@ -14,7 +14,7 @@ namespace Backtrace.Model.JsonData
     /// <summary>
     /// Class instance to get a built-in attributes from current application
     /// </summary>
-    internal class BacktraceAttributes<T>
+    public class BacktraceAttributes<T>
     {
         /// <summary>
         /// Get built-in attributes
@@ -116,14 +116,9 @@ namespace Backtrace.Model.JsonData
 
             //Time when system was booted
             Attributes["cpu.boottime"] = Environment.TickCount.ToString();
-
-
-            //Time when system was booted
-
+            
             //The hostname of the crashing system.
             Attributes["hostname"] = Environment.MachineName;
-
-
         }
     }
 }
