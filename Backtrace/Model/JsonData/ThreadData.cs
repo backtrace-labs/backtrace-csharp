@@ -16,7 +16,11 @@ namespace Backtrace.Model.JsonData
     /// </summary>
     public class ThreadData
     {
+        /// <summary>
+        /// All collected information about application threads
+        /// </summary>
         public Dictionary<string, ThreadInformation> ThreadInformations = new Dictionary<string, ThreadInformation>();
+
         /// <summary>
         /// Create instance of ThreadData class to get more information about threads used in application
         /// </summary>

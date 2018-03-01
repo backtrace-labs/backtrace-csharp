@@ -10,7 +10,7 @@ namespace Backtrace
     /// <summary>
     /// Backtrace .NET Client 
     /// </summary>
-    public class BacktraceClient : Backtrace<object>, IBacktraceClient<object>
+    public class BacktraceClient : BacktraceBase<object>, IBacktraceClient<object>
     {
         /// <summary>
         /// Set an event executed when send function triggers

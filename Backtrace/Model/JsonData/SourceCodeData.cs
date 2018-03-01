@@ -8,8 +8,14 @@ using System.Text.RegularExpressions;
 
 namespace Backtrace.Model.JsonData
 {
+    /// <summary>
+    /// Collect all source data information about current program
+    /// </summary>
     public class SourceCodeData
     {
+        /// <summary>
+        /// Single instance of source data frame
+        /// </summary>
         public class SourceCode
         {
             /// <summary>
@@ -45,6 +51,11 @@ namespace Backtrace.Model.JsonData
                 }
             }
 
+            /// <summary>
+            /// Get a SourceData instance from Exception stack
+            /// </summary>
+            /// <param name="exceptionStack">Exception Stack</param>
+            /// <returns>New instance of SoruceCode</returns>
             public static SourceCode FromExceptionStack(ExceptionStack exceptionStack)
             {
                 return new SourceCode()
@@ -56,6 +67,9 @@ namespace Backtrace.Model.JsonData
             }
         }
 
+        /// <summary>
+        /// Source code information about current executed program
+        /// </summary>
         public Dictionary<string, SourceCode> data = new Dictionary<string, SourceCode>();
         internal SourceCodeData(IEnumerable<ExceptionStack> exceptionStack)
         {

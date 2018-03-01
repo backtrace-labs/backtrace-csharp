@@ -10,8 +10,17 @@ namespace Backtrace.Base
     /// <summary>
     /// Base Backtrace .NET Client 
     /// </summary>
-    public class Backtrace<T>
+    public class BacktraceBase<T>
     {
+        /// <summary>
+        /// Set an event executed when received bad request, unauthorize request or other information from server
+        /// </summary>
+        public Action WhenServerUnvailable = null;
+
+        /// <summary>
+        /// Set an event executed when server return information after sending data to API
+        /// </summary>
+        public Action OnServerAnswer = null;
 
         /// <summary>
         /// Set an event executed before data send to Backtrace API
@@ -56,7 +65,7 @@ namespace Backtrace.Base
         /// <param name="attributes">Attributes scoped for every report</param>
         /// <param name="databaseDirectory">Database path</param>
         /// <param name="reportPerMin">Numbers of report send per one sec. If value is equal to zero, there is no request send to API. Value have to be greater than or equal to 0</param>
-        public Backtrace(
+        public BacktraceBase(
             BacktraceCredentials backtraceCredentials,
             Dictionary<string, T> attributes = null,
             string databaseDirectory = "",
