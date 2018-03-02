@@ -23,6 +23,9 @@ namespace Backtrace.Services
         private readonly string _serverurl;
         private readonly BacktraceCredentials _credentials;
 
+        public Action<Exception> WhenServerUnvailable { get; set; }
+        public Action<BacktraceServerResponse> OnServerAnswer { get; set; }
+
         /// <summary>
         /// Create a new instance of Backtrace API request.
         /// </summary>
@@ -97,11 +100,16 @@ namespace Backtrace.Services
                 {
                     StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
                     string fullResponse = responseReader.ReadToEnd();
+                    if (OnServerAnswer != null)
+                    {
+                        var response = JsonConvert.DeserializeObject<BacktraceServerResponse>(fullResponse);
+                        OnServerAnswer.Invoke(response);
+                    }
                 }
             }
-            catch(Exception exception)
+            catch (Exception exception)
             {
-                Trace.TraceWarning($"Backtrace C# Library: {exception.Message}");
+                WhenServerUnvailable?.Invoke(exception);
                 return false;
             }
             return true;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Backtrace.Model;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -17,6 +18,15 @@ namespace Backtrace.Interfaces
         /// <param name="data">Data to send </param>
         /// <returns>True if report was sended to Backtrace API without any exception</returns>
         bool Send(Model.BacktraceData<T> data);
-        
+
+        /// <summary>
+        /// Set an event executed when received bad request, unauthorize request or other information from server
+        /// </summary>
+        Action<Exception> WhenServerUnvailable { get; set; }
+
+        /// <summary>
+        /// Set an event executed when server return information after sending data to API
+        /// </summary>
+        Action<BacktraceServerResponse> OnServerAnswer { get; set; }
     }
 }

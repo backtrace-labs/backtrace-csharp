@@ -25,7 +25,10 @@ namespace Backtrace.Examples
                 Name = "Backtrace",
                 Type = "Library"
             };
-
+            backtraceClient.OnServerAnswer = (BacktraceServerResponse response) =>
+            {
+                System.Diagnostics.Trace.WriteLine(response.Object);
+            };
             //Add your own handler to client API
             backtraceClient.BeforeSend =
                (BacktraceData<object> model) =>

@@ -15,12 +15,33 @@ namespace Backtrace.Base
         /// <summary>
         /// Set an event executed when received bad request, unauthorize request or other information from server
         /// </summary>
-        public Action WhenServerUnvailable = null;
+        public Action<Exception> WhenServerUnvailable
+        {
+            get
+            {
+                return _backtraceApi.WhenServerUnvailable;
+            }
+            set
+            {
+                _backtraceApi.WhenServerUnvailable = value;
+            }
+        }
 
         /// <summary>
         /// Set an event executed when server return information after sending data to API
         /// </summary>
-        public Action OnServerAnswer = null;
+        public Action<BacktraceServerResponse> OnServerAnswer
+        {
+            get
+            {
+                return _backtraceApi.OnServerAnswer;
+            }
+            set
+            {
+                _backtraceApi.OnServerAnswer = value;
+            }
+        }
+
 
         /// <summary>
         /// Set an event executed before data send to Backtrace API
@@ -72,7 +93,8 @@ namespace Backtrace.Base
             uint reportPerMin = 3)
         {
             _attributes = attributes ?? new Dictionary<string, T>();
-            _database = new BacktraceDatabase<T>(databaseDirectory); _backtraceApi = new BacktraceApi<T>(backtraceCredentials);
+            _database = new BacktraceDatabase<T>(databaseDirectory);
+            _backtraceApi = new BacktraceApi<T>(backtraceCredentials);
             _reportWatcher = new ReportWatcher<T>(reportPerMin);
         }
 
@@ -93,10 +115,10 @@ namespace Backtrace.Base
             if (!string.IsNullOrEmpty(minidumpPath))
             {
                 report._attachmentPaths.Add(minidumpPath);
-            }            
+            }
             //create a JSON payload instance
             var data = new BacktraceData<T>(report, Attributes);
-           
+
             //valid user custom events
             data = BeforeSend?.Invoke(data) ?? data;
             bool result = _backtraceApi.Send(data);
