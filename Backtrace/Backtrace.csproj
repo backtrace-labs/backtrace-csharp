@@ -1,16 +1,29 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
+    <PackageId>Backtrace.Csharp</PackageId>
     <TargetFrameworks>netstandard2.0;net461;net35</TargetFrameworks>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageTags>Backtrace Error Diagnostic Tools </PackageTags>
+    <PackageVersion>1.0.0</PackageVersion>
     <Product>Backtrace</Product>
-    <Description>Backtrace C# client to Backtrace API</Description>
+    <PackageLicenseUrl>https://github.com/backtrace-labs/backtrace-csharp/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/backtrace-labs/backtrace-csharp</PackageProjectUrl>
+    <PackageIconUrl>https://cdn-js.global.ssl.fastly.net/4/_assets/57cb09f3701eff799fda5bb538973751.png</PackageIconUrl>
+    <Description>Backtrace C# client is a error reporting tool for C# developers. Client allow you to integrate your application with Backtrace API. You can use library in Xamarin, UWP, .NET Framework and .NET Core projects!</Description>
     <RepositoryUrl>https://github.com/backtrace-labs/backtrace-csharp</RepositoryUrl>
-    <!--<TargetFramework>net35</TargetFramework>-->
+    <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DocumentationFile>bin\Debug\netstandard2.0\Backtrace.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,9 +34,6 @@
     <PackageReference Include="System.Configuration.ConfigurationManager">
       <Version>4.4.1</Version>
     </PackageReference>
-    <PackageReference Include="System.Diagnostics.DiagnosticSource">
-      <Version>4.4.1</Version>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
@@ -31,7 +41,7 @@
       <Version>0.9.170809.3</Version>
     </PackageReference>
   </ItemGroup>
-  
+
   <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
     <Reference Include="System.Configuration" />
   </ItemGroup>
@@ -39,5 +49,5 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
     <Reference Include="System.Configuration" />
   </ItemGroup>
-  
+
 </Project>
