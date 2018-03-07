@@ -14,6 +14,15 @@ catch(Exception exception){
 }
 ```
 
+## Supported .NET Frameworks
+* .NET Framework 3.5 >
+* .NET Framework 4.6.1 (new cool features) >
+* .NET Core 2
+* .NET Standard:
+  * Xamarin
+  * Universal Windows Platform
+* Unity
+
 ## Instalation
 
 You can install library via Nuget package
@@ -21,13 +30,13 @@ You can install library via Nuget package
 Install-Package Backtrace.Csharp
 ```
 
-## Supported .NET Frameworks
-* .NET Framework 3.5 >
-* .NET Framework 4.6.1 (new cool features) >
-* .NET Core 2
-* Xamarin
-* Universal Windows Platform
-* Unity
+### Xamarin
+
+You can use library with Xamarin if you change `HttpClient Implementation` to Android. To change settings navigate to `Android Options` in `Project Settings` and use `Advance` button. 
+
+![Xamarin Android Support][androidSupport]
+
+[androidSupport]: https://github.com/backtrace-labs/backtrace-csharp/tree/dev/Backtrace/Documents/Images/AndroidSupport.PNG "Xamarin Android Support"
 
 ## Documentation
 
