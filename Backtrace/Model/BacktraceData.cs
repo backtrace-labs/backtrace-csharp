@@ -137,11 +137,7 @@ namespace Backtrace.Model
         {
             get
             {
-                //we can't post to API 'null' value
-                string currentThread = Thread.CurrentThread.Name;
-                return string.IsNullOrEmpty(currentThread)
-                        ? Thread.CurrentThread.ManagedThreadId.ToString()
-                        : currentThread;
+                return ThreadData.mainThread;
             }
         }
 

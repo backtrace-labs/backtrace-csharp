@@ -22,20 +22,46 @@ namespace Backtrace.Model.JsonData
         public Dictionary<string, ThreadInformation> ThreadInformations = new Dictionary<string, ThreadInformation>();
 
         /// <summary>
+        /// Application Id for current thread. This value is used in mainThreadSection in output JSON file
+        /// </summary>
+        internal string mainThread = string.Empty;
+
+        /// <summary>
         /// Create instance of ThreadData class to get more information about threads used in application
         /// </summary>
         internal ThreadData(Assembly callingAssembly, IEnumerable<ExceptionStack> exceptionStack)
         {
-            var current = Thread.CurrentThread;
 #if NET461
             GetUsedThreads(callingAssembly);
 #else
             ProcessThreads();
 #endif
-            var currentThreadStackTrace = ExceptionStack.FromCurrentThread(callingAssembly.GetName().Name, exceptionStack);
-            ThreadInformations.Add(current.ManagedThreadId.ToString(), new ThreadInformation(current,currentThreadStackTrace));
+            GenerateCurrentThreadInformation(callingAssembly, exceptionStack);
         }
 
+       
+
+        /// <summary>
+        /// Generate information for current thread
+        /// </summary>
+        private void GenerateCurrentThreadInformation(Assembly callingAssembly, IEnumerable<ExceptionStack> exceptionStack)
+        {
+            var current = Thread.CurrentThread;
+            //get a current thread stack trace
+            //in thread stack trace we concatenate current thread stack trace and stack trace available in exception object
+            var currentThreadStackTrace = ExceptionStack.FromCurrentThread(callingAssembly.GetName().Name, exceptionStack);
+
+            //get current thread id
+            string generatedMainThreadId = ThreadInformation.GenerateValidThreadName(current);
+
+            ThreadInformations[generatedMainThreadId] = new ThreadInformation(current, currentThreadStackTrace);
+            //set currentThreadId
+            mainThread = generatedMainThreadId;
+        }
+
+        /// <summary>
+        /// Generate list of process thread and it to threadInformation dictionary.
+        /// </summary>
         private void ProcessThreads()
         {
             ProcessThreadCollection currentThreads = null;
@@ -52,7 +78,7 @@ namespace Backtrace.Model.JsonData
             {
                 //you can't retrieve stack trace for processthread
                 string threadId = thread.Id.ToString();
-                ThreadInformations.Add(threadId, new ThreadInformation(threadId, false, null));
+                ThreadInformations.Add(Guid.NewGuid().ToString(), new ThreadInformation(threadId, false, null));
             }
         }
 
@@ -76,7 +102,7 @@ namespace Backtrace.Model.JsonData
                         //main thread catched
                         continue;
                     }
-                    //ClrThread doesn't have any information about thread name
+                    //ClrThread doesn't have any information about thread 
                     string threadName = thread.ManagedThreadId.ToString();
                     var frames = ExceptionStack.Convert(thread.StackTrace);
                     ThreadInformations.Add(threadName, new ThreadInformation(threadName, false, frames));

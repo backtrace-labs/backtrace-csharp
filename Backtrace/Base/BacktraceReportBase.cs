@@ -81,13 +81,15 @@ namespace Backtrace.Base
         internal List<string> _attachmentPaths;
 
         /// <summary>
-        /// Sending a report with custom message
+        /// Send a report with custom message
         /// </summary>
-        /// <param name="message">message about application state</param>
+        /// <param name="message">Custom client message</param>
+        /// <param name="callingAssembly">Calling assembly instance</param>
         /// <param name="attributes">Report additional information</param>
         /// <param name="attachmentPaths">Path to all report attachments</param>
         public BacktraceReportBase(
             string message,
+            Assembly callingAssembly,
             Dictionary<string, T> attributes = null,
             List<string> attachmentPaths = null)
         {
@@ -98,17 +100,33 @@ namespace Backtrace.Base
         }
 
         /// <summary>
-        /// Sending a report with custom exception
+        /// Send a report with custom message
         /// </summary>
-        /// <param name="exception">Occur exception</param>
+        /// <param name="message">Custom client message</param>
+        /// <param name="attributes">Report additional information</param>
+        /// <param name="attachmentPaths">Path to all report attachments</param>
+        public BacktraceReportBase(
+            string message,
+            Dictionary<string, T> attributes = null,
+            List<string> attachmentPaths = null)
+            : this(message, Assembly.GetCallingAssembly(), attributes, attachmentPaths)
+        {
+        }
+
+        /// <summary>
+        /// Send a report with custom exception
+        /// </summary>
+        /// <param name="exception">Current exception</param>
+        /// <param name="callingAssembly">Calling assembly</param>
         /// <param name="attributes">Report additional information</param>
         /// <param name="attachmentPaths">Path to all report attachments</param>
         public BacktraceReportBase(
             Exception exception,
+            Assembly callingAssembly,
             Dictionary<string, T> attributes = null,
             List<string> attachmentPaths = null)
         {
-            CallingAssembly = Assembly.GetCallingAssembly();
+            CallingAssembly = callingAssembly;
             _attributes = attributes ?? new Dictionary<string, T>();
             _attachmentPaths = attachmentPaths ?? new List<string>();
             //handle null value in exception parameter
@@ -119,6 +137,20 @@ namespace Backtrace.Base
             Exception = exception;
             var type = Exception?.GetType();
             ExceptionTypeReport = true;
+        }
+
+        /// <summary>
+        /// Send a report with custom exception
+        /// </summary>
+        /// <param name="exception">Current exception</param>
+        /// <param name="attributes">Report additional information</param>
+        /// <param name="attachmentPaths">Path to all report attachments</param>
+        public BacktraceReportBase(
+            Exception exception,
+            Dictionary<string, T> attributes = null,
+            List<string> attachmentPaths = null)
+            : this(exception, Assembly.GetCallingAssembly(), attributes, attachmentPaths)
+        {
         }
 
         /// <summary>

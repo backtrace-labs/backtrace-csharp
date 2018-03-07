@@ -23,8 +23,6 @@ namespace Backtrace.Model.JsonData
         [JsonProperty(PropertyName = "fault")]
         public readonly bool Fault;
 
-        //[JsonProperty(PropertyName = "stackTrace")]
-        //public readonly string MainThreadStackTrace;
 
         [JsonProperty(PropertyName = "stack")]
         internal IEnumerable<ExceptionStack> Stack = new List<ExceptionStack>();
@@ -52,12 +50,29 @@ namespace Backtrace.Model.JsonData
         /// </summary>
         /// <param name="thread">Thread to analyse</param>
         /// <param name="stack">Exception stack information</param>
-        public ThreadInformation(Thread thread, IEnumerable<ExceptionStack> stack)
+        /// <param name="currentThread">Is current thread flag</param>
+        public ThreadInformation(Thread thread, IEnumerable<ExceptionStack> stack, bool currentThread = false)
             : this(
-                 threadName: string.IsNullOrEmpty(thread.Name) ? thread.ManagedThreadId.ToString() : thread.Name,
-                 fault: false,
+                 threadName: GenerateValidThreadName(thread),
+                 fault: currentThread, //faulting thread = current thread
                  stack: stack)
         {
+        }
+        /// <summary>
+        /// Generate a valid thread name for passed thread
+        /// </summary>
+        /// <returns>Thread name</returns>
+        public static string GenerateValidThreadName(Thread thread)
+        {
+            //generate temporary thread name
+            //thread name cannot be "null" or null or empty string
+            //in worst scenario thread name should be managedThreadId 
+            var threadName = thread.Name;
+            threadName = string.IsNullOrEmpty(threadName)
+                        ? thread.ManagedThreadId.ToString()
+                        : threadName;
+
+            return threadName;
         }
 
     }
