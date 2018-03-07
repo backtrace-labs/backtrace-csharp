@@ -1,4 +1,4 @@
-# backtrace-dotnet
+# backtrace-Csharp
 
 [Backtrace](http://backtrace.io/) error reporting tool for C#.
 
@@ -13,6 +13,21 @@ catch(Exception exception){
 	backtraceClient.Send(new BacktraceReport(exception));
 }
 ```
+
+## Instalation
+
+You can install library via Nuget package
+```
+Install-Package Backtrace.Csharp
+```
+
+## Supported .NET Frameworks
+* .NET Framework 3.5 >
+* .NET Framework 4.6.1 (new cool features) >
+* .NET Core 2
+* Xamarin
+* Universal Windows Platform
+* Unity
 
 ## Documentation
 
@@ -102,9 +117,9 @@ catch (Exception exception)
 }
 ```
 
-Additionally `BacktraceReport` constructor accepts report attributes and attachment paths. These arguments are optional.
+Additionally `BacktraceReport` constructor accept report attributes and attachment paths. These arguments are optional.
 ```csharp
- var report = new BacktraceReport<string>(
+ var report = new BacktraceReport(
     exception: exception,
     attributes: new Dictionary<string, string>() { { "AttributeString", "string" } },
     attachmentPaths: new List<string>() { "path to file attachment", "another path" }
@@ -127,3 +142,8 @@ backtraceClient.BeforeSend =
         return data;
     };
 ```           
+`BacktraceClient` allows you to add custom events that will trigger after server response. You can add new events when server is temporary unvailable `WhenServerUnvailable` or when you receive response from server `OnServerResponse`.
+
+### Customization
+
+`BacktraceClient` and `BacktraceReport` allows you to use your own generic attributes and your own implementation. You can override `BacktraceReportBase` and `BacktraceClientBase` to create your own client/report implementation. 
