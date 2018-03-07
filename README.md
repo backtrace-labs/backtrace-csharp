@@ -36,7 +36,7 @@ You can use library with Xamarin if you change `HttpClient Implementation` to An
 
 ![Xamarin Android Support][androidSupport]
 
-[androidSupport]: https://github.com/backtrace-labs/backtrace-csharp/tree/dev/Backtrace/Documents/Images/AndroidSupport.PNG "Xamarin Android Support"
+[androidSupport]: https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/AndroidSupport.PNG "Xamarin Android Support"
 
 ## Documentation
 
