@@ -58,7 +58,7 @@ In C# code you can initialize new BacktraceClient with section :
  var backtraceClient = new BacktraceClient("BacktraceCredentials");
  ```
 
- If you don't pass a section name to `BacktraceClient` section `BacktraceCredentials section` will be used.
+ If you don't pass a section name to `BacktraceClient`, `BacktraceCredentials` section  will be used.
 
 You can use `BacktraceCredential` class to create new instance of `BacktraceClient`. 
 
@@ -78,7 +78,7 @@ var backtraceClient = new BacktraceClient(
 );
 ```
 
-If parameter `reportPerMin` is equal to 0, there is no limit for report send per minute. If you want to send more reports than `reportPerMin` value, `Send` method will return false.
+If parameter `reportPerMin` is equal to 0, there is no limit for number of reports sending per minute. If you want to send more reports than `reportPerMin` value, `Send` method will return false.
 
 `DatabaseDirectory` parameter is optional. Make sure that there are no files in directory passed in `databaseDirectory`. BacktraceClient will use this directory to save additional information about executed program.
 
@@ -117,7 +117,7 @@ catch (Exception exception)
 }
 ```
 
-Additionally `BacktraceReport` constructor accept report attributes and attachment paths. These arguments are optional.
+Additionally `BacktraceReport` constructor accepts report attributes and attachment paths. These arguments are optional.
 ```csharp
  var report = new BacktraceReport(
     exception: exception,
