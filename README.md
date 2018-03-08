@@ -23,12 +23,21 @@ catch(Exception exception){
   * Universal Windows Platform
 * Unity
 
-## Instalation
+## Installation
 
 You can install library via Nuget package
 ```
 Install-Package Backtrace.Csharp
+
 ```
+
+### Windows
+
+#### Command Line
+
+#### Visual Studio
+
+
 
 ### Xamarin
 
@@ -37,6 +46,89 @@ You can use library with Xamarin if you change `HttpClient Implementation` to An
 ![Xamarin Android Support][androidSupport]
 
 [androidSupport]: https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/AndroidSupport.PNG "Xamarin Android Support"
+
+### Mac OS X  
+  
+#### Command Line  
+  
+- In order to use **backtrace-csharp** on Mac OS X, you need to download and install [.NET Core 2.0 or above](https://www.microsoft.com/net/download/macos).  
+
+- Install backtrace-csharp project through nuget:  
+
+```
+    nuget install backtrace-csharp
+``` 
+- In the directory where project is installed, go to \*\*Backtrace.Core\*\* sample application: 
+
+``` 
+       cd Backtrace.Core  
+``` 
+
+- Edit **App.config** and update the following Backtrace I/O credential entries:  
+
+```
+     <BacktraceCredentials>  
+           <add key="HostUrl" value="...backtrace host URL (with port)..."/>  
+           <add key="Token" value="...your backtrace submission token"/>  
+     </BacktraceCredentials>  
+```
+
+- Build the project:  
+
+``` 
+    dotnet build  
+``` 
+
+- Upon successful build, run the project  
+
+
+``` 
+    dotnet run  
+``` 
+
+- You should see new errors in your Backtrace I/O dashboard.
+
+
+
+#### Visual Studio
+
+- In order to use **backtrace-csharp** on Mac OS X, you need to download and install [.NET Core 2.0 or above](https://www.microsoft.com/net/download/macos).  
+
+- Install backtrace-csharp project through nuget:  
+
+```
+    nuget install backtrace-csharp
+``` 
+
+- Open the **Backtrace** solution in Visual Studio, and unload all projects excepts **Backtrace** and **Backtrace.Core** 
+
+[VisualStudioMacOS]: https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/VisualStudioMacOS.PNG "Visual Studio Mac OS X Project Settings"
+
+- In project **Backtrace.Core**, edit **App.config** and update the following Backtrace I/O credential entries:  
+
+```
+     <BacktraceCredentials>  
+           <add key="HostUrl" value="...backtrace host URL (with port)..."/>  
+           <add key="Token" value="...your backtrace submission token"/>  
+     </BacktraceCredentials>  
+```
+
+- Build the project. 
+
+
+- Upon successful build, run the project.
+
+
+- You should see new errors in your Backtrace I/O dashboard.
+
+
+
+
+### Linux
+
+#### Command Line
+
+
 
 ## Documentation
 
