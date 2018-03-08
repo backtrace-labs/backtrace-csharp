@@ -41,7 +41,7 @@ namespace Backtrace.Model.JsonData
                 {
                     if (!string.IsNullOrEmpty(_sourceCodeFullPath))
                     {
-                        return Regex.Escape(_sourceCodeFullPath);
+                        return Path.GetFileName(_sourceCodeFullPath);
                     }
                     return string.Empty;
                 }

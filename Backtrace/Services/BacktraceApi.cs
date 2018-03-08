@@ -7,7 +7,6 @@ using System.Net;
 using System.IO;
 using System.Security.Authentication;
 using Backtrace.Common;
-using System.Diagnostics;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Services
@@ -19,6 +18,8 @@ namespace Backtrace.Services
     {
         public const SslProtocols _Tls12 = (SslProtocols)0x00000C00;
         public const SecurityProtocolType Tls12 = (SecurityProtocolType)_Tls12;
+
+        public bool AsynchronousRequest { get; set; } = false;
 
         private readonly string _serverurl;
         private readonly BacktraceCredentials _credentials;
@@ -64,11 +65,11 @@ namespace Backtrace.Services
         /// </summary>
         /// <param name="data">Collected backtrace data</param>
         /// <returns>False if operation fail or true if API return OK</returns>
-        public bool Send(BacktraceData<T> data)
+        public void Send(BacktraceData<T> data)
         {
             string json = JsonConvert.SerializeObject(data, GetSerializerSettings());
             List<string> attachments = data.Attachments;
-            return Send(json, attachments);
+            Send(json, attachments);
         }
 
         /// <summary>
@@ -76,8 +77,7 @@ namespace Backtrace.Services
         /// </summary>
         /// <param name="json">Diagnostics json</param>
         /// <param name="attachmentPaths">Attachments path</param>
-        /// <returns>False if operation fail or true if API return OK</returns>
-        private bool Send(string json, List<string> attachmentPaths)
+        private void Send(string json, List<string> attachmentPaths)
         {
             Guid requestId = Guid.NewGuid();
             var formData = FormDataHelper.GetFormData(json, attachmentPaths, requestId);
@@ -88,31 +88,61 @@ namespace Backtrace.Services
             request.ContentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
             request.ContentLength = formData.Length;
 
+            ////Send the form data to the request
+            if (AsynchronousRequest)
+            {
+                request.BeginGetRequestStream(new AsyncCallback((n) => RequestStreamCallback(n, formData)), request);
+                return;
+            }
             try
             {
-                //Send the form data to the request.
                 using (Stream requestStream = request.GetRequestStream())
                 {
                     requestStream.Write(formData, 0, formData.Length);
                     requestStream.Close();
                 }
-                using (WebResponse webResponse = request.GetResponse() as HttpWebResponse)
-                {
-                    StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
-                    string fullResponse = responseReader.ReadToEnd();
-                    if (OnServerAnswer != null)
-                    {
-                        var response = JsonConvert.DeserializeObject<BacktraceServerResponse>(fullResponse);
-                        OnServerAnswer.Invoke(response);
-                    }
-                }
+                ReadServerResponse(request);
             }
             catch (Exception exception)
             {
                 WhenServerUnvailable?.Invoke(exception);
-                return false;
             }
-            return true;
+        }
+
+        private void ReadServerResponse(HttpWebRequest request)
+        {
+            using (WebResponse webResponse = request.GetResponse() as HttpWebResponse)
+            {
+                StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
+                string fullResponse = responseReader.ReadToEnd();
+                if (OnServerAnswer != null)
+                {
+                    var response = JsonConvert.DeserializeObject<BacktraceServerResponse>(fullResponse);
+                    OnServerAnswer.Invoke(response);
+                }
+            }
+        }
+
+        private void RequestStreamCallback(IAsyncResult asyncResult, byte[] form)
+        {
+            var webRequest = (HttpWebRequest)asyncResult.AsyncState;
+            Stream postStream = webRequest.EndGetRequestStream(asyncResult);
+            postStream.Write(form, 0, form.Length);
+            postStream.Close();
+            webRequest.BeginGetResponse(new AsyncCallback(GetResponseCallback), webRequest);
+        }
+
+        private void GetResponseCallback(IAsyncResult asyncResult)
+        {
+            try
+            {
+                HttpWebRequest webRequest = (HttpWebRequest)asyncResult.AsyncState;
+                ReadServerResponse(webRequest);
+            }
+            catch (Exception exception)
+            {
+                WhenServerUnvailable?.Invoke(exception);
+            }
         }
     }
 }

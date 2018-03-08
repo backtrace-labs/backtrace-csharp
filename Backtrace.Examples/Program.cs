@@ -19,7 +19,7 @@ namespace Backtrace.Examples
 
             //Add new scoped attributes
             backtraceClient.Attributes["ClientAttributeNumber"] = 1;
-            backtraceClient.Attributes["ClientAttributeString"] = "string attribute";
+            backtraceClient.Attributes["ClientAttributeString"] = "/string attribute";
             backtraceClient.Attributes["ClientAttributeCustomClass"] = new
             {
                 Name = "Backtrace",
@@ -66,6 +66,7 @@ namespace Backtrace.Examples
             );
                 backtraceClient.Send(report);
             }
+            //Thread.Sleep(5000);
             //Report a new message
             backtraceClient.Send("Client message");
         }
