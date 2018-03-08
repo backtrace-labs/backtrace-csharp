@@ -61,16 +61,16 @@ You can use library with Xamarin if you change `HttpClient Implementation` to An
 - In the directory where project is installed, go to \*\*Backtrace.Core\*\* sample application: 
 
 ``` 
-       cd Backtrace.Core  
+    cd Backtrace.Core  
 ``` 
 
 - Edit **App.config** and update the following Backtrace I/O credential entries:  
 
 ```
-     <BacktraceCredentials>  
-           <add key="HostUrl" value="...backtrace host URL (with port)..."/>  
-           <add key="Token" value="...your backtrace submission token"/>  
-     </BacktraceCredentials>  
+    <BacktraceCredentials>  
+        <add key="HostUrl" value="...backtrace host URL (with port)..."/>  
+        <add key="Token" value="...your backtrace submission token"/>  
+    </BacktraceCredentials>  
 ```
 
 - Build the project:  
@@ -102,15 +102,15 @@ You can use library with Xamarin if you change `HttpClient Implementation` to An
 
 - Open the **Backtrace** solution in Visual Studio, and unload all projects excepts **Backtrace** and **Backtrace.Core** 
 
-[VisualStudioMacOS]: https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/VisualStudioMacOS.PNG "Visual Studio Mac OS X Project Settings"
+![VisualStudioMacOS](https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/VisualStudioMacOS.PNG)
 
 - In project **Backtrace.Core**, edit **App.config** and update the following Backtrace I/O credential entries:  
 
 ```
-     <BacktraceCredentials>  
-           <add key="HostUrl" value="...backtrace host URL (with port)..."/>  
-           <add key="Token" value="...your backtrace submission token"/>  
-     </BacktraceCredentials>  
+    <BacktraceCredentials>  
+        <add key="HostUrl" value="...backtrace host URL (with port)..."/>  
+        <add key="Token" value="...your backtrace submission token"/>  
+    </BacktraceCredentials>  
 ```
 
 - Build the project. 
