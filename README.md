@@ -100,7 +100,7 @@ You can use library with Xamarin if you change `HttpClient Implementation` to An
     nuget install backtrace-csharp
 ``` 
 
-- Open the **Backtrace** solution in Visual Studio, and unload all projects excepts **Backtrace** and **Backtrace.Core** 
+- Open the **Backtrace** solution in Visual Studio, unload all projects excepts **Backtrace** and **Backtrace.Core**, and set **Backtrace.Core** as your startup project:
 
 ![VisualStudioMacOS](https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/VisualStudioMacOS.PNG)
 
