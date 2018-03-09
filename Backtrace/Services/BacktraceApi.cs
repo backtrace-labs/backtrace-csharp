@@ -21,6 +21,8 @@ namespace Backtrace.Services
 
         public bool AsynchronousRequest { get; set; } = false;
 
+        public Action<string, string, byte[]> RequestHandler { get; set; } = null;
+
         private readonly string _serverurl;
         private readonly BacktraceCredentials _credentials;
 
@@ -31,8 +33,7 @@ namespace Backtrace.Services
         /// Create a new instance of Backtrace API request.
         /// </summary>
         /// <param name="credentials">API credentials</param>
-        /// <param name="timeout">Request timeout in milliseconds</param>
-        public BacktraceApi(BacktraceCredentials credentials, int timeout = 5000)
+        public BacktraceApi(BacktraceCredentials credentials)
         {
             _credentials = credentials;
             //_serverurl = $"{_credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={_credentials.Token}";
@@ -81,11 +82,17 @@ namespace Backtrace.Services
         {
             Guid requestId = Guid.NewGuid();
             var formData = FormDataHelper.GetFormData(json, attachmentPaths, requestId);
+            string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
+            if (RequestHandler != null)
+            {
+                RequestHandler.Invoke(_serverurl, contentType, formData);
+                return;
+            }
             HttpWebRequest request = WebRequest.Create(_serverurl) as HttpWebRequest;
 
             //Set up the request properties.
             request.Method = "POST";
-            request.ContentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
+            request.ContentType = contentType;
             request.ContentLength = formData.Length;
 
             ////Send the form data to the request

@@ -3,13 +3,13 @@
     <PackageId>Backtrace.Csharp</PackageId>
     <TargetFrameworks>netstandard2.0;net461;net35</TargetFrameworks>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageTags>Backtrace Error Diagnostic Tools </PackageTags>
+    <PackageTags>Backtrace Error Diagnostic Tools Debug Bug Bugs StackTrace</PackageTags>
     <PackageVersion>1.0.0</PackageVersion>
     <Product>Backtrace</Product>
     <PackageLicenseUrl>https://github.com/backtrace-labs/backtrace-csharp/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/backtrace-labs/backtrace-csharp</PackageProjectUrl>
     <PackageIconUrl>https://cdn-js.global.ssl.fastly.net/4/_assets/57cb09f3701eff799fda5bb538973751.png</PackageIconUrl>
-    <Description>Backtrace C# client is a error reporting tool for C# developers. Client allow you to integrate your application with Backtrace API. You can use library in Xamarin, UWP, .NET Framework and .NET Core projects!</Description>
+    <Description>Backtrace C# client is an error reporting tool for C# developers. The client allows you to integrate Backtrace API into your C# application. You can use the library in Xamarin, UWP, .NET Framework and .NET Core projects!</Description>
     <RepositoryUrl>https://github.com/backtrace-labs/backtrace-csharp</RepositoryUrl>
     <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
@@ -48,6 +48,12 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
     <Reference Include="System.Configuration" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="UnityEngine">
+      <HintPath>D:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

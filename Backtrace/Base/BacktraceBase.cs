@@ -12,6 +12,22 @@ namespace Backtrace.Base
     /// </summary>
     public class BacktraceBase<T>
     {
+
+        /// <summary>
+        /// Custom request handler for HTTP call to server
+        /// </summary>
+        public Action<string, string, byte[]> RequestHandler
+        {
+            get
+            {
+                return _backtraceApi.RequestHandler;
+            }
+            set
+            {
+                _backtraceApi.RequestHandler = value;
+            }
+        }
+
         /// <summary>
         /// Use asynchronous method to send report to server
         /// </summary>

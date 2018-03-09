@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Linq;
 using Backtrace.Base;
 using Newtonsoft.Json;
+using System.Net.NetworkInformation;
 
 [assembly: InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Model.JsonData
@@ -28,17 +29,36 @@ namespace Backtrace.Model.JsonData
         /// <param name="scopedAttributes">Client scoped attributes</param>
         public BacktraceAttributes(BacktraceReportBase<T> report, Dictionary<string, T> scopedAttributes)
         {
+            //Environment attributes override user attributes
             Attributes = BacktraceReportBase<T>.ConcatAttributes(report, scopedAttributes)
                 .ToDictionary(n => n.Key, v => JsonConvert.SerializeObject(v.Value));
 
-            //A unique identifier to a machine
-            //Environment attributes override user attributes
-            Attributes["guid"] = Guid.NewGuid().ToString();
+            //A unique identifier of a machine
+            Attributes["guid"] = GenerateMachineId().ToString();
             //Base name of application generating the report
             Attributes["application"] = report.CallingAssembly.GetName().Name;
             SetMachineAttributes();
             SetProcessAttributes();
             SetExceptionAttributes(report);
+        }
+
+        /// <summary>
+        /// Generate unique machine identifier. Value should be with guid key in Attributes dictionary. 
+        /// Machine id is equal to mac address of first network interface. If network interface in unvailable, random long will be generated.
+        /// </summary>
+        /// <returns></returns>
+        private UInt64 GenerateMachineId()
+        {
+            var networkInterface = NetworkInterface.GetAllNetworkInterfaces().FirstOrDefault();
+            if (networkInterface == null)
+            {
+                Random random = new Random();
+                return (UInt64)(random.NextDouble() * UInt64.MaxValue);
+            }
+            string macAddress = networkInterface.GetPhysicalAddress().ToString();
+            string hex = macAddress.Replace(":", string.Empty);
+
+            return Convert.ToUInt64(hex, 16);
         }
 
         /// <summary>
@@ -53,12 +73,12 @@ namespace Backtrace.Model.JsonData
             }
             if (!report.ExceptionTypeReport)
             {
-                Attributes["error.Message"] = report.Message;
+                Attributes["error.message"] = report.Message;
                 return;
             }
             var exception = report.Exception;
             Attributes["classifier"] = exception.GetType().FullName;
-            Attributes["error.Message"] = exception.Message;
+            Attributes["error.message"] = exception.Message;
         }
 
         /// <summary>
@@ -69,9 +89,8 @@ namespace Backtrace.Model.JsonData
             var process = Process.GetCurrentProcess();
 
             //How long the application has been running] = in millisecounds
-            Attributes["process.age"] = process.TotalProcessorTime.TotalMilliseconds.ToString();
+            Attributes["process.age"] = Math.Round(process.TotalProcessorTime.TotalMilliseconds).ToString();
             Attributes["gc.heap.used"] = GC.GetTotalMemory(false).ToString();
-
             try
             {
                 Attributes["cpu.process.count"] = Process.GetProcesses().Count().ToString();
@@ -86,7 +105,7 @@ namespace Backtrace.Model.JsonData
                 Attributes["vm.vma.size"] = process.VirtualMemorySize64.ToString();
 
                 //Peak virtual memory usage
-                Attributes["vm.wma.peak"] = process.PeakVirtualMemorySize64.ToString();
+                Attributes["vm.vma.peak"] = process.PeakVirtualMemorySize64.ToString();
             }
             catch (Exception exception)
             {
@@ -109,14 +128,22 @@ namespace Backtrace.Model.JsonData
             Attributes["uname.version"] = Environment.OSVersion.Version.ToString();
 
             //The count of processors on the system
-            Attributes["cpu.count"] = Environment.ProcessorCount.ToString();
+            var cpuCount = Environment.ProcessorCount;
+            if (cpuCount > 0)
+            {
+                Attributes["cpu.count"] = cpuCount.ToString();
+            }
 
             //CPU brand string or type.
-            Attributes["cpu.brand"] = Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER");
+            string cpuBrand = Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER");
+            if (!string.IsNullOrEmpty(cpuBrand))
+            {
+                Attributes["cpu.brand"] = cpuBrand;
+            }
 
             //Time when system was booted
             Attributes["cpu.boottime"] = Environment.TickCount.ToString();
-            
+
             //The hostname of the crashing system.
             Attributes["hostname"] = Environment.MachineName;
         }
