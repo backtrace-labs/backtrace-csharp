@@ -2,8 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Backtrace.Core
+namespace Backtrace.Framework45Example
 {
     class Program
     {

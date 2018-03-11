@@ -4,16 +4,11 @@ using System.Collections.Generic;
 using Backtrace.Model.JsonData;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading;
-using System.Collections.Specialized;
 using static Backtrace.Model.JsonData.SourceCodeData;
 using Backtrace.Base;
 
 namespace Backtrace.Model
 {
-    ///Todo : Add converter to string
-
     /// <summary>
     /// Serializable Backtrace API data object
     /// </summary>
@@ -49,16 +44,10 @@ namespace Backtrace.Model
         /// Name of programming language/environment this error comes from.
         /// </summary>
         [JsonProperty(PropertyName = "lang")]
-        public string Lang
-        {
-            get
-            {
-                return "csharp";
-            }
-        }
+        public const string Lang = "csharp";
 
         /// <summary>
-        /// Get a C# language version
+        /// Version of programming language/environment this error comes from.
         /// </summary>
         [JsonProperty(PropertyName = "langVersion")]
         public string LangVersion
@@ -82,7 +71,7 @@ namespace Backtrace.Model
         }
 
         /// <summary>
-        /// Version of the client that is sending this error report.
+        /// Version of the C# library
         /// </summary>
         [JsonProperty(PropertyName = "agentVersion")]
         public string AgentVersion
@@ -106,6 +95,9 @@ namespace Backtrace.Model
             }
         }
 
+        /// <summary>
+        /// Get current host environment variables and application dependencies
+        /// </summary>
         [JsonProperty(PropertyName = "annotations")]
         internal Annotations Annotations
         {
@@ -115,6 +107,9 @@ namespace Backtrace.Model
             }
         }
 
+        /// <summary>
+        /// Application thread details
+        /// </summary>
         [JsonProperty(PropertyName = "threads")]
         internal Dictionary<string, ThreadInformation> ThreadInformations
         {
@@ -125,7 +120,7 @@ namespace Backtrace.Model
         }
 
         /// <summary>
-        /// Set an information about application main thread
+        /// Information about available application threads
         /// </summary>
         internal ThreadData ThreadData { get; set; }
 
@@ -137,16 +132,12 @@ namespace Backtrace.Model
         {
             get
             {
-                //we can't post to API 'null' value
-                string currentThread = Thread.CurrentThread.Name;
-                return string.IsNullOrEmpty(currentThread)
-                        ? Thread.CurrentThread.ManagedThreadId.ToString()
-                        : currentThread;
+                return ThreadData.MainThread;
             }
         }
 
         /// <summary>
-        /// Get a report exepion type 
+        /// Get a report classifiers. If user send custom message, then variable should be null
         /// </summary>
         [JsonProperty(PropertyName = "classifiers", NullValueHandling = NullValueHandling.Ignore)]
         public string[] Classifier

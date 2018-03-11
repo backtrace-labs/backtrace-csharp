@@ -46,6 +46,10 @@ namespace Backtrace.Model.JsonData
         /// </summary>
         private readonly ApplicationDependencies appDependencies;
 
+        /// <summary>
+        /// Create new instance of Annotations class
+        /// </summary>
+        /// <param name="callingAssembly">Calling assembly</param>
         public Annotations(Assembly callingAssembly)
         {
             appDependencies = new ApplicationDependencies(callingAssembly);

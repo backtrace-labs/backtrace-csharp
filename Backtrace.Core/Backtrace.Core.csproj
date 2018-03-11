@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Backtrace\Backtrace\Backtrace.csproj" />
     <ProjectReference Include="..\Backtrace\Backtrace.csproj" />
   </ItemGroup>
 

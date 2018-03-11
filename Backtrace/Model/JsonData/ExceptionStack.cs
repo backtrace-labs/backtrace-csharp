@@ -1,4 +1,4 @@
-﻿#if NET461
+﻿#if NET45
 using Microsoft.Diagnostics.Runtime;
 #endif
 using Newtonsoft.Json;
@@ -132,7 +132,7 @@ namespace Backtrace.Model.JsonData
             int stackFramesLength = stackFrames.Length;
             return stackFrames.Select(n => Convert(n, source, true)).ToList();
         }
-#if NET461
+#if NET45
         internal static IEnumerable<ExceptionStack> Convert(IEnumerable<ClrStackFrame> clrStackFrames)
         {
             var result = new List<ExceptionStack>();

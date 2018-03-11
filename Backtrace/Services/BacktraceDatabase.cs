@@ -60,8 +60,9 @@ namespace Backtrace.Services
         /// Create new minidump file in database directory path. Minidump file name is a random Guid
         /// </summary>
         /// <param name="backtraceReport">Current report</param>
+        /// <param name="miniDumpType">Generated minidump type</param>
         /// <returns>Path to minidump file</returns>
-        public string GenerateMiniDump(BacktraceReportBase<T> backtraceReport)
+        public string GenerateMiniDump(BacktraceReportBase<T> backtraceReport, MiniDumpType miniDumpType)
         {
             if (!_enable)
             {
@@ -76,7 +77,7 @@ namespace Backtrace.Services
 
             bool minidumpSaved = MinidumpHelper.Write(
                 filePath: minidumpDestinationPath,
-                options: MiniDumpOptions.Normal,
+                options: miniDumpType,
                 exceptionType: minidumpExceptionType);
 
             if (minidumpSaved)
