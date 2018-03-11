@@ -62,7 +62,7 @@ namespace Backtrace.Core.Model
                 if (string.IsNullOrEmpty(word))
                 {
                     var exception = new ArgumentException("Word is empty or null.");
-                    var result = _backtraceClient.Send(exception);
+                    _backtraceClient.Send(exception);
                     throw exception;
                 }
 
@@ -74,7 +74,7 @@ namespace Backtrace.Core.Model
                     if (!current.Children.ContainsKey(word[i]))
                     {
                         var exception = new KeyNotFoundException("Word doesn't belong to trie.");
-                        var result = _backtraceClient.Send(exception);
+                        _backtraceClient.Send(exception);
                         throw exception;
                     }
                     current = current.Children[word[i]];
