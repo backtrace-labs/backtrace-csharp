@@ -50,7 +50,7 @@ namespace Backtrace.Common
         /// <param name="filePath">The path where the minidump file will be saved</param>
         /// <param name="options">Minidump save options</param>
         /// <param name="exceptionType">Type to check if exception exists</param>
-        internal static bool Write(string filePath, MiniDumpOptions options = MiniDumpOptions.WithFullMemory, MinidumpException exceptionType = MinidumpException.None)
+        internal static bool Write(string filePath, MiniDumpType options = MiniDumpType.WithFullMemory, MinidumpException exceptionType = MinidumpException.None)
         {
             bool miniDumpAvailable = IsMemoryDumpAvailable();
             if (!miniDumpAvailable)

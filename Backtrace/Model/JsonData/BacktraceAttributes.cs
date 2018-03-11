@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
-using System.Text;
 using System.Runtime.CompilerServices;
 using System.Linq;
 using Backtrace.Base;
 using Newtonsoft.Json;
 using System.Net.NetworkInformation;
+using System.Runtime.InteropServices;
+using Backtrace.Common;
 
 [assembly: InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Model.JsonData
@@ -86,11 +86,15 @@ namespace Backtrace.Model.JsonData
         /// </summary>
         private void SetProcessAttributes()
         {
-            var process = Process.GetCurrentProcess();
+            Attributes["gc.heap.used"] = GC.GetTotalMemory(false).ToString();
 
+            var process = Process.GetCurrentProcess();
+            if (process.HasExited)
+            {
+                return;
+            }
             //How long the application has been running] = in millisecounds
             Attributes["process.age"] = Math.Round(process.TotalProcessorTime.TotalMilliseconds).ToString();
-            Attributes["gc.heap.used"] = GC.GetTotalMemory(false).ToString();
             try
             {
                 Attributes["cpu.process.count"] = Process.GetProcesses().Count().ToString();
@@ -119,10 +123,10 @@ namespace Backtrace.Model.JsonData
         private void SetMachineAttributes()
         {
             //The processor architecture.
-            Attributes["uname.machine"] = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE");
+            Attributes["uname.machine"] = SystemHelper.CpuArchitecture();
 
-            //Operating system name] = such as "windows"
-            Attributes["uname.sysname"] = Environment.OSVersion.Platform.ToString();
+            //Operating system name = such as "windows"
+            Attributes["uname.sysname"] = SystemHelper.Name();
 
             //The version of the operating system
             Attributes["uname.version"] = Environment.OSVersion.Version.ToString();
@@ -135,6 +139,7 @@ namespace Backtrace.Model.JsonData
             }
 
             //CPU brand string or type.
+            //Because System.Management is not supported in .NET Core value should be available in Backtrace API in future work (.NET Standard 2.1>)
             string cpuBrand = Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER");
             if (!string.IsNullOrEmpty(cpuBrand))
             {

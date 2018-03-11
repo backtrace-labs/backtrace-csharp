@@ -48,6 +48,61 @@ namespace Backtrace.Common
                 return true;
             }
             return !libraries.Any(n => !IsLibraryAvailable(n));
+        }
+
+        internal static string Name()
+        {
+            var platform = Environment.OSVersion.Platform;
+            switch (platform)
+            {
+                case PlatformID.Win32NT:
+                    return "Windows NT";
+#if NETSTANDARD2_0
+                case PlatformID.Unix:
+                    // for .NET Core Environment.OSVersion returns Unix for MacOS and Linux
+                    if(RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    {
+                        return "Mac OS X";
+                    }                    
+                    return "Linux";
+
+#else
+                case PlatformID.MacOSX:
+                    return "Mac OS X";
+                case PlatformID.Unix:
+                    return "Linux";
+                case PlatformID.Win32S:
+                case PlatformID.Win32Windows:
+                case PlatformID.WinCE:
+                    return "Windows";
+                case PlatformID.Xbox:
+                    return "Xbox";
+#endif
+                default:
+                    return "NaCl";
+            }
+        }
+
+        internal static string CpuArchitecture()
+        {
+#if NETSTANDARD2_0
+            Architecture cpuArchitecture = RuntimeInformation.ProcessArchitecture;
+            switch (cpuArchitecture)
+            {
+                case Architecture.X86:
+                    return "x86";
+                case Architecture.X64:
+                    return "amd64";
+                case Architecture.Arm:
+                    return "arm";
+                case Architecture.Arm64:
+                    return "arm64";
+                default:
+                    return Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE").ToLower();
+            }
+#else
+            return Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE").ToLower();
+#endif
 
         }
 

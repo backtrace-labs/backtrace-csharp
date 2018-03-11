@@ -1,4 +1,4 @@
-﻿#if NET461
+﻿#if NET45
 using Microsoft.Diagnostics.Runtime;
 #endif
 using System;
@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Linq;
-using Diagnostics = System.Diagnostics;
 using System.Reflection;
 
 namespace Backtrace.Model.JsonData
@@ -17,29 +16,30 @@ namespace Backtrace.Model.JsonData
     public class ThreadData
     {
         /// <summary>
-        /// All collected information about application threads
+        /// All collected application threads information
         /// </summary>
         public Dictionary<string, ThreadInformation> ThreadInformations = new Dictionary<string, ThreadInformation>();
 
         /// <summary>
         /// Application Id for current thread. This value is used in mainThreadSection in output JSON file
         /// </summary>
-        internal string mainThread = string.Empty;
+        internal string MainThread = string.Empty;
 
         /// <summary>
-        /// Create instance of ThreadData class to get more information about threads used in application
+        /// Create instance of ThreadData class to collect information about used threads
         /// </summary>
         internal ThreadData(Assembly callingAssembly, IEnumerable<ExceptionStack> exceptionStack)
         {
-#if NET461
+#if NET45
+            //use available in .NET 4.5 api to find stack trace of all available managed threads
             GetUsedThreads(callingAssembly);
 #else
+            //get all available process threads
             ProcessThreads();
 #endif
+            //get stack trace and infomrations about current thread
             GenerateCurrentThreadInformation(callingAssembly, exceptionStack);
         }
-
-       
 
         /// <summary>
         /// Generate information for current thread
@@ -56,11 +56,11 @@ namespace Backtrace.Model.JsonData
 
             ThreadInformations[generatedMainThreadId] = new ThreadInformation(current, currentThreadStackTrace);
             //set currentThreadId
-            mainThread = generatedMainThreadId;
+            MainThread = generatedMainThreadId;
         }
 
         /// <summary>
-        /// Generate list of process thread and it to threadInformation dictionary.
+        /// Generate list of process thread 
         /// </summary>
         private void ProcessThreads()
         {
@@ -76,14 +76,14 @@ namespace Backtrace.Model.JsonData
             }
             foreach (ProcessThread thread in currentThreads)
             {
-                //you can't retrieve stack trace for processthread
+                //you can't retrieve stack trace from processThread
+                //you can't retrieve thread name from processThread 
                 string threadId = thread.Id.ToString();
                 ThreadInformations.Add(Guid.NewGuid().ToString(), new ThreadInformation(threadId, false, null));
             }
         }
 
-
-#if NET461
+#if NET45
         /// <summary>
         /// Get all used threads in calling assembly. Function ignore current thread Id 
         /// </summary>
@@ -94,7 +94,6 @@ namespace Backtrace.Model.JsonData
             using (DataTarget target = DataTarget.AttachToProcess(Process.GetCurrentProcess().Id, 5000, AttachFlag.Passive))
             {
                 ClrRuntime runtime = target.ClrVersions.First().CreateRuntime();
-
                 foreach (ClrThread thread in runtime.Threads)
                 {
                     if (thread.ManagedThreadId == mainThreadId)

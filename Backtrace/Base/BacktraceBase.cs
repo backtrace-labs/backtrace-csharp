@@ -3,6 +3,7 @@ using Backtrace.Interfaces;
 using System;
 using System.Collections.Generic;
 using Backtrace.Services;
+using Backtrace.Types;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Base
@@ -72,6 +73,11 @@ namespace Backtrace.Base
                 _backtraceApi.OnServerAnswer = value;
             }
         }
+
+        /// <summary>
+        /// Get or set saved minidump type
+        /// </summary>
+        public MiniDumpType MiniDumpType { get; set; } = MiniDumpType.Normal;
 
         /// <summary>
         /// Set event executed when client site report limit reached
@@ -147,7 +153,7 @@ namespace Backtrace.Base
                 return;
             }
             //generate minidump and add minidump to report if exists
-            string minidumpPath = _database.GenerateMiniDump(report);
+            string minidumpPath = _database.GenerateMiniDump(report, MiniDumpType);
             if (!string.IsNullOrEmpty(minidumpPath))
             {
                 report._attachmentPaths.Add(minidumpPath);
