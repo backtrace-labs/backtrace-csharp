@@ -35,10 +35,9 @@ namespace Backtrace.Services
         /// <param name="credentials">API credentials</param>
         public BacktraceApi(BacktraceCredentials credentials)
         {
-            _credentials = credentials;
             //_serverurl = $"{_credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={_credentials.Token}";
-            _serverurl = $"{_credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={_credentials.Token}";
-            bool isHttps = _credentials.BacktraceHostUri.Scheme == "https";
+            _serverurl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
+            bool isHttps = credentials.BacktraceHostUri.Scheme == "https";
             //prepare web client to send a data to ssl API
             if (isHttps)
             {
