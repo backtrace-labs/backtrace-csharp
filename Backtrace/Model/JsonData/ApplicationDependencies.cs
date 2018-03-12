@@ -20,7 +20,7 @@ namespace Backtrace.Model.JsonData
         /// <summary>
         /// Create new instance of application dependecies object
         /// </summary>
-        /// <param name="assembly">Current assembly</param>
+        /// <param name="assembly">Calling assembly</param>
         public ApplicationDependencies(Assembly assembly)
         {
             ReadDependencies(assembly);

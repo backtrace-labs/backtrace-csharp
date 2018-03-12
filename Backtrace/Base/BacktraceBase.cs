@@ -60,7 +60,7 @@ namespace Backtrace.Base
         }
 
         /// <summary>
-        /// Set an event executed when server return information after sending data to API
+        /// Set an event executed when Backtrace API return information about send report
         /// </summary>
         public Action<BacktraceServerResponse> OnServerAnswer
         {
@@ -75,7 +75,7 @@ namespace Backtrace.Base
         }
 
         /// <summary>
-        /// Get or set saved minidump type
+        /// Get or set minidump type
         /// </summary>
         public MiniDumpType MiniDumpType { get; set; } = MiniDumpType.Normal;
 
@@ -85,12 +85,12 @@ namespace Backtrace.Base
         public Action OnClientSiteRatingLimit = null;
 
         /// <summary>
-        /// Set event executed before data send to Backtrace API
+        /// Set event executed before sending data to Backtrace API
         /// </summary>
         public Func<BacktraceData<T>, BacktraceData<T>> BeforeSend = null;
 
         /// <summary>
-        /// Get scoped attributes from Backtrace client. Every argument stored in dictionary will be send to a Backtrace service
+        /// Get custom client attributes. Every argument stored in dictionary will be send to Backtrace API
         /// </summary>
         public Dictionary<string, T> Attributes
         {
@@ -106,27 +106,28 @@ namespace Backtrace.Base
         protected Dictionary<string, T> _attributes;
 
         /// <summary>
-        /// Instance of request object to Backtrace API
+        /// Instance of BacktraceApi that allows to send data to Backtrace API
         /// </summary>
         internal IBacktraceApi<T> _backtraceApi;
 
         /// <summary>
-        /// Backtrace database
+        /// Backtrace database instance that allows to manage minidump files 
         /// </summary>
         private readonly BacktraceDatabase<T> _database;
 
         /// <summary>
-        /// Control available request send per minute
+        /// Backtrace report watcher that controls number of request sending per minute
         /// </summary>
         private readonly ReportWatcher<T> _reportWatcher;
 
+        
         /// <summary>
-        /// Initialize client with BacktraceCredentials
+        /// Initialize new client instance with BacktraceCredentials
         /// </summary>
         /// <param name="backtraceCredentials">Backtrace credentials to access Backtrace API</param>
-        /// <param name="attributes">Attributes scoped for every report</param>
+        /// <param name="attributes">Additional information about current application</param>
         /// <param name="databaseDirectory">Database path</param>
-        /// <param name="reportPerMin">Numbers of report send per one sec. If value is equal to zero, there is no request send to API. Value have to be greater than or equal to 0</param>
+        /// <param name="reportPerMin">Number of reports sending per one minute. If value is equal to zero, there is no request sending to API. Value have to be greater than or equal to 0</param>
         public BacktraceBase(
             BacktraceCredentials backtraceCredentials,
             Dictionary<string, T> attributes = null,
@@ -152,7 +153,7 @@ namespace Backtrace.Base
                 OnClientSiteRatingLimit?.Invoke();
                 return;
             }
-            //generate minidump and add minidump to report if exists
+            //generate minidump and add minidump to report 
             string minidumpPath = _database.GenerateMiniDump(report, MiniDumpType);
             if (!string.IsNullOrEmpty(minidumpPath))
             {

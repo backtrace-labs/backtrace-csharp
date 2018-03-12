@@ -15,7 +15,6 @@ namespace Backtrace.Model.JsonData
 {
     /// <summary>
     /// Parse exception information to Backtrace API format
-    /// missing values - address, guessed_frame, callstack_state
     /// </summary>
     public class ExceptionStack
     {
@@ -56,7 +55,7 @@ namespace Backtrace.Model.JsonData
         public string Library { get; set; }
 
         /// <summary>
-        /// Convert stackframe to ExceptionStack used in diagnose JSON
+        /// Convert stackframe to ExceptionStack
         /// </summary>
         /// <param name="stackFrame">Current Stack frame</param>
         /// <param name="libraryName">Library name</param>

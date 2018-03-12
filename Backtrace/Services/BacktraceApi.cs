@@ -12,31 +12,46 @@ using Backtrace.Common;
 namespace Backtrace.Services
 {
     /// <summary>
-    /// Create requests to Backtrace API
+    /// Backtrace Api class that allows to send a diagnostic data to server
     /// </summary>
     internal class BacktraceApi<T> : IBacktraceApi<T>
     {
+        //ssl and tls12 flags used in ssl communiaction
         public const SslProtocols _Tls12 = (SslProtocols)0x00000C00;
         public const SecurityProtocolType Tls12 = (SecurityProtocolType)_Tls12;
 
+        /// <summary>
+        /// Asynchronous request flag. If value is equal to true, data will be send to server asynchronous
+        /// </summary>
         public bool AsynchronousRequest { get; set; } = false;
 
+        /// <summary>
+        /// User custom request method
+        /// </summary>
         public Action<string, string, byte[]> RequestHandler { get; set; } = null;
 
+        /// <summary>
+        /// Url to server
+        /// </summary>
         private readonly string _serverurl;
-        private readonly BacktraceCredentials _credentials;
-
+        
+        /// <summary>
+        /// Event triggered when server is unvailable
+        /// </summary>
         public Action<Exception> WhenServerUnvailable { get; set; }
+
+        /// <summary>
+        /// Event triggered when server respond to diagnostic data
+        /// </summary>
         public Action<BacktraceServerResponse> OnServerAnswer { get; set; }
 
         /// <summary>
-        /// Create a new instance of Backtrace API request.
+        /// Create a new instance of Backtrace API
         /// </summary>
         /// <param name="credentials">API credentials</param>
         public BacktraceApi(BacktraceCredentials credentials)
         {
-            //_serverurl = $"{_credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={_credentials.Token}";
-            _serverurl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
+             _serverurl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
             bool isHttps = credentials.BacktraceHostUri.Scheme == "https";
             //prepare web client to send a data to ssl API
             if (isHttps)
@@ -61,9 +76,9 @@ namespace Backtrace.Services
         }
 
         /// <summary>
-        /// Send a backtrace data to server API. 
+        /// Sending a diagnostic report data to server API. 
         /// </summary>
-        /// <param name="data">Collected backtrace data</param>
+        /// <param name="data">Diagnostic data</param>
         /// <returns>False if operation fail or true if API return OK</returns>
         public void Send(BacktraceData<T> data)
         {
@@ -73,7 +88,7 @@ namespace Backtrace.Services
         }
 
         /// <summary>
-        /// Send a backtrace data to server API. 
+        /// Sending a diagnostic report data to server API. 
         /// </summary>
         /// <param name="json">Diagnostics json</param>
         /// <param name="attachmentPaths">Attachments path</param>
@@ -94,7 +109,6 @@ namespace Backtrace.Services
             request.ContentType = contentType;
             request.ContentLength = formData.Length;
 
-            ////Send the form data to the request
             if (AsynchronousRequest)
             {
                 request.BeginGetRequestStream(new AsyncCallback((n) => RequestStreamCallback(n, formData)), request);
@@ -114,7 +128,11 @@ namespace Backtrace.Services
                 WhenServerUnvailable?.Invoke(exception);
             }
         }
-
+        
+        /// <summary>
+        /// Handle server respond for synchronous request
+        /// </summary>
+        /// <param name="request">Current HttpWebRequest</param>
         private void ReadServerResponse(HttpWebRequest request)
         {
             using (WebResponse webResponse = request.GetResponse() as HttpWebResponse)
@@ -129,6 +147,11 @@ namespace Backtrace.Services
             }
         }
 
+        /// <summary>
+        /// Send a diagnostic bytes to server
+        /// </summary>
+        /// <param name="asyncResult">Asynchronous result</param>
+        /// <param name="form">diagnostic data bytes</param>
         private void RequestStreamCallback(IAsyncResult asyncResult, byte[] form)
         {
             var webRequest = (HttpWebRequest)asyncResult.AsyncState;
@@ -138,6 +161,10 @@ namespace Backtrace.Services
             webRequest.BeginGetResponse(new AsyncCallback(GetResponseCallback), webRequest);
         }
 
+        /// <summary>
+        /// Handle server respond
+        /// </summary>
+        /// <param name="asyncResult">Asynchronous reuslt</param>
         private void GetResponseCallback(IAsyncResult asyncResult)
         {
             try

@@ -167,7 +167,7 @@ namespace Backtrace.Model
         }
 
         /// <summary>
-        /// Get a path to attachments
+        /// Get a path to report attachments
         /// </summary>
         [JsonIgnore]
         public List<string> Attachments
@@ -179,12 +179,12 @@ namespace Backtrace.Model
         }
 
         /// <summary>
-        /// Get a Backtrace attributes from client, report and system 
+        /// Get a Backtrace a built-in attributes from current application
         /// </summary>
         private readonly BacktraceAttributes<T> _backtraceAttributes;
 
         /// <summary>
-        /// Received BacktraceReport
+        /// Current BacktraceReport
         /// </summary>
         private readonly BacktraceReportBase<T> _report;
 
@@ -193,10 +193,10 @@ namespace Backtrace.Model
         private readonly IEnumerable<ExceptionStack> _exceptionStack;
 
         /// <summary>
-        /// Create instance of report data class
+        /// Create instance of report data
         /// </summary>
-        /// <param name="report">Received report</param>
-        /// <param name="scopedAttributes">Scoped Attributes from BacktraceClient</param>
+        /// <param name="report">Current report</param>
+        /// <param name="scopedAttributes">BacktraceClient's attributes</param>
         public BacktraceData(BacktraceReportBase<T> report, Dictionary<string, T> scopedAttributes)
         {
             _report = report;

@@ -145,7 +145,6 @@ namespace Backtrace.Model.JsonData
             {
                 Attributes["cpu.brand"] = cpuBrand;
             }
-
             //Time when system was booted
             Attributes["cpu.boottime"] = Environment.TickCount.ToString();
 

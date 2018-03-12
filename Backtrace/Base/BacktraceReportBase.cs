@@ -8,7 +8,7 @@ using System.Text;
 namespace Backtrace.Base
 {
     /// <summary>
-    /// Capture a report of an application
+    /// Capture application report
     /// </summary>
     public class BacktraceReportBase<T>
     {
@@ -24,13 +24,12 @@ namespace Backtrace.Base
         public readonly long Timestamp = (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
 
         /// <summary>
-        /// 
-        /// Get an information aboout report type. If value is true the BacktraceReport has an error information
+        /// Get information aboout report type. If value is true the BacktraceReport has an error information
         /// </summary>
         public bool ExceptionTypeReport = false;
 
         /// <summary>
-        /// Additional information about report. You can define any information that will be sended to server
+        /// Additional information about application state
         /// </summary>
         private Dictionary<string, T> _attributes;
 
@@ -61,17 +60,17 @@ namespace Backtrace.Base
         }
 
         /// <summary>
-        /// Get a message from report
+        /// Get a custom client message
         /// </summary>
         internal readonly string Message;
 
         /// <summary>
-        /// Get an exception from report
+        /// Get a report exception
         /// </summary>
         internal Exception Exception;
 
         /// <summary>
-        /// Get an assembly where client called
+        /// Get an assembly where report was created (or should be created)
         /// </summary>
         internal Assembly CallingAssembly;
 
@@ -81,11 +80,11 @@ namespace Backtrace.Base
         internal List<string> _attachmentPaths;
 
         /// <summary>
-        /// Send a report with custom message
+        /// Create new instance of Backtrace report to sending a report with custom client message
         /// </summary>
         /// <param name="message">Custom client message</param>
         /// <param name="callingAssembly">Calling assembly instance</param>
-        /// <param name="attributes">Report additional information</param>
+        /// <param name="attributes">Additional information about application state</param>
         /// <param name="attachmentPaths">Path to all report attachments</param>
         public BacktraceReportBase(
             string message,
@@ -100,10 +99,10 @@ namespace Backtrace.Base
         }
 
         /// <summary>
-        /// Send a report with custom message
+        /// Create new instance of Backtrace report to sending a report with custom client message
         /// </summary>
         /// <param name="message">Custom client message</param>
-        /// <param name="attributes">Report additional information</param>
+        /// <param name="attributes">Additional information about application state</param>
         /// <param name="attachmentPaths">Path to all report attachments</param>
         public BacktraceReportBase(
             string message,
@@ -114,11 +113,11 @@ namespace Backtrace.Base
         }
 
         /// <summary>
-        /// Send a report with custom exception
+        /// Create new instance of Backtrace report to sending a report with application exception
         /// </summary>
         /// <param name="exception">Current exception</param>
         /// <param name="callingAssembly">Calling assembly</param>
-        /// <param name="attributes">Report additional information</param>
+        /// <param name="attributes">Additional information about application state</param>
         /// <param name="attachmentPaths">Path to all report attachments</param>
         public BacktraceReportBase(
             Exception exception,
@@ -140,10 +139,10 @@ namespace Backtrace.Base
         }
 
         /// <summary>
-        /// Send a report with custom exception
+        /// Create new instance of Backtrace report to sending a report with application exception
         /// </summary>
         /// <param name="exception">Current exception</param>
-        /// <param name="attributes">Report additional information</param>
+        /// <param name="attributes">Additional information about application state</param>
         /// <param name="attachmentPaths">Path to all report attachments</param>
         public BacktraceReportBase(
             Exception exception,
@@ -154,9 +153,9 @@ namespace Backtrace.Base
         }
 
         /// <summary>
-        /// Convert exception to ExceptionStack
+        /// Convert exception to Exception Stack
         /// </summary>
-        /// <returns>Exception stack based on exception</returns>
+        /// <returns>ExceptionStack based on exception</returns>
         internal IEnumerable<ExceptionStack> GetExceptionStack()
         {
             if (!ExceptionTypeReport)
@@ -166,10 +165,15 @@ namespace Backtrace.Base
             return ExceptionStack.Convert(Exception);
         }
 
+        /// <summary>
+        /// Concat two attributes dictionary 
+        /// </summary>
+        /// <param name="report">Current report</param>
+        /// <param name="attributes">Attributes to concatenate</param>
+        /// <returns></returns>
         internal static Dictionary<string, T> ConcatAttributes(
             BacktraceReportBase<T> report, Dictionary<string, T> attributes)
         {
-
             var reportAttributes = report.Attributes;
             if (attributes == null)
             {

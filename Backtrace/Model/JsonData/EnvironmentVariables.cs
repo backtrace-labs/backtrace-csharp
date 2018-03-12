@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -8,14 +7,15 @@ using System.Text.RegularExpressions;
 namespace Backtrace.Model.JsonData
 {
     /// <summary>
-    /// Get Environment variables stored in system
+    /// System environment variables
     /// </summary>
     public class EnvironmentVariables
     {
         /// <summary>
-        /// Dictionary with system environment values 
+        /// System environment values dictionary
         /// </summary>
         public Dictionary<string, string> Variables = new Dictionary<string, string>();
+
         /// <summary>
         /// Create instance of EnvironmnetVariables class to get system environment variables
         /// </summary>

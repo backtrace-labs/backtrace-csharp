@@ -104,10 +104,10 @@ namespace Backtrace.Services
         }
 
         /// <summary>
-        /// Save diagnostic report on disc
+        /// Save diagnostic report on hard drive
         /// </summary>
         /// <param name="backtraceReport"></param>
-        /// <returns></returns>
+        [Obsolete]
         public bool SaveReport(BacktraceData<T> backtraceReport)
         {
             if (!_enable)

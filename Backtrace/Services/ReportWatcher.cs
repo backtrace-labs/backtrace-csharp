@@ -9,7 +9,7 @@ using Backtrace.Base;
 namespace Backtrace.Services
 {
     /// <summary>
-    /// Create a Backtrace backgroud watcher. Use watcher to send a report to Backtrace api in a period defined in reportPerSec
+    /// Report watcher class. Watcher controls number of reports sending per one minute. If value reportPerMin is equal to zero, there is no request sending to API. Value has to be greater than or equal to 0
     /// </summary>
     internal class ReportWatcher<T>
     {
@@ -18,10 +18,11 @@ namespace Backtrace.Services
         private bool _watcherEnable;
 
         private readonly int _reportPerSec;
+
         /// <summary>
         /// Create new instance of background watcher
         /// </summary>
-        /// <param name="reportPerMin">How many times per minute should watcher send a report</param>
+        /// <param name="reportPerMin">How many times per minute watcher can send a report</param>
         public ReportWatcher(uint reportPerMin)
         {
             if (reportPerMin < 0)
@@ -35,7 +36,7 @@ namespace Backtrace.Services
         }
 
         /// <summary>
-        /// Check if user can add new report to a Backtrace API
+        /// Check if user can send new report to a Backtrace API
         /// </summary>
         /// <param name="report">Current report</param>
         /// <returns>true if user can add a new report</returns>
@@ -66,9 +67,6 @@ namespace Backtrace.Services
             while (!clear && _reportQue.Count != 0)
             {
                 var item = _reportQue.Peek();
-                //sample output 
-                //40 = true 
-                //70 = false
                 clear = !(currentTime - item >= _queReportTime);
                 if (!clear)
                 {

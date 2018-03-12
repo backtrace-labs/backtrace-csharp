@@ -13,22 +13,22 @@ namespace Backtrace
     public class BacktraceClient : BacktraceBase<object>, IBacktraceClient<object>
     {
         /// <summary>
-        /// Set an event executed when send function triggers
+        /// Set an event executed before sending data to Backtrace API
         /// </summary>
         public Action<BacktraceReport> OnReportStart;
 
         /// <summary>
-        /// Set an event executed after data send to Backtrace API
+        /// Set an event executed after sending data to Backtrace API
         /// </summary>
         public Action<BacktraceReport> AfterSend;
 
         /// <summary>
-        /// Initialize Backtrace report client
+        /// Initializing Backtrace client instance
         /// </summary>
         /// <param name="sectionName">Backtrace configuration section in App.config or Web.config file. Default section is BacktraceCredentials</param>
-        /// <param name="attributes">Attributes scoped for every report</param>
-        /// <param name="databaseDirectory">Database path</param>
-        /// <param name="reportPerMin">Numbers of records send per one min</param>
+        /// <param name="attributes">Client's attributes</param>
+        /// <param name="databaseDirectory">Database path used to store minidumps and temporary reports</param>
+        /// <param name="reportPerMin">Numbers of records sending per one min</param>
         public BacktraceClient(
                 string sectionName = "BacktraceCredentials",
                 Dictionary<string, object> attributes = null,
@@ -37,16 +37,15 @@ namespace Backtrace
             )
             : base(BacktraceCredentials.ReadConfigurationSection(sectionName),
                   attributes, databaseDirectory, reportPerMin)
-        {
-        }
+        { }
 
         /// <summary>
-        /// Initialize client with BacktraceCredentials
+        /// Initializing Backtrace client instance with BacktraceCredentials
         /// </summary>
-        /// <param name="backtraceCredentials">Backtrace credentials to access Backtrace API</param>
-        /// <param name="attributes">Attributes scoped for every report</param>
-        /// <param name="databaseDirectory">Database path</param>
-        /// <param name="reportPerMin">Numbers of records send per one minute</param>
+        /// <param name="backtraceCredentials">Backtrace credentials</param>
+        /// <param name="attributes">Client's attributes</param>
+        /// <param name="databaseDirectory">Database path used to store minidumps and temporary reports</param>
+        /// <param name="reportPerMin">Numbers of records sending per one minute</param>
         public BacktraceClient(
             BacktraceCredentials backtraceCredentials,
             Dictionary<string, object> attributes = null,
@@ -56,22 +55,23 @@ namespace Backtrace
         { }
 
         /// <summary>
-        /// Send a backtrace report to Backtrace API
+        /// Sending a backtrace report to Backtrace API
         /// </summary>
-        /// <param name="backtraceReport">report</param>
+        /// <param name="backtraceReport">Current report</param>
         public void Send(BacktraceReport backtraceReport)
         {
             OnReportStart?.Invoke(backtraceReport);
             base.Send(backtraceReport);
             AfterSend?.Invoke(backtraceReport);
 
-            //check if there is more errors to send 
+            //check if there is more errors to send
+            //handle inner exception
             HandleInnerException(backtraceReport);
         }
 
         /// <summary>
         /// Handle inner exception in current backtrace report
-        /// if inner exception exists, we should send report twice
+        /// if inner exception exists, client should send report twice - one with current exception, one with inner exception
         /// </summary>
         /// <param name="report">current report</param>
         private void HandleInnerException(BacktraceReport report)
@@ -89,16 +89,16 @@ namespace Backtrace
         }
 
         /// <summary>
-        /// Send an exception to Backtrace API
+        /// Sending an exception to Backtrace API
         /// </summary>
-        /// <param name="exception">Exception</param>
+        /// <param name="exception">Current exception</param>
         /// <param name="attributes">Additional information about application state</param>
         /// <param name="attachmentPaths">Path to all report attachments</param>
         public virtual void Send(
             Exception exception,
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null)
-        {
+        { 
             var report = new BacktraceReport(exception, attributes, attachmentPaths)
             {
                 CallingAssembly = Assembly.GetCallingAssembly()
@@ -107,9 +107,9 @@ namespace Backtrace
             HandleInnerException(report);
         }
         /// <summary>
-        /// Send a message to Backtrace API
+        /// Sending a message to Backtrace API
         /// </summary>
-        /// <param name="message">Message</param>
+        /// <param name="message">Custom client message</param>
         /// <param name="attributes">Additional information about application state</param>
         /// <param name="attachmentPaths">Path to all report attachments</param>
         public virtual void Send(
