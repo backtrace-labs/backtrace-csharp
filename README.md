@@ -263,13 +263,13 @@ backtraceClient.BeforeSend =
 # Architecture  <a name="architecture"></a>
 
 ## BacktraceReport  <a name="architecture-BacktraceReport"></a>
-**`BacktraceReport`** - Class that describe single instance of prepared user report. As user you can pass to `Send` method `Exception` or custom message. `BacktraceReport` use base class `BacktraceReportBase`. `BacktraceReportbase` allow you to add your custom logic to any report. You can override `BacktraceReportBase` and create your custom `BacktraceReport`. Keep in mind - `BacktraceClient` use `CallingAssembly` information to send valid data about your application. `BacktraceReportbase` is a generic class. `T` argument is a value type in `Attribute` dictionary.
+**`BacktraceReport`** - Class that describe single instance of prepared user report. As user you can pass to `Send` method `Exception` or custom message. `BacktraceReport` use base class `BacktraceReportBase`. `BacktraceReportBase` allows you to add your custom logic to any report. You can override `BacktraceReportBase` and create your custom `BacktraceReport`. Keep in mind - `BacktraceClient` uses `CallingAssembly` information to send valid data about your application. `BacktraceReportBase` is a generic class. `T` argument is a value type in `Attribute` dictionary.
 
 ## BacktraceClient  <a name="architecture-BacktraceClient"></a>
-**`BacktraceClient`** - class that allow you to create single client instance to prepare integration with `Backtrace API`. As user you want to use class to prepare connection with `BacktraceApi`, set client behaviour (saving minidump files on your local hard drive or set rate limiting). `BacktraceClient` use base class `BacktraceBase`. You can use `BacktraceBase` to prepare you custom logic. `BacktraceBase`is a generic class. `T` argument is a value type in `Attribute` dictionary.
+**`BacktraceClient`** - class that allows you to create single client instance to prepare integration with `Backtrace API`. As user you want to use class to prepare connection with `BacktraceApi`, set client behaviour (saving minidump files on your local hard drive or set rate limiting). `BacktraceClient` uses base class `BacktraceBase`. You can use `BacktraceBase` to add your custom logic. `BacktraceBase`is a generic class. `T` argument is a value type in `Attribute` dictionary.
 
 ## BacktraceData  <a name="architecture-BacktraceData"></a>
-**`BacktraceData`** - serializable class that store all values necessary to create diagnostic `JSON` send to `Backtrace API`. `BacktraceData` is a generic class. You can check prepared data and change it via `BeforeSend` event. `BacktraceData` require `BacktraceReport` and `BacktraceClient` scoped attributes.
+**`BacktraceData`** - serializable class that stores all values necessary to create diagnostic `JSON` sending to `Backtrace API`. `BacktraceData` is a generic class. You can check prepared data and change it via `BeforeSend` event. `BacktraceData` require `BacktraceReport` and `BacktraceClient` client attributes.
 
 ## BacktraceApi  <a name="architecture-BacktraceApi"></a>
 **`BacktraceApi`** - class that allows you to send diagnostic JSON to `Backtrace API`. `BacktraceApi` is initialized on `BacktraceClient` start. You can prepare custom events for `BacktraceApi`:
@@ -280,10 +280,10 @@ backtraceClient.BeforeSend =
 BacktraceAPI allows you to send synchronous and asynchronous reports to server. To prepare asynchronous report (default is synchronous) you have to change `AsynchronousRequest` property to true.
 
 ## BacktraceDatabase  <a name="architecture-BacktraceDatabase"></a>
-**`BacktraceDatabase`** - class that allows you to store data in hard drive. `BacktraceDatabase` instance is initialized on `BacktraceClient` start. If `database path` isn't available on `BacktraceClient` constructor, `BacktraceDatabase` won't generate mini dump files. Before start - Make sure that **Backtrace database directory** is **empty**. 
+**`BacktraceDatabase`** - class that allows you to store data in hard drive. `BacktraceDatabase` instance is initialized on `BacktraceClient` start. If `database path` isn't available on `BacktraceClient` constructor, `BacktraceDatabase` won't generate minidump files. Before start - make sure that **Backtrace database directory** is **empty**. 
 
 ## ReportWatcher  <a name="architecture-ReportWatcher"></a>
-**`ReportWatcher`** - class that validate all send request to `Backtrace API`. If rate limiting variable is set on `BacktraceClient` constructor, `Watcher` limit all request to a server per minute.
+**`ReportWatcher`** - class that validate all send request to `Backtrace API`. If rate limiting variable is set on `BacktraceClient` constructor, `Watcher` limits all request to a server per minute.
 
 
 
