@@ -124,8 +124,8 @@ namespace Backtrace
             {
                 throw new ArgumentException($"Section {nameof(sectionName)} is null or empty");
             }
-            string backtraceHostUri = "";
-            string accessToken = "";
+            string backtraceHostUri = string.Empty;
+            string accessToken = string.Empty;
             var applicationSettings = ConfigurationManager.GetSection(sectionName) as NameValueCollection;
 
             if (applicationSettings == null || applicationSettings.Count == 0)
