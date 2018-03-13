@@ -102,6 +102,25 @@ You can use `CLI` to run sample project on `Linux`, `Windows` and `MacOS`. In or
 - You should see new errors in your Backtrace I/O dashboard.
 
 
+## Visual Studio <a name="sample-app-vs"></a>
+Visual Studio allows you to build project and run all available samples (prepared for .NET Core, .NET Framework 4.5, .NET Framework 3.5). 
+- Double click `.sln` file or navigate to project directory via `Open` dialog in Visual Studio.
+- In `Solution Explorer` navigate to directory `Sample` and set preffered project (.NET Core/Framework) as startup project.
+
+![Visual Studio](https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/VisualStudio.PNG)
+
+- Sample application store credentials to `Backtrace API` in `App.config`. Update the following `Backtrace I/O credentials` entries:
+```xml
+    <BacktraceCredentials>  
+        <add key="HostUrl" value="...backtrace host URL (with port)..."/>  
+        <add key="Token" value="...your backtrace submission token"/>  
+    </BacktraceCredentials>  
+```
+- press `Ctrl+Shift+B` to `build` solution
+- Press `F5` to run the project
+- You should see new errors in your Backtrace I/O dashboard.
+
+
 
 ## Visual Studio for MacOS  <a name="sample-app-vs-mac"></a>
 
@@ -120,24 +139,6 @@ You can use `CLI` to run sample project on `Linux`, `Windows` and `MacOS`. In or
 - Upon successful build, run the project.
 - You should see new errors in your Backtrace I/O dashboard.
 
-
-## Visual Studio <a name="sample-app-vs"></a>
-Visual Studio allows you to build project and run all available samples (prepared for .NET Core, .NET Framework 4.5, .NET Framework 3.5). 
-- Double click `.sln` file or navigate to project directory via `Open` dialog in Visual Studio.
-- In `Solution Explorer` navigate to directory `Sample` and set preffered project (.NET Core/Framework) as startup project.
-
-![Visual Studio](https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/VisualStudio.PNG)
-
-- Sample application store credentials to `Backtrace API` in `App.config`. Update the following `Backtrace I/O credentials` entries:
-```xml
-    <BacktraceCredentials>  
-        <add key="HostUrl" value="...backtrace host URL (with port)..."/>  
-        <add key="Token" value="...your backtrace submission token"/>  
-    </BacktraceCredentials>  
-```
-- press `Ctrl+Shift+B` to `build` solution
-- Press `F5` to run the project
-- You should see new errors in your Backtrace I/O dashboard.
 
 
 # Documentation  <a name="documentation"></a>
