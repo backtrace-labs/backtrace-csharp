@@ -49,13 +49,16 @@ namespace Backtrace.Model.JsonData
         /// <returns></returns>
         private UInt64 GenerateMachineId()
         {
-            var networkInterface = NetworkInterface.GetAllNetworkInterfaces().FirstOrDefault();
-            if (networkInterface == null)
+            var networkInterface = NetworkInterface.GetAllNetworkInterfaces().FirstOrDefault(n => n.OperationalStatus == OperationalStatus.Up);
+
+            PhysicalAddress physicalAddr = null;
+            string macAddress = null;
+            if (networkInterface == null || (physicalAddr = networkInterface.GetPhysicalAddress()) == null || (macAddress = physicalAddr.ToString()).Equals(String.Empty))
             {
                 Random random = new Random();
                 return (UInt64)(random.NextDouble() * UInt64.MaxValue);
             }
-            string macAddress = networkInterface.GetPhysicalAddress().ToString();
+
             string hex = macAddress.Replace(":", string.Empty);
 
             return Convert.ToUInt64(hex, 16);
