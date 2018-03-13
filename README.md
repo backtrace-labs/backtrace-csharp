@@ -105,7 +105,7 @@ You can use `CLI` to run sample project on `Linux`, `Windows` and `MacOS`. In or
 
 ## Visual Studio for MacOS  <a name="sample-app-vs-mac"></a>
 
-- Open the **Backtrace** solution in Visual Studio, unload all projects excepts **Backtrace**, **Backtrace.Tests** and **Backtrace.Core**, and set **Backtrace.Core** as your startup project:
+- Open the **Backtrace** solution in Visual Studio, unload all projects except **Backtrace**, **Backtrace.Tests** and **Backtrace.Core**, and set **Backtrace.Core** as your startup project:
 
 ![VisualStudioMacOS](https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/VisualStudioMacOS.PNG)
 
