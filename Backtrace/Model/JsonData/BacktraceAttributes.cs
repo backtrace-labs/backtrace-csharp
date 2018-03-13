@@ -47,21 +47,28 @@ namespace Backtrace.Model.JsonData
         /// Machine id is equal to mac address of first network interface. If network interface in unvailable, random long will be generated.
         /// </summary>
         /// <returns></returns>
+
         private UInt64 GenerateMachineId()
         {
             var networkInterface = NetworkInterface.GetAllNetworkInterfaces().FirstOrDefault(n => n.OperationalStatus == OperationalStatus.Up);
 
             PhysicalAddress physicalAddr = null;
             string macAddress = null;
-            if (networkInterface == null || (physicalAddr = networkInterface.GetPhysicalAddress()) == null || (macAddress = physicalAddr.ToString()).Equals(String.Empty))
+            if (networkInterface == null || (physicalAddr = networkInterface.GetPhysicalAddress()) == null || string.IsNullOrEmpty(macAddress = physicalAddr.ToString()))
             {
-                Random random = new Random();
-                return (UInt64)(random.NextDouble() * UInt64.MaxValue);
+                return GenerateRandomMachineId();
             }
 
             string hex = macAddress.Replace(":", string.Empty);
 
             return Convert.ToUInt64(hex, 16);
+        }
+
+
+        private UInt64 GenerateRandomMachineId()
+        {
+            Random random = new Random();
+            return (UInt64)(random.NextDouble() * UInt64.MaxValue);
         }
 
         /// <summary>
@@ -126,10 +133,11 @@ namespace Backtrace.Model.JsonData
         private void SetMachineAttributes()
         {
             //The processor architecture.
-            Attributes["uname.machine"] = SystemHelper.CpuArchitecture();
+            string cpuArchitecture = SystemHelper.CpuArchitecture();
+            Attributes["uname.machine"] = cpuArchitecture;
 
             //Operating system name = such as "windows"
-            Attributes["uname.sysname"] = SystemHelper.Name();
+            Attributes["uname.sysname"] = SystemHelper.Name(cpuArchitecture);
 
             //The version of the operating system
             Attributes["uname.version"] = Environment.OSVersion.Version.ToString();

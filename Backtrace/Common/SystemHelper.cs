@@ -50,7 +50,7 @@ namespace Backtrace.Common
             return !libraries.Any(n => !IsLibraryAvailable(n));
         }
 
-        internal static string Name()
+        internal static string Name(string architecture)
         {
             var platform = Environment.OSVersion.Platform;
             switch (platform)
@@ -59,11 +59,20 @@ namespace Backtrace.Common
                     return "Windows NT";
 #if NETSTANDARD2_0
                 case PlatformID.Unix:
+                   
                     // for .NET Core Environment.OSVersion returns Unix for MacOS and Linux
                     if(RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                     {
+                        if (architecture == "arm" || architecture == "arm64")
+                        {
+                            return "IOS";
+                        }
                         return "Mac OS X";
-                    }                    
+                    }
+                    if (architecture == "arm" || architecture == "arm64")
+                    {
+                        return "Android";
+                    }
                     return "Linux";
 
 #else
