@@ -49,16 +49,25 @@ namespace Backtrace.Model.JsonData
         /// <returns></returns>
         private UInt64 GenerateMachineId()
         {
-            var networkInterface = NetworkInterface.GetAllNetworkInterfaces().FirstOrDefault();
+            var networkInterface = NetworkInterface.GetAllNetworkInterfaces().FirstOrDefault(n => n.OperationalStatus == OperationalStatus.Up);
             if (networkInterface == null)
             {
-                Random random = new Random();
-                return (UInt64)(random.NextDouble() * UInt64.MaxValue);
+                GenerateRandomMachineId();
             }
             string macAddress = networkInterface.GetPhysicalAddress().ToString();
-            string hex = macAddress.Replace(":", string.Empty);
+            if(string.IsNullOrEmpty(macAddress))
+            {
+                GenerateRandomMachineId();
+            }
 
+            string hex = macAddress.Replace(":", string.Empty);
             return Convert.ToUInt64(hex, 16);
+        }
+
+        private UInt64 GenerateRandomMachineId()
+        {
+            Random random = new Random();
+            return (UInt64)(random.NextDouble() * UInt64.MaxValue);
         }
 
         /// <summary>
@@ -123,10 +132,11 @@ namespace Backtrace.Model.JsonData
         private void SetMachineAttributes()
         {
             //The processor architecture.
-            Attributes["uname.machine"] = SystemHelper.CpuArchitecture();
+            string cpuArchitecture = SystemHelper.CpuArchitecture();
+            Attributes["uname.machine"] = cpuArchitecture;
 
             //Operating system name = such as "windows"
-            Attributes["uname.sysname"] = SystemHelper.Name();
+            Attributes["uname.sysname"] = SystemHelper.Name(cpuArchitecture);
 
             //The version of the operating system
             Attributes["uname.version"] = Environment.OSVersion.Version.ToString();
