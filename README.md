@@ -67,11 +67,11 @@ You can install library via Nuget package
 
 Windows: 
 ```
-Install-Package Backtrace.Csharp
+Install-Package Backtrace
 ```
 Linux/MacOS/.NET CLI:
 ```
-dotnet add package Backtrace.Csharp
+dotnet add package Backtrace
 ```
 
 
