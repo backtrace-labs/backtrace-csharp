@@ -54,7 +54,9 @@ namespace Backtrace.Model.JsonData
 
             PhysicalAddress physicalAddr = null;
             string macAddress = null;
-            if (networkInterface == null || (physicalAddr = networkInterface.GetPhysicalAddress()) == null || string.IsNullOrEmpty(macAddress = physicalAddr.ToString()))
+            if (networkInterface == null 
+                || (physicalAddr = networkInterface.GetPhysicalAddress()) == null 
+                || string.IsNullOrEmpty(macAddress = physicalAddr.ToString()))
             {
                 return GenerateRandomMachineId();
             }
