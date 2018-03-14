@@ -20,8 +20,10 @@ namespace Backtrace.Tests.ClientTests
             var api = new Mock<IBacktraceApi<object>>();
             api.Setup(n => n.Send(It.IsAny<Model.BacktraceData<object>>()));
             var credentials = new BacktraceCredentials(@"https://validurl.com/", "validToken");
-            _backtraceClient = new BacktraceClient(credentials);
-            _backtraceClient._backtraceApi = api.Object;
+            _backtraceClient = new BacktraceClient(credentials)
+            {
+                _backtraceApi = api.Object
+            };
 
             //set one scoped attribute
             _backtraceClient.Attributes["ScopedAttributes"] = true;

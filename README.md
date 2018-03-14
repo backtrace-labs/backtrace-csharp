@@ -1,4 +1,4 @@
-# Backtrace-Csharp
+# Backtrace
 
 [Backtrace](http://backtrace.io/) error reporting tool for C#.
 
@@ -54,7 +54,7 @@ catch(Exception exception){
 ### Development Environment
 - On `Windows` we suggest to use `Visual Studio 2017`. You can download and install `Visual Studio` from [link above](https://www.visualstudio.com/downloads/). As an alternative to `Visual Studio` you can use .NET Core environment from `cmd` or any other terminal. You can check installation guide available [here](https://docs.microsoft.com/en-us/dotnet/core/windows-prerequisites?tabs=netcore2x)
 - To work with library on `Linux`, you need to prepare your development environment to work with `.NET Core`. You can find installation steps for `.NET Core` on `Linux` environment on [link above](https://docs.microsoft.com/en-US/dotnet/core/linux-prerequisites?tabs=netcore2x)
-- In order to use **backtrace-csharp** on Mac OS X, you need to download and install [.NET Core 2.0 or above](https://www.microsoft.com/net/download/macos).  
+- In order to use **backtrace** on Mac OS X, you need to download and install [.NET Core 2.0 or above](https://www.microsoft.com/net/download/macos).  
 
 ### NuGet  
 The `Backtrace` library is available via NuGet. You can read more about NuGet and how to download the package on [link above](https://docs.microsoft.com/en-us/nuget/)

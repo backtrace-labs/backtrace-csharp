@@ -11,7 +11,7 @@ namespace Backtrace
     /// Backtrace .NET Client 
     /// </summary>
     public class BacktraceClient : BacktraceBase<object>, IBacktraceClient<object>
-    {
+    {        
         /// <summary>
         /// Set an event executed before sending data to Backtrace API
         /// </summary>

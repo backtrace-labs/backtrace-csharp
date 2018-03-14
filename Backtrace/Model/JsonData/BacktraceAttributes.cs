@@ -54,8 +54,8 @@ namespace Backtrace.Model.JsonData
 
             PhysicalAddress physicalAddr = null;
             string macAddress = null;
-            if (networkInterface == null 
-                || (physicalAddr = networkInterface.GetPhysicalAddress()) == null 
+            if (networkInterface == null
+                || (physicalAddr = networkInterface.GetPhysicalAddress()) == null
                 || string.IsNullOrEmpty(macAddress = physicalAddr.ToString()))
             {
                 return GenerateRandomMachineId();
@@ -112,16 +112,32 @@ namespace Backtrace.Model.JsonData
                 Attributes["cpu.process.count"] = Process.GetProcesses().Count().ToString();
 
                 //Resident memory usage.
-                Attributes["vm.rss.size"] = process.PagedMemorySize64.ToString();
+                var pagedMemorySize = process.PagedMemorySize64;
+                if (pagedMemorySize > 0)
+                {
+                    Attributes["vm.rss.size"] = pagedMemorySize.ToString();
+                }
 
                 //Peak resident memory usage.
-                Attributes["vm.rss.peak"] = process.PeakPagedMemorySize64.ToString();
+                var peakPagedMemorySize = process.PeakPagedMemorySize64;
+                if (peakPagedMemorySize > 0)
+                {
+                    Attributes["vm.rss.peak"] = peakPagedMemorySize.ToString();
+                }
 
                 //Virtual memory usage
-                Attributes["vm.vma.size"] = process.VirtualMemorySize64.ToString();
+                var virtualMemorySize = process.VirtualMemorySize64;
+                if (virtualMemorySize > 0)
+                {
+                    Attributes["vm.vma.size"] = virtualMemorySize.ToString();
+                }
 
                 //Peak virtual memory usage
-                Attributes["vm.vma.peak"] = process.PeakVirtualMemorySize64.ToString();
+                var peakVirtualMemorySize = process.PeakVirtualMemorySize64;
+                if (peakVirtualMemorySize > 0)
+                {
+                    Attributes["vm.vma.peak"] = peakVirtualMemorySize.ToString();
+                }
             }
             catch (Exception exception)
             {

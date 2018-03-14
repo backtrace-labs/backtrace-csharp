@@ -16,7 +16,7 @@ namespace Backtrace.Core
         //initialize new BacktraceClient with custom configuration section readed from file App.config
         //Client will be initialized with values stored in default section name "BacktraceCredentials"
         private BacktraceClient backtraceClient = new BacktraceClient(
-            new BacktraceCredentials(@"https://yolo.sp.backtrace.io:6098/", "328174ab5c377e2cdcb6c763ec2bbdf1f9aa5282c1f6bede693efe06a479db54"),
+            new BacktraceCredentials(@"http://yolo.sp.backtrace.io:6097/", "328174ab5c377e2cdcb6c763ec2bbdf1f9aa5282c1f6bede693efe06a479db54"),
             reportPerMin: 0 //unlimited number of reports per secound
         );
 
@@ -25,6 +25,18 @@ namespace Backtrace.Core
             SetupBacktraceLibrary();
             SetupStartupTasks();
             StartTasks();
+            //handle uncaught exception from unsafe code
+            ThrowUnsafeException();
+        }
+
+        private void ThrowUnsafeException()
+        {
+            unsafe
+            {
+                int t = 0;
+                int j = 0;
+                DividePtrParam(&t, &j);
+            }
         }
 
         private void StartTasks()
@@ -147,14 +159,19 @@ namespace Backtrace.Core
 
         }
 
+        unsafe static void DividePtrParam(int* p, int* j)
+        {
+            *p = *p / *j;
+        }
+
+
         /// <summary>
         /// Setup client behaviour - attributes, events
         /// </summary>
         private void SetupBacktraceLibrary()
         {
-
+            backtraceClient.HandleApplicationException();
             //Add new scoped attributes
-
             backtraceClient.Attributes["ClientAttributeNumber"] = 1;
             backtraceClient.Attributes["ClientAttributeString"] = "string attribute";
             backtraceClient.Attributes["ClientAttributeCustomClass"] = new
