@@ -68,6 +68,10 @@ namespace Backtrace.Model.JsonData
             try
             {
                 currentThreads = Process.GetCurrentProcess().Threads;
+                if(currentThreads == null)
+                {
+                    return;
+                }
             }
             catch
             {
@@ -76,6 +80,10 @@ namespace Backtrace.Model.JsonData
             }
             foreach (ProcessThread thread in currentThreads)
             {
+                if (thread == null)
+                {
+                    continue;
+                }
                 //you can't retrieve stack trace from processThread
                 //you can't retrieve thread name from processThread 
                 string threadId = thread.Id.ToString();

@@ -22,6 +22,7 @@ namespace Backtrace
         /// </summary>
         public Action<BacktraceReport> AfterSend;
 
+#if NET35 || NET45
         /// <summary>
         /// Initializing Backtrace client instance
         /// </summary>
@@ -38,6 +39,7 @@ namespace Backtrace
             : base(BacktraceCredentials.ReadConfigurationSection(sectionName),
                   attributes, databaseDirectory, reportPerMin)
         { }
+#endif
 
         /// <summary>
         /// Initializing Backtrace client instance with BacktraceCredentials

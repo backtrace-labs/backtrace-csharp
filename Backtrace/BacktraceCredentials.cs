@@ -111,6 +111,7 @@ namespace Backtrace
             return _accessToken != null && _accessToken.Length > 0 && _backtraceHostUri.IsWellFormedOriginalString();
         }
 
+#if NET35 || NET45
         /// <summary>
         /// Read Backtrace credentials from application configuration
         /// </summary>
@@ -136,5 +137,6 @@ namespace Backtrace
             accessToken = applicationSettings[_configurationTokenRecordName];
             return new BacktraceCredentials(backtraceHostUri, accessToken);
         }
+#endif
     }
 }
