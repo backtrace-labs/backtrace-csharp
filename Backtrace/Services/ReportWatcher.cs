@@ -17,7 +17,7 @@ namespace Backtrace.Services
         internal readonly Queue<long> _reportQue;
         private bool _watcherEnable;
 
-        private readonly int _reportPerSec;
+        private int _reportPerSec;
 
         /// <summary>
         /// Create new instance of background watcher
@@ -31,6 +31,13 @@ namespace Backtrace.Services
             }
             int reportNumber = checked((int)reportPerMin);
             _reportQue = new Queue<long>(reportNumber);
+            _reportPerSec = reportNumber;
+            _watcherEnable = reportPerMin != 0;
+        }
+
+        internal void ChangeRateLimiting(uint reportPerMin)
+        {
+            int reportNumber = checked((int)reportPerMin);
             _reportPerSec = reportNumber;
             _watcherEnable = reportPerMin != 0;
         }
