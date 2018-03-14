@@ -25,8 +25,8 @@ namespace Backtrace.WinFoms
             );
             backtraceClient.HandleApplicationException();
             Application.EnableVisualStyles();
-            //Application.ThreadException += backtraceClient.HandleApplicationThreadException;
-            //Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+            Application.ThreadException += backtraceClient.HandleApplicationThreadException;
+            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
             Application.SetCompatibleTextRenderingDefault(false);
           
             Application.Run(new Form1());
