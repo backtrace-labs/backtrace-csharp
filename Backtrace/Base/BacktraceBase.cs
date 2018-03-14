@@ -90,6 +90,11 @@ namespace Backtrace.Base
         public Func<BacktraceData<T>, BacktraceData<T>> BeforeSend = null;
 
         /// <summary>
+        /// Set event executed when unhandled application exception event catch exception
+        /// </summary>
+        public Action<Exception> OnUnhandledApplicationException = null;
+
+        /// <summary>
         /// Get custom client attributes. Every argument stored in dictionary will be send to Backtrace API
         /// </summary>
         public Dictionary<string, T> Attributes
@@ -178,12 +183,22 @@ namespace Backtrace.Base
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
         }
 
+        /// <summary>
+        /// Add automatic thread exception handling for current application
+        /// </summary>
+        public virtual void HandleApplicationThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
+        {
+            var assembly = System.Reflection.Assembly.GetCallingAssembly();
+            Send(new BacktraceReportBase<T>(e.Exception, assembly));
+            OnUnhandledApplicationException?.Invoke(e.Exception);
+        }
+
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var assembly = System.Reflection.Assembly.GetCallingAssembly();
             var exception = e.ExceptionObject as Exception;
-            var report = new BacktraceReportBase<T>(exception, assembly);
-            Send(report);
+            Send(new BacktraceReportBase<T>(exception, assembly));
+            OnUnhandledApplicationException?.Invoke(exception);
         }
 #endif
     }
