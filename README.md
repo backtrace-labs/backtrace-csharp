@@ -17,12 +17,12 @@ catch(Exception exception){
 # Table of contents
 1. [Supported .NET Frameworks](#supported-frameworks)
 2. [Installation](#installation)
-    1. [Before start](#installation-before-start)
-    2. [Nuget installation](#installation-nuget)
+    1. [Prerequisites](#installation-before-start)
+    2. [NuGet installation](#installation-nuget)
 3. [Running sample application](#sample-app)
-    1. [.NET Core CLI](#sample-app-cli)
-    2. [Visual Studio for Mac](#sample-app-vs-mac)
-    2. [Visual Studio](#sample-app-vs)
+    1. [Visual Studio](#sample-app-vs)
+    2. [.NET Core CLI](#sample-app-cli)
+    3. [Visual Studio for Mac](#sample-app-vs-mac)
 4. [Documentation](#documentation)
     1. [Initialize new BacktraceClient](#documentation-initialization)
     2. [Sending a report](#documentation-sending-report)
@@ -49,21 +49,21 @@ catch(Exception exception){
 
 # Installation <a name="installation"></a>
 
-## Before start <a name="installation-before-start"></a>
+## Prerequisites <a name="installation-before-start"></a>
 
 ### Development Environment
-- On `Windows` we suggest to use `Visual Studio 2017`. You can download and install `Visual Studio` from [link above](https://www.visualstudio.com/downloads/). If you don't want to use `Visual Studio` you can use .NET Core environment from `cmd` or any other terminal. You can check installation guide available [here](https://docs.microsoft.com/en-us/dotnet/core/windows-prerequisites?tabs=netcore2x)
+- On `Windows` we suggest to use `Visual Studio 2017`. You can download and install `Visual Studio` from [link above](https://www.visualstudio.com/downloads/). As an alternative to `Visual Studio` you can use .NET Core environment from `cmd` or any other terminal. You can check installation guide available [here](https://docs.microsoft.com/en-us/dotnet/core/windows-prerequisites?tabs=netcore2x)
 - To work with library on `Linux`, you need to prepare your development environment to work with `.NET Core`. You can find installation steps for `.NET Core` on `Linux` environment on [link above](https://docs.microsoft.com/en-US/dotnet/core/linux-prerequisites?tabs=netcore2x)
 - In order to use **backtrace-csharp** on Mac OS X, you need to download and install [.NET Core 2.0 or above](https://www.microsoft.com/net/download/macos).  
 
-### Nuget  
-`Backtrace-csharp` library is available via nuget. You can read more about nuget and how to download package on [link above](https://docs.microsoft.com/en-us/nuget/)
+### NuGet  
+The `Backtrace` library is available via NuGet. You can read more about NuGet and how to download the package on [link above](https://docs.microsoft.com/en-us/nuget/)
 
 
 
-## Install library via Nuget <a name="installation-nuget"></a>
+## Install library via NuGet <a name="installation-nuget"></a>
 
-You can install library via Nuget package
+You can install library via NuGet package
 
 Windows: 
 ```
@@ -76,6 +76,26 @@ dotnet add package Backtrace
 
 
 # Running sample application <a name="sample-app"></a>
+
+
+## Visual Studio <a name="sample-app-vs"></a>
+Visual Studio allows you to build project and run all available samples (prepared for .NET Core, .NET Framework 4.5, .NET Framework 3.5). 
+- Double click `.sln` file or navigate to project directory via `Open` dialog in Visual Studio.
+- In `Solution Explorer` navigate to directory `Sample` and set preffered project (.NET Core/Framework) as startup project.
+
+![Visual Studio](https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/VisualStudio.PNG)
+
+- Sample application store credentials to `Backtrace API` in `App.config`. Update the following `Backtrace I/O credentials` entries:
+```xml
+    <BacktraceCredentials>  
+        <add key="HostUrl" value="...backtrace host URL (with port)..."/>  
+        <add key="Token" value="...your backtrace submission token"/>  
+    </BacktraceCredentials>  
+```
+- press `Ctrl+Shift+B` to `build` solution
+- Press `F5` to run the project
+- You should see new errors in your Backtrace I/O dashboard.
+
 
 ## .NET Core Command line <a name="sample-app-cli"></a>
 You can use `CLI` to run sample project on `Linux`, `Windows` and `MacOS`. In order to run a sample project via `.NET CLI` follow guide:
@@ -99,25 +119,6 @@ You can use `CLI` to run sample project on `Linux`, `Windows` and `MacOS`. In or
 ``` 
     dotnet run  
 ``` 
-- You should see new errors in your Backtrace I/O dashboard.
-
-
-## Visual Studio <a name="sample-app-vs"></a>
-Visual Studio allows you to build project and run all available samples (prepared for .NET Core, .NET Framework 4.5, .NET Framework 3.5). 
-- Double click `.sln` file or navigate to project directory via `Open` dialog in Visual Studio.
-- In `Solution Explorer` navigate to directory `Sample` and set preffered project (.NET Core/Framework) as startup project.
-
-![Visual Studio](https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/VisualStudio.PNG)
-
-- Sample application store credentials to `Backtrace API` in `App.config`. Update the following `Backtrace I/O credentials` entries:
-```xml
-    <BacktraceCredentials>  
-        <add key="HostUrl" value="...backtrace host URL (with port)..."/>  
-        <add key="Token" value="...your backtrace submission token"/>  
-    </BacktraceCredentials>  
-```
-- press `Ctrl+Shift+B` to `build` solution
-- Press `F5` to run the project
 - You should see new errors in your Backtrace I/O dashboard.
 
 
@@ -184,7 +185,7 @@ Additionally `BacktraceClient` constructor accepts report attributes, database d
 ```csharp
 var backtraceClient = new BacktraceClient(
     sectionName: "BacktraceCredentials",
-    attributes: new Dictionary<string, object>() { { "Attribute", "attribute" } },
+    attributes: new Dictionary<string, object>() { { "Attribute", "value" } },
     databaseDirectory: "pathToDatabaseDirectory",
     reportPerMin: 0
 );
@@ -192,7 +193,7 @@ var backtraceClient = new BacktraceClient(
 
 If parameter `reportPerMin` is equal to 0, there is no limit for number of reports sending per minute. If you want to send more reports than `reportPerMin` value, `Send` method will return false.
 
-`DatabaseDirectory` parameter is optional. Make sure that there are no files in directory passed in `databaseDirectory`. BacktraceClient will use this directory to save additional information about executed program.
+`DatabaseDirectory` parameter is optional. Make sure that there are no files in directory passed in `databaseDirectory`. BacktraceClient will use this directory to save additional information about executed program. If `databaseDirectory` path is provided, library will generate and attach to report a minidump automatically
 
 ## Sending a report <a name="documentation-sending-report"></a>
 
@@ -200,7 +201,7 @@ To send a new report to Backtrace API you have to use instance of `BacktraceClie
 
 ### Use BacktraceReport
 
-You can send a report to server by using `BacktraceReport` class. `BacktraceReport` override a generic class `BacktraceReportBase`. `T` argument is used to determinate type of values in attributes dictionary. 
+You can send a report to server by using `BacktraceReport` class. `BacktraceReport` override a generic class `BacktraceReportBase`. `T` argument is used to determinate type of values in attributes dictionary. To `BacktraceReport` constructor you can add new additional information about report by using `attributes` dictionary and attachments by passing array of paths to `attachmentPaths`.
 ```csharp
 try
 {
@@ -208,10 +209,12 @@ try
 }
 catch (Exception exception)
 {
-  var backtraceReport = new BacktraceReport(
-        exception: exception
-  );
-  backtraceClient.Send(backtraceReport);
+    var report = new BacktraceReport(
+        exception: exception,
+        attributes: new Dictionary<string, object>() { { "AttributeString", "value" } },
+        attachmentPaths: new List<string>() { @"path to file attachment", @"patch to another file attachment" }
+    );
+    backtraceClient.Send(backtraceReport);
 }
 ```
 
@@ -234,7 +237,7 @@ Additionally `BacktraceReport` constructor accepts report attributes and attachm
 ```csharp
  var report = new BacktraceReport(
     exception: exception,
-    attributes: new Dictionary<string, string>() { { "AttributeString", "string" } },
+    attributes: new Dictionary<string, object>() { { "AttributeString", "string" } },
     attachmentPaths: new List<string>() { "path to file attachment", "another path" }
 );
 ```
@@ -251,7 +254,13 @@ backtraceClient.BeforeSend =
     (Model.BacktraceData<object> model) =>
     {
         var data = model;
-        //do something with data
+        //do something with data for example:        
+        data.Attributes.Add("eventAtrtibute", "EventAttributeValue");
+        if(data.Classifier == null || !data.Classifier.Any())
+        {
+            data.Attachments.Add("path to attachment");
+        }
+
         return data;
     };
 ```           
@@ -259,7 +268,7 @@ backtraceClient.BeforeSend =
 
 ## Customization <a name="documentation-customization"></a>
 
-`BacktraceClient` and `BacktraceReport` allows you to use your own generic attributes and your own implementation. You can override `BacktraceReportBase` and `BacktraceBase` to create your own client/report implementation. 
+`BacktraceClient` and `BacktraceReport` allows you to use your own generic attributes and your own implementation. You can override `BacktraceReportBase` and `BacktraceBase` to create your own client/report implementation. You can check `BacktraceClient` or `BacktraceReport` implementation to check how to prepare your custom reporting tool. 
 
 # Architecture  <a name="architecture"></a>
 

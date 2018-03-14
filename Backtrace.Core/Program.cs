@@ -174,6 +174,10 @@ namespace Backtrace.Core
                {
                    var data = model;
                    data.Attributes.Add("eventAtrtibute", "EventAttributeValue");
+                   if(data.Classifier == null || !data.Classifier.Any())
+                   {
+                       data.Attachments.Add("path to attachment");
+                   }
                    return data;
                };
 
