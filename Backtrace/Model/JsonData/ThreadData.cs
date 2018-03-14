@@ -110,7 +110,11 @@ namespace Backtrace.Model.JsonData
                         continue;
                     }
                     //ClrThread doesn't have any information about thread 
-                    string threadName = thread.ManagedThreadId.ToString();
+                    string threadName = thread.OSThreadId.ToString();
+                    if (string.IsNullOrEmpty(threadName))
+                    {
+                        threadName = thread.ManagedThreadId.ToString();
+                    }
                     var frames = ExceptionStack.Convert(thread.StackTrace);
                     ThreadInformations.Add(threadName, new ThreadInformation(threadName, false, frames));
                 }
