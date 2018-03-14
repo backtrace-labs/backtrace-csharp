@@ -350,7 +350,7 @@ namespace Backtrace.Tests.IntegrationTests
         {
 
             BacktraceClient backtraceClient = new BacktraceClient(
-            new BacktraceCredentials(@"https://yolo.sp.backtrace.io:6098/", "328174ab5c377e2cdcb6c763ec2bbdf1f9aa5282c1f6bede693efe06a479db54"),
+            new BacktraceCredentials(@"https://yolo.sp.backtrace.io:6097/", "328174ab5c377e2cdcb6c763ec2bbdf1f9aa5282c1f6bede693efe06a479db54"),
             reportPerMin: rpm //unlimited number of reports per secound
             );
 
