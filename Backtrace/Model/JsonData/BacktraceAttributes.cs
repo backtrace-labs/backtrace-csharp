@@ -47,24 +47,23 @@ namespace Backtrace.Model.JsonData
         /// Machine id is equal to mac address of first network interface. If network interface in unvailable, random long will be generated.
         /// </summary>
         /// <returns></returns>
+
         private UInt64 GenerateMachineId()
         {
             var networkInterface = NetworkInterface.GetAllNetworkInterfaces().FirstOrDefault(n => n.OperationalStatus == OperationalStatus.Up);
-            NetworkInterface.GetAllNetworkInterfaces().Where(n => n != null).Select(n => { Console.WriteLine(n.GetPhysicalAddress().ToString()); return n; });
 
-            if (networkInterface == null)
+            PhysicalAddress physicalAddr = null;
+            string macAddress = null;
+            if (networkInterface == null || (physicalAddr = networkInterface.GetPhysicalAddress()) == null || string.IsNullOrEmpty(macAddress = physicalAddr.ToString()))
             {
-                GenerateRandomMachineId();
-            }
-            string macAddress = networkInterface.GetPhysicalAddress().ToString();
-            if (string.IsNullOrEmpty(macAddress))
-            {
-                GenerateRandomMachineId();
+                return GenerateRandomMachineId();
             }
 
             string hex = macAddress.Replace(":", string.Empty);
+
             return Convert.ToUInt64(hex, 16);
         }
+
 
         private UInt64 GenerateRandomMachineId()
         {

@@ -19,7 +19,7 @@ catch(Exception exception){
 2. [Installation](#installation)
     1. [Before start](#installation-before-start)
     2. [Nuget installation](#installation-nuget)
-3. [Running sammple application](#sample-app)
+3. [Running sample application](#sample-app)
     1. [.NET Core CLI](#sample-app-cli)
     2. [Visual Studio for Mac](#sample-app-vs-mac)
     2. [Visual Studio](#sample-app-vs)
@@ -75,7 +75,7 @@ dotnet add package Backtrace.Csharp
 ```
 
 
-# Running sammple application <a name="sample-app"></a>
+# Running sample application <a name="sample-app"></a>
 
 ## .NET Core Command line <a name="sample-app-cli"></a>
 You can use `CLI` to run sample project on `Linux`, `Windows` and `MacOS`. In order to run a sample project via `.NET CLI` follow guide:
@@ -105,7 +105,7 @@ You can use `CLI` to run sample project on `Linux`, `Windows` and `MacOS`. In or
 
 ## Visual Studio for MacOS  <a name="sample-app-vs-mac"></a>
 
-- Open the **Backtrace** solution in Visual Studio, unload all projects excepts **Backtrace**, **Backtrace.Tests** and **Backtrace.Core**, and set **Backtrace.Core** as your startup project:
+- Open the **Backtrace** solution in Visual Studio, unload all projects except **Backtrace**, **Backtrace.Tests** and **Backtrace.Core**, and set **Backtrace.Core** as your startup project:
 
 ![VisualStudioMacOS](https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/VisualStudioMacOS.PNG)
 
@@ -195,7 +195,7 @@ If parameter `reportPerMin` is equal to 0, there is no limit for number of repor
 
 ## Sending a report <a name="documentation-sending-report"></a>
 
-To send a new report to Backtrace API you have to use instance of `BacktraceClient`. Use `Send` method to send a new report. You can use overrided versions of `Send` method. See examples below to learn how to send a new `BacktraceReport` to server:
+To send a new report to Backtrace API you have to use instance of `BacktraceClient`. Use `Send` method to send a new report. You can use overridden versions of `Send` method. See examples below to learn how to send a new `BacktraceReport` to server:
 
 ### Use BacktraceReport
 
@@ -214,8 +214,8 @@ catch (Exception exception)
 }
 ```
 
-### Use overrided methods
-`BacktraceClient` can create report for you. You can use overrided `Send` methods and pass string messsage or received exception. 
+### Use overridden methods
+`BacktraceClient` can create report for you. You can use overridden `Send` methods and pass string messsage or received exception. 
 
 ```csharp
 try
