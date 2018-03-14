@@ -1,11 +1,47 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.3;net35</TargetFrameworks>
+    <PackageId>Backtrace</PackageId>
+    <TargetFrameworks>netstandard2.0;net45;net35</TargetFrameworks>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageTags>Backtrace Error Diagnostic Tools Debug Bug Bugs StackTrace</PackageTags>
+    <PackageVersion>1.0.0</PackageVersion>
+    <Product>Backtrace</Product>
+    <PackageLicenseUrl>https://github.com/backtrace-labs/backtrace-csharp/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/backtrace-labs/backtrace-csharp</PackageProjectUrl>
+    <PackageIconUrl>http://backtrace.io/images/icon.png</PackageIconUrl>
+    <Description>Backtrace C# client is an error reporting tool for C# developers. The client allows you to integrate Backtrace API into your C# application. You can use the library in Xamarin, UWP, .NET Framework and .NET Core projects!</Description>
+    <RepositoryUrl>https://github.com/backtrace-labs/backtrace-csharp</RepositoryUrl>
+    <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DocumentationFile>bin\Debug\netstandard2.0\Backtrace.xml</DocumentationFile>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+    <PackageReference Include="Microsoft.Diagnostics.Runtime">
+      <Version>0.9.170809.3</Version>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+    <Reference Include="System.Configuration" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
+    <Reference Include="System.Configuration" />
+  </ItemGroup>
 
 </Project>
