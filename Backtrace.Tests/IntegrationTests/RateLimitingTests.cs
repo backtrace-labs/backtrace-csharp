@@ -17,6 +17,9 @@ namespace Backtrace.Tests.IntegrationTests
     {
         private BacktraceClient _backtraceClient;
 
+        /// <summary>
+        /// Prepare basic setup of Backtrace client
+        /// </summary>
         [SetUp]
         public void Setup()
         {
