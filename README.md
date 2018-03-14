@@ -60,7 +60,6 @@ catch(Exception exception){
 The `Backtrace` library is available via NuGet. You can read more about NuGet and how to download the package on [link above](https://docs.microsoft.com/en-us/nuget/)
 
 
-
 ## Install library via NuGet <a name="installation-nuget"></a>
 
 You can install library via NuGet package
