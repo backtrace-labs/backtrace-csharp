@@ -76,6 +76,7 @@ dotnet add package Backtrace
 
 # Running sample application <a name="sample-app"></a>
 
+Warning! .NET Standard don't support reading application config from `app.config` file. Instead use `BacktraceCredentials` to pass host url and token to `BacktraceClient`. 
 
 ## Visual Studio <a name="sample-app-vs"></a>
 Visual Studio allows you to build project and run all available samples (prepared for .NET Core, .NET Framework 4.5, .NET Framework 3.5). 
