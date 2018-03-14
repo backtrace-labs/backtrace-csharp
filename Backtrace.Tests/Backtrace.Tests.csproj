@@ -18,4 +18,13 @@
     <ProjectReference Include="..\Backtrace\Backtrace.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="IntegrationTests\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="IntegrationTests\Template.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="IntegrationTests\Template.cs" />
+  </ItemGroup>
 </Project>
