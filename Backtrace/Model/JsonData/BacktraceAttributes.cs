@@ -54,7 +54,9 @@ namespace Backtrace.Model.JsonData
 
             PhysicalAddress physicalAddr = null;
             string macAddress = null;
-            if (networkInterface == null || (physicalAddr = networkInterface.GetPhysicalAddress()) == null || string.IsNullOrEmpty(macAddress = physicalAddr.ToString()))
+            if (networkInterface == null 
+                || (physicalAddr = networkInterface.GetPhysicalAddress()) == null 
+                || string.IsNullOrEmpty(macAddress = physicalAddr.ToString()))
             {
                 return GenerateRandomMachineId();
             }
@@ -157,7 +159,13 @@ namespace Backtrace.Model.JsonData
                 Attributes["cpu.brand"] = cpuBrand;
             }
             //Time when system was booted
-            Attributes["cpu.boottime"] = Environment.TickCount.ToString();
+            int boottime = Environment.TickCount;
+            string bootTimeString = boottime.ToString();
+            if (boottime <= 0)
+            {
+                bootTimeString = "More than 30 days";
+            }
+            Attributes["cpu.boottime"] = bootTimeString;
 
             //The hostname of the crashing system.
             Attributes["hostname"] = Environment.MachineName;

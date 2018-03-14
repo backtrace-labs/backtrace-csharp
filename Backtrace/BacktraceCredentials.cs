@@ -111,6 +111,7 @@ namespace Backtrace
             return _accessToken != null && _accessToken.Length > 0 && _backtraceHostUri.IsWellFormedOriginalString();
         }
 
+#if NET35 || NET45
         /// <summary>
         /// Read Backtrace credentials from application configuration
         /// </summary>
@@ -124,8 +125,8 @@ namespace Backtrace
             {
                 throw new ArgumentException($"Section {nameof(sectionName)} is null or empty");
             }
-            string backtraceHostUri = "";
-            string accessToken = "";
+            string backtraceHostUri = string.Empty;
+            string accessToken = string.Empty;
             var applicationSettings = ConfigurationManager.GetSection(sectionName) as NameValueCollection;
 
             if (applicationSettings == null || applicationSettings.Count == 0)
@@ -136,5 +137,6 @@ namespace Backtrace
             accessToken = applicationSettings[_configurationTokenRecordName];
             return new BacktraceCredentials(backtraceHostUri, accessToken);
         }
+#endif
     }
 }

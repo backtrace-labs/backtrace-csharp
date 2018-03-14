@@ -9,9 +9,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: global::Android.Runtime.ResourceDesignerAttribute("BacktraceMobile.Xamarin.Resource", IsApplication=true)]
+[assembly: global::Android.Runtime.ResourceDesignerAttribute("Backtrace.Mobile.Resource", IsApplication=true)]
 
-namespace BacktraceMobile.Xamarin
+namespace Backtrace.Mobile
 {
 	
 	

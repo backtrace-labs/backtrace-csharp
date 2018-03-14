@@ -1,4 +1,5 @@
 ﻿using Backtrace.Model;
+using Backtrace;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -61,10 +62,10 @@ namespace Backtrace.Framework35Example
             catch (Exception e)
             {
                 var report = new BacktraceReport(
-                exception: e,
-                attributes: new Dictionary<string, object>() { { "AttributeString", "string" } },
-                attachmentPaths: new List<string>() { @"path to file attachment", @"patch to another file attachment" }
-            );
+                    exception: e,
+                    attributes: new Dictionary<string, object>() { { "AttributeString", "string" } },
+                    attachmentPaths: new List<string>() { @"path to file attachment", @"patch to another file attachment" }
+                );
                 backtraceClient.Send(report);
             }
             //Report a new message
