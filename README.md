@@ -18,7 +18,7 @@ catch(Exception exception){
 1. [Supported .NET Frameworks](#supported-frameworks)
 2. [Installation](#installation)
     1. [Before start](#installation-before-start)
-    2. [Nuget installation](#installation-nuget)
+    2. [NuGet installation](#installation-nuget)
 3. [Running sample application](#sample-app)
     1. [.NET Core CLI](#sample-app-cli)
     2. [Visual Studio for Mac](#sample-app-vs-mac)
@@ -56,14 +56,14 @@ catch(Exception exception){
 - To work with library on `Linux`, you need to prepare your development environment to work with `.NET Core`. You can find installation steps for `.NET Core` on `Linux` environment on [link above](https://docs.microsoft.com/en-US/dotnet/core/linux-prerequisites?tabs=netcore2x)
 - In order to use **backtrace-csharp** on Mac OS X, you need to download and install [.NET Core 2.0 or above](https://www.microsoft.com/net/download/macos).  
 
-### Nuget  
+### NuGet  
 `Backtrace-csharp` library is available via nuget. You can read more about nuget and how to download package on [link above](https://docs.microsoft.com/en-us/nuget/)
 
 
 
-## Install library via Nuget <a name="installation-nuget"></a>
+## Install library via NuGet <a name="installation-nuget"></a>
 
-You can install library via Nuget package
+You can install library via NuGet package
 
 Windows: 
 ```
