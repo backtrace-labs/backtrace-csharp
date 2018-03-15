@@ -1,6 +1,6 @@
 # Backtrace
 
-[Backtrace](http://backtrace.io/) error reporting tool for C#.
+The [Backtrace](http://backtrace.io/) error reporting library for C# and .NET applications.
 
 ## Usage
 
