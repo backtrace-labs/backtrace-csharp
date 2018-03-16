@@ -40,7 +40,9 @@ catch(Exception exception){
 
 # Supported .NET Frameworks <a name="supported-frameworks"></a>
 * .NET Framework 3.5 >
-* .NET Framework 4.5 > (new cool features) 
+* .NET Framework 4.5 > 
+    - getting information about application thread,
+    - handling unhandled application exceptions
 * .NET Standard:
   * .NET Core 2.0 application
   * Xamarin
@@ -76,8 +78,6 @@ dotnet add package Backtrace
 
 # Running sample application <a name="sample-app"></a>
 
-Warning! .NET Standard don't support reading application config from `app.config` file. Instead use `BacktraceCredentials` to pass host url and token to `BacktraceClient`. 
-
 ## Visual Studio <a name="sample-app-vs"></a>
 Visual Studio allows you to build project and run all available samples (prepared for .NET Core, .NET Framework 4.5, .NET Framework 3.5). 
 - Double click `.sln` file or navigate to project directory via `Open` dialog in Visual Studio.
@@ -85,13 +85,11 @@ Visual Studio allows you to build project and run all available samples (prepare
 
 ![Visual Studio](https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/VisualStudio.PNG)
 
-- Sample application store credentials to `Backtrace API` in `App.config`. Update the following `Backtrace I/O credentials` entries:
-```xml
-    <BacktraceCredentials>  
-        <add key="HostUrl" value="...backtrace host URL (with port)..."/>  
-        <add key="Token" value="...your backtrace submission token"/>  
-    </BacktraceCredentials>  
+- Edit `Program.cs` class in project **Backtrace Sample project** by changing `BacktraceCredential` constructor patemeters with following example:
+```csharp
+    var backtraceCredentials = new BacktraceCredentials(@"host url", "application token");
 ```
+
 - press `Ctrl+Shift+B` to `build` solution
 - Press `F5` to run the project
 - You should see new errors in your Backtrace I/O dashboard.
@@ -104,12 +102,9 @@ You can use `CLI` to run sample project on `Linux`, `Windows` and `MacOS`. In or
 ``` 
     cd Backtrace.Core  
 ``` 
-- Sample application store credentials to `Backtrace API` in `App.config`. Update the following `Backtrace I/O credentials` entries:
-```xml
-    <BacktraceCredentials>  
-        <add key="HostUrl" value="...backtrace host URL (with port)..."/>  
-        <add key="Token" value="...your backtrace submission token"/>  
-    </BacktraceCredentials>  
+- Edit `Program.cs` class in project **Backtrace.Core** by changing `BacktraceCredential` constructor patemeters with following example:
+```csharp
+    var backtraceCredentials = new BacktraceCredentials(@"host url", "application token");
 ```
 - Build the project:  
 ```
@@ -129,13 +124,11 @@ You can use `CLI` to run sample project on `Linux`, `Windows` and `MacOS`. In or
 
 ![VisualStudioMacOS](https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/VisualStudioMacOS.PNG)
 
-- In project **Backtrace.Core**, edit **App.config** and update the following Backtrace I/O credential entries:  
+- Edit `Program.cs` class in project **Backtrace.Core** by changing `BacktraceCredential` constructor patemeters with following example:
+```csharp
+    var backtraceCredentials = new BacktraceCredentials(@"host url", "application token");
 ```
-    <BacktraceCredentials>  
-        <add key="HostUrl" value="...backtrace host URL (with port)..."/>  
-        <add key="Token" value="...your backtrace submission token"/>  
-    </BacktraceCredentials>  
-```
+
 - Build the project. 
 - Upon successful build, run the project.
 - You should see new errors in your Backtrace I/O dashboard.
@@ -265,6 +258,13 @@ backtraceClient.BeforeSend =
     };
 ```           
 `BacktraceClient` allows you to add custom events that will trigger after server response. You can add new events when server is temporary unvailable `WhenServerUnvailable` or when you receive response from server `OnServerResponse`.
+
+## Catch unhandled application exceptions
+`BacktraceClient` allows you to catch unhandle application exceptions. If your `try catch` block fails `BacktraceClient` can try handle exception before application crash. To catch unhandle application exception use:
+```csharp
+backtraceClient.HandleApplicationException();
+``` 
+
 
 ## Customization <a name="documentation-customization"></a>
 
