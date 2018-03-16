@@ -85,13 +85,6 @@ Visual Studio allows you to build project and run all available samples (prepare
 
 ![Visual Studio](https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/VisualStudio.PNG)
 
-- Sample application store credentials to `Backtrace API` in `App.config`. Update the following `Backtrace I/O credentials` entries:
-```xml
-    <BacktraceCredentials>  
-        <add key="HostUrl" value="...backtrace host URL (with port)..."/>  
-        <add key="Token" value="...your backtrace submission token"/>  
-    </BacktraceCredentials>  
-```
 - press `Ctrl+Shift+B` to `build` solution
 - Press `F5` to run the project
 - You should see new errors in your Backtrace I/O dashboard.
@@ -104,13 +97,6 @@ You can use `CLI` to run sample project on `Linux`, `Windows` and `MacOS`. In or
 ``` 
     cd Backtrace.Core  
 ``` 
-- Sample application store credentials to `Backtrace API` in `App.config`. Update the following `Backtrace I/O credentials` entries:
-```xml
-    <BacktraceCredentials>  
-        <add key="HostUrl" value="...backtrace host URL (with port)..."/>  
-        <add key="Token" value="...your backtrace submission token"/>  
-    </BacktraceCredentials>  
-```
 - Build the project:  
 ```
     dotnet build  
@@ -129,13 +115,6 @@ You can use `CLI` to run sample project on `Linux`, `Windows` and `MacOS`. In or
 
 ![VisualStudioMacOS](https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/VisualStudioMacOS.PNG)
 
-- In project **Backtrace.Core**, edit **App.config** and update the following Backtrace I/O credential entries:  
-```
-    <BacktraceCredentials>  
-        <add key="HostUrl" value="...backtrace host URL (with port)..."/>  
-        <add key="Token" value="...your backtrace submission token"/>  
-    </BacktraceCredentials>  
-```
 - Build the project. 
 - Upon successful build, run the project.
 - You should see new errors in your Backtrace I/O dashboard.
@@ -146,34 +125,7 @@ You can use `CLI` to run sample project on `Linux`, `Windows` and `MacOS`. In or
 
 ## Initialize new BacktraceClient <a name="documentation-initialization"></a>
 
-You can initialize `BacktraceClient` instance via `BacktraceCredential` or application configuration where credentials are stored.
-
-You can check Backtrace credential section in `App.config` file in `Backtrace.Examples` project. See example below to check `App.config` file:
-
-```xml
-<configuration>
-  <configSections>
-    <section name="BacktraceCredentials" type="System.Configuration.NameValueSectionHandler"/>
-  </configSections>
-
-  <BacktraceCredentials>
-    <add key="HostUrl" value="Your host Url"/>
-    <add key="Token" value="Your access token"/>
-  </BacktraceCredentials>
-
-  ....
-</configuration>
-```
-
-In C# code you can initialize new BacktraceClient with section :
-
-```csharp
- var backtraceClient = new BacktraceClient("BacktraceCredentials");
- ```
-
- If you don't pass a section name to `BacktraceClient`, `BacktraceCredentials` section  will be used.
-
-You can use `BacktraceCredential` class to create new instance of `BacktraceClient`. 
+You can initialize a `BacktraceClient` instance with an `BacktraceCredential`:
 
 ```csharp
 var credentials = new BacktraceCredentials("backtraceHostUrl", "accessToken");
