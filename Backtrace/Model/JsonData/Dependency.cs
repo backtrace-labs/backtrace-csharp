@@ -11,12 +11,6 @@ namespace Backtrace.Model.JsonData
     public class Dependency
     {
         /// <summary>
-        /// Requested assembly version
-        /// </summary>
-        [JsonProperty(PropertyName = "requestedVersion")]
-        public string RequestedVersion { get; set; }
-
-        /// <summary>
         /// Installed assembly version
         /// </summary>
         [JsonProperty(PropertyName = "installedVersion")]

@@ -36,13 +36,10 @@ namespace Backtrace.Model.JsonData
             foreach (var refAssembly in referencedAssemblies)
             {
                 var dependency = new Dependency()
-                {
-                    RequestedVersion = refAssembly.Version.ToString(),
+                { 
                     InstalledVersion = refAssembly.Version.ToString()
-
                 };
                 AvailableDependencies.Add(refAssembly.Name, dependency);
-
             }
         }
 

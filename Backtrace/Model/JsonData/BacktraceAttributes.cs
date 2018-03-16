@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using Backtrace.Common;
+using Backtrace.Extensions;
 
 [assembly: InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Model.JsonData
@@ -48,7 +49,7 @@ namespace Backtrace.Model.JsonData
         /// </summary>
         /// <returns></returns>
 
-        private UInt64 GenerateMachineId()
+        private Guid GenerateMachineId()
         {
             var networkInterface = NetworkInterface.GetAllNetworkInterfaces().FirstOrDefault(n => n.OperationalStatus == OperationalStatus.Up);
 
@@ -58,19 +59,12 @@ namespace Backtrace.Model.JsonData
                 || (physicalAddr = networkInterface.GetPhysicalAddress()) == null
                 || string.IsNullOrEmpty(macAddress = physicalAddr.ToString()))
             {
-                return GenerateRandomMachineId();
+                return Guid.NewGuid();
             }
 
             string hex = macAddress.Replace(":", string.Empty);
-
-            return Convert.ToUInt64(hex, 16);
-        }
-
-
-        private UInt64 GenerateRandomMachineId()
-        {
-            Random random = new Random();
-            return (UInt64)(random.NextDouble() * UInt64.MaxValue);
+            var value = Convert.ToInt64(hex, 16);
+            return GuidExtensions.FromLong(value);
         }
 
         /// <summary>
