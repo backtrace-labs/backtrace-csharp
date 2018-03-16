@@ -1,6 +1,6 @@
 # Backtrace
 
-[Backtrace](http://backtrace.io/) error reporting tool for C#.
+The [Backtrace](http://backtrace.io/) error reporting library for C# and .NET applications.
 
 ## Usage
 
@@ -40,7 +40,9 @@ catch(Exception exception){
 
 # Supported .NET Frameworks <a name="supported-frameworks"></a>
 * .NET Framework 3.5 >
-* .NET Framework 4.5 > (new cool features) 
+* .NET Framework 4.5 > 
+    - getting information about application thread,
+    - handling unhandled application exceptions
 * .NET Standard:
   * .NET Core 2.0 application
   * Xamarin
@@ -76,14 +78,17 @@ dotnet add package Backtrace
 
 # Running sample application <a name="sample-app"></a>
 
-Warning! .NET Standard don't support reading application config from `app.config` file. Instead use `BacktraceCredentials` to pass host url and token to `BacktraceClient`. 
-
 ## Visual Studio <a name="sample-app-vs"></a>
 Visual Studio allows you to build project and run all available samples (prepared for .NET Core, .NET Framework 4.5, .NET Framework 3.5). 
 - Double click `.sln` file or navigate to project directory via `Open` dialog in Visual Studio.
 - In `Solution Explorer` navigate to directory `Sample` and set preffered project (.NET Core/Framework) as startup project.
 
 ![Visual Studio](https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/VisualStudio.PNG)
+
+- Edit `Program.cs` class in any **Backtrace Sample project** by changing `BacktraceCredential` constructor patemeters with following example:
+```csharp
+    var backtraceCredentials = new BacktraceCredentials(@"host url", "application token");
+```
 
 - press `Ctrl+Shift+B` to `build` solution
 - Press `F5` to run the project
@@ -97,6 +102,10 @@ You can use `CLI` to run sample project on `Linux`, `Windows` and `MacOS`. In or
 ``` 
     cd Backtrace.Core  
 ``` 
+- Edit `Program.cs` class in project **Backtrace.Core** by changing `BacktraceCredential` constructor patemeters with following example:
+```csharp
+    var backtraceCredentials = new BacktraceCredentials(@"host url", "application token");
+```
 - Build the project:  
 ```
     dotnet build  
@@ -114,6 +123,11 @@ You can use `CLI` to run sample project on `Linux`, `Windows` and `MacOS`. In or
 - Open the **Backtrace** solution in Visual Studio, unload all projects except **Backtrace**, **Backtrace.Tests** and **Backtrace.Core**, and set **Backtrace.Core** as your startup project:
 
 ![VisualStudioMacOS](https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/VisualStudioMacOS.PNG)
+
+- Edit `Program.cs` class in project **Backtrace.Core** by changing `BacktraceCredential` constructor patemeters with following example:
+```csharp
+    var backtraceCredentials = new BacktraceCredentials(@"host url", "application token");
+```
 
 - Build the project. 
 - Upon successful build, run the project.
@@ -217,6 +231,13 @@ backtraceClient.BeforeSend =
     };
 ```           
 `BacktraceClient` allows you to add custom events that will trigger after server response. You can add new events when server is temporary unvailable `WhenServerUnvailable` or when you receive response from server `OnServerResponse`.
+
+## Catch unhandled application exceptions
+`BacktraceClient` allows you to catch unhandle application exceptions. If your `try catch` block fails `BacktraceClient` can try handle exception before application crash. To catch unhandle application exception use:
+```csharp
+backtraceClient.HandleApplicationException();
+``` 
+
 
 ## Customization <a name="documentation-customization"></a>
 
