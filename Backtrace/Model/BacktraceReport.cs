@@ -26,7 +26,7 @@ namespace Backtrace.Model
             string message,
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null)
-            : base(message, Assembly.GetCallingAssembly(), attributes, attachmentPaths)
+            : base(message, null, attributes, attachmentPaths)
         {
 
         }
@@ -40,7 +40,7 @@ namespace Backtrace.Model
             Exception exception,
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null)
-            : base(exception, Assembly.GetCallingAssembly(), attributes, attachmentPaths)
+            : base(exception, null, attributes, attachmentPaths)
         {
 
         }

@@ -11,7 +11,7 @@ namespace Backtrace
     /// Backtrace .NET Client 
     /// </summary>
     public class BacktraceClient : BacktraceBase<object>, IBacktraceClient<object>
-    {        
+    {
         /// <summary>
         /// Set an event executed before sending data to Backtrace API
         /// </summary>
@@ -100,11 +100,8 @@ namespace Backtrace
             Exception exception,
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null)
-        { 
-            var report = new BacktraceReport(exception, attributes, attachmentPaths)
-            {
-                CallingAssembly = Assembly.GetCallingAssembly()
-            };
+        {
+            var report = new BacktraceReport(exception, attributes, attachmentPaths);
             Send(report);
             HandleInnerException(report);
         }
@@ -119,10 +116,7 @@ namespace Backtrace
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null)
         {
-            var report = new BacktraceReport(message, attributes, attachmentPaths)
-            {
-                CallingAssembly = Assembly.GetCallingAssembly()
-            };
+            var report = new BacktraceReport(message, attributes, attachmentPaths);
             Send(report);
         }
     }

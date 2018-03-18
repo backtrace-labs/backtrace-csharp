@@ -92,7 +92,7 @@ namespace Backtrace.Base
             Dictionary<string, T> attributes = null,
             List<string> attachmentPaths = null)
         {
-            CallingAssembly = Assembly.GetCallingAssembly();
+            CallingAssembly = callingAssembly ?? GetCallingAssemblies();
             Message = message;
             _attributes = attributes ?? new Dictionary<string, T>();
             _attachmentPaths = attachmentPaths ?? new List<string>();
@@ -108,7 +108,7 @@ namespace Backtrace.Base
             string message,
             Dictionary<string, T> attributes = null,
             List<string> attachmentPaths = null)
-            : this(message, Assembly.GetCallingAssembly(), attributes, attachmentPaths)
+            : this(message, null, attributes, attachmentPaths)
         {
         }
 
@@ -125,7 +125,7 @@ namespace Backtrace.Base
             Dictionary<string, T> attributes = null,
             List<string> attachmentPaths = null)
         {
-            CallingAssembly = callingAssembly;
+            CallingAssembly = callingAssembly ?? GetCallingAssemblies();
             _attributes = attributes ?? new Dictionary<string, T>();
             _attachmentPaths = attachmentPaths ?? new List<string>();
             //handle null value in exception parameter
@@ -148,7 +148,7 @@ namespace Backtrace.Base
             Exception exception,
             Dictionary<string, T> attributes = null,
             List<string> attachmentPaths = null)
-            : this(exception, Assembly.GetCallingAssembly(), attributes, attachmentPaths)
+            : this(exception, null, attributes, attachmentPaths)
         {
         }
 
@@ -180,6 +180,36 @@ namespace Backtrace.Base
                 return reportAttributes;
             };
             return reportAttributes.Merge(attributes);
+        }
+
+        /// <summary>
+        /// Get calling assembly from current stack trace
+        /// </summary>
+        /// <returns>calling assembly</returns>
+        private Assembly GetCallingAssemblies()
+        {
+            var executedAssembly = Assembly.GetExecutingAssembly();
+            var stacktrace = new System.Diagnostics.StackTrace();
+            foreach (var stackframe in stacktrace.GetFrames())
+            {
+                if (stackframe == null)
+                {
+                    continue;
+                }
+                var assembly = stackframe.GetMethod()?.DeclaringType?.Assembly;
+                if (assembly == null)
+                {
+                    continue;
+                }
+
+                if (!(assembly.FullName.StartsWith("Microsoft.")
+                    || assembly.FullName.StartsWith("System.")
+                    || assembly.FullName == executedAssembly.FullName))
+                {
+                    return assembly;
+                }
+            }
+            return executedAssembly;
         }
     }
 }

@@ -11,14 +11,6 @@ namespace Backtrace.Common
     internal static class SystemHelper
     {
         /// <summary>
-        /// Check if current runtime is mono
-        /// </summary>
-        public static bool IsRunningOnMono()
-        {
-            return Type.GetType("Mono.Runtime") != null;
-        }
-
-        /// <summary>
         /// Get current thread Id
         /// </summary>
         [DllImport("kernel32.dll", EntryPoint = "GetCurrentThreadId", ExactSpelling = true)]
@@ -122,9 +114,6 @@ namespace Backtrace.Common
 #else
             return Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE").ToLower();
 #endif
-
         }
-
-
     }
 }

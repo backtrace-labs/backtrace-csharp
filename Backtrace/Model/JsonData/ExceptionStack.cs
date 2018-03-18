@@ -42,8 +42,11 @@ namespace Backtrace.Model.JsonData
         [JsonProperty(PropertyName = "column")]
         public int Column { get; set; }
 
+        /// <summary>
+        /// Address of the stack frame
+        /// </summary>
         [JsonProperty(PropertyName = "address")]
-        public int ILOffset { get; set; }
+        public int? ILOffset { get; set; }
         /// <summary>
         /// Source code file name where exception occurs
         /// </summary>
@@ -69,13 +72,14 @@ namespace Backtrace.Model.JsonData
             {
                 return null;
             }
-
+            int? ILOffset = stackFrame.GetILOffset();
+            string functionName = stackFrame.GetMethod()?.Name;
             return new ExceptionStack()
             {
                 Column = stackFrame.GetFileColumnNumber(),
                 Library = libraryName,
-                ILOffset = stackFrame.GetILOffset(),
-                FunctionName = stackFrame.GetMethod().Name,
+                ILOffset = ILOffset <=0 ? null : ILOffset,
+                FunctionName = string.IsNullOrEmpty(functionName)?libraryName : functionName ,
                 Line = stackFrame.GetFileLineNumber(),
                 SourceCode = generatedByException ? Guid.NewGuid().ToString() : string.Empty,
                 SourceCodeFullPath = stackFrame.GetFileName()
@@ -89,7 +93,7 @@ namespace Backtrace.Model.JsonData
 
             //get all stack created by current thread - excpect stacks created by diagnostic library
             var stackFrames = stackTrace.GetFrames()
-                .Where(n => n.GetMethod().DeclaringType.Assembly != currentAssembly);
+                .Where(n => n.GetMethod()?.DeclaringType?.Assembly != currentAssembly);
 
             //convert current thread stack trace to exception stacks
             var result = stackFrames.Select(n => Convert(n, libraryName)).ToList();
@@ -118,13 +122,20 @@ namespace Backtrace.Model.JsonData
             return result;
         }
 
+        /// <summary>
+        /// Convert stacktrace from current exception to diagnostic stack trace.
+        /// </summary>
+        /// <param name="exception">Current exception</param>
+        /// <returns>List of exception stack trace</returns>
         internal static List<ExceptionStack> Convert(Exception exception)
         {
+            // don't do anything if this is not exception
             if (exception == null)
             {
                 return null;
             }
 
+            // Generate stack trace from exception
             var stackTrace = new StackTrace(exception, true);
             var stackFrames = stackTrace.GetFrames();
             string source = exception.Source;
@@ -132,7 +143,7 @@ namespace Backtrace.Model.JsonData
             {
                 return new List<ExceptionStack>();
             }
-            int stackFramesLength = stackFrames.Length;
+            // convert from stacktrace to diagnostic stack trace
             return stackFrames.Select(n => Convert(n, source, true)).ToList();
         }
 #if NET45
