@@ -23,7 +23,7 @@ namespace Backtrace.Core.Model
             }
 
             /// <summary>
-            /// Add word to trie
+            /// Add word to tree
             /// </summary>
             public void Add(string word)
             {
@@ -37,11 +37,11 @@ namespace Backtrace.Core.Model
                 {
                     if (!current.Children.ContainsKey(word[i]))
                     {
-                        var newTrieNode = new Node(word[i])
+                        var newTreeNode = new Node(word[i])
                         {
                             Parent = current
                         };
-                        current.Children.Add(word[i], newTrieNode);
+                        current.Children.Add(word[i], newTreeNode);
                     }
 
                     current = current.Children[word[i]];
@@ -49,13 +49,13 @@ namespace Backtrace.Core.Model
 
                 if (current.IsTerminal)
                 {
-                    throw new InvalidOperationException("Word already exists in Trie.");
+                    throw new InvalidOperationException("Word already exists in Tree.");
                 }
                 current.IsTerminal = true;
             }
 
             /// <summary>
-            /// Removes a word from the trie.
+            /// Removes a word from the tree.
             /// </summary>
             public void Remove(string word)
             {
@@ -73,7 +73,7 @@ namespace Backtrace.Core.Model
                 {
                     if (!current.Children.ContainsKey(word[i]))
                     {
-                        var exception = new KeyNotFoundException("Word doesn't belong to trie.");
+                        var exception = new KeyNotFoundException("Word doesn't belong to tree.");
                         _backtraceClient.Send(exception);
                         throw exception;
                     }
@@ -82,7 +82,7 @@ namespace Backtrace.Core.Model
 
                 if (!current.IsTerminal)
                 {
-                    var exception = new KeyNotFoundException("Word doesn't belong to trie.");
+                    var exception = new KeyNotFoundException("Word doesn't belong to tree.");
                     _backtraceClient.Send(exception);
                     throw exception;
                 }
