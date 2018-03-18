@@ -37,12 +37,14 @@ namespace Backtrace.Common
         /// <param name="libraryName">library name</param>
         internal static bool IsLibraryAvailable(string libraryName)
         {
-            bool result = LoadLibrary(libraryName) != IntPtr.Zero;
-            if (!result)
+            try
             {
-                Trace.TraceWarning($"Library {libraryName} is not available in your project");
+                return LoadLibrary(libraryName) != IntPtr.Zero;
             }
-            return result;
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -67,9 +69,9 @@ namespace Backtrace.Common
                     return "Windows NT";
 #if NETSTANDARD2_0
                 case PlatformID.Unix:
-                   
+
                     // for .NET Core Environment.OSVersion returns Unix for MacOS and Linux
-                    if(RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                     {
                         if (architecture == "arm" || architecture == "arm64")
                         {

@@ -202,11 +202,38 @@ namespace Backtrace.Base
             OnUnhandledApplicationException?.Invoke(e.Exception);
         }
 
+        /// <summary>
+        /// In most situation when application crash, main process wont wait till we prepare report and send it to API. 
+        /// Method allows you to get all necessary data required by BacktraceClient and wait till report will be send on server
+        /// This method is invoked when application crash, so BacktraceClient override all existing events to make sure 
+        /// we can handle request end
+        /// </summary>
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var assembly = System.Reflection.Assembly.GetCallingAssembly();
             var exception = e.ExceptionObject as Exception;
+            AsyncRequest = false;
+            int maximumTry = 10;
+            bool shutdown = false;
+            OnServerAnswer = (BacktraceServerResponse r) =>
+            {
+                shutdown = true;
+            };
+            WhenServerUnvailable = (Exception ex) =>
+            {
+                shutdown = true;
+            };
+
             Send(new BacktraceReportBase<T>(exception, assembly));
+
+
+            //wait till request send from application or when maximu try will be equal to zero
+            while (maximumTry != 0 && shutdown != true)
+            {
+                System.Threading.Thread.Sleep(1000);
+                maximumTry--;
+            }
+            //System.Threading.Thread.Sleep(20000);
             OnUnhandledApplicationException?.Invoke(exception);
         }
 #endif

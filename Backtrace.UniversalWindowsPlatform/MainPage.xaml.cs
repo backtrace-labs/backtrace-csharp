@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Backtrace.Model;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -25,10 +27,9 @@ namespace Backtrace.UniversalWindowsPlatform
     public sealed partial class MainPage : Page
     {
         private static Windows.Storage.StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
-        private static BacktraceClient backtraceClient = new BacktraceClient(
-            new BacktraceCredentials(@"https://yolo.sp.backtrace.io:6098/", "328174ab5c377e2cdcb6c763ec2bbdf1f9aa5282c1f6bede693efe06a479db54"),
-            databaseDirectory: localFolder.Path
-            );
+
+        private static BacktraceCredentials credentials = new BacktraceCredentials(@"http://yolo.sp.backtrace.io:6097/", "328174ab5c377e2cdcb6c763ec2bbdf1f9aa5282c1f6bede693efe06a479db54");
+        private static BacktraceClient backtraceClient;
 
         private static void StartJob()
         {
@@ -48,20 +49,44 @@ namespace Backtrace.UniversalWindowsPlatform
             catch (Exception e)
             {
                 System.Diagnostics.Trace.WriteLine(e.Message);
-                System.Diagnostics.Trace.WriteLine(Thread.CurrentThread.Name);
+                System.Diagnostics.Trace.WriteLine(e.ToString());
                 backtraceClient.Send(e);
             }
         }
 
         public MainPage()
-        {           
-            this.InitializeComponent();
-            var thread = new Thread(new ThreadStart(() => {
-                Thread.CurrentThread.Name = "Universal windows platform main thread";
-                StartJob();
-            }));
-            thread.Start();
-            thread.Join();
+        {
+            try
+            {
+                Trace.WriteLine(localFolder.Path);
+                backtraceClient = new BacktraceClient(
+                    credentials,
+                    databaseDirectory: localFolder.Path
+                );
+                backtraceClient.OnServerAnswer = (BacktraceServerResponse response) =>
+                {
+                    Trace.WriteLine(response);
+                };
+
+                backtraceClient.WhenServerUnvailable = (Exception e) =>
+                {
+                    Trace.WriteLine(e.Message);
+                };
+
+
+                this.InitializeComponent();
+                var thread = new Thread(new ThreadStart(() =>
+                {
+                    Thread.CurrentThread.Name = "Universal windows platform main thread";
+                    StartJob();
+                }));
+                thread.Start();
+                thread.Join();
+            }
+            catch (Exception e)
+            {
+                Trace.WriteLine(e);
+            }
         }
     }
 }

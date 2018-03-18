@@ -21,7 +21,7 @@ namespace Backtrace.Framework45Example
 
             //Add new scoped attributes
             backtraceClient.Attributes["ClientAttributeNumber"] = 1;
-            backtraceClient.Attributes["ClientAttributeString"] = "/string attribute";
+            backtraceClient.Attributes["ClientAttributeString"] = "string attribute";
             backtraceClient.Attributes["ClientAttributeCustomClass"] = new
             {
                 Name = "Backtrace",
@@ -30,6 +30,10 @@ namespace Backtrace.Framework45Example
             backtraceClient.OnServerAnswer = (BacktraceServerResponse response) =>
             {
                 System.Diagnostics.Trace.WriteLine(response.Object);
+            };
+            backtraceClient.WhenServerUnvailable = (Exception e) =>
+            {
+                System.Diagnostics.Trace.WriteLine(e.Message);
             };
             //Add your own handler to client API
             backtraceClient.BeforeSend =

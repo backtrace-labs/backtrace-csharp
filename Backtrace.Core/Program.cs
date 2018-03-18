@@ -31,6 +31,9 @@ namespace Backtrace.Core
 
         private void ThrowUnsafeException()
         {
+            Console.WriteLine("This is expected behaviour. BacktraceClient can try to handle unhandled exception from your application");
+            Console.WriteLine("To catch all unhandled application exception use HandleApplicationException on BacktraceClient");
+            Console.WriteLine("If you want to add your custom event after BacktraceClient send a report to server use OnUnhandledApplicationException event");
             unsafe
             {
                 int t = 0;
