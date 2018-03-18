@@ -21,12 +21,12 @@ namespace Backtrace.Interfaces
         /// <summary>
         /// Set an event executed when received bad request, unauthorize request or other information from server
         /// </summary>
-        Action<Exception> WhenServerUnvailable { get; set; }
+        Action<Exception> OnServerError { get; set; }
 
         /// <summary>
         /// Set an event executed when server return information after sending data to API
         /// </summary>
-        Action<BacktraceServerResponse> OnServerAnswer { get; set; }
+        Action<BacktraceServerResponse> OnServerResponse { get; set; }
 
         /// <summary>
         /// Use asynchronous method to send report to server

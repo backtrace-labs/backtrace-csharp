@@ -38,12 +38,12 @@ namespace Backtrace.Services
         /// <summary>
         /// Event triggered when server is unvailable
         /// </summary>
-        public Action<Exception> WhenServerUnvailable { get; set; }
+        public Action<Exception> OnServerError { get; set; }
 
         /// <summary>
         /// Event triggered when server respond to diagnostic data
         /// </summary>
-        public Action<BacktraceServerResponse> OnServerAnswer { get; set; }
+        public Action<BacktraceServerResponse> OnServerResponse { get; set; }
 
         /// <summary>
         /// Create a new instance of Backtrace API
@@ -125,7 +125,7 @@ namespace Backtrace.Services
             }
             catch (Exception exception)
             {
-                WhenServerUnvailable?.Invoke(exception);
+                OnServerError?.Invoke(exception);
             }
         }
         
@@ -139,10 +139,10 @@ namespace Backtrace.Services
             {
                 StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
                 string fullResponse = responseReader.ReadToEnd();
-                if (OnServerAnswer != null)
+                if (OnServerResponse != null)
                 {
                     var response = JsonConvert.DeserializeObject<BacktraceServerResponse>(fullResponse);
-                    OnServerAnswer.Invoke(response);
+                    OnServerResponse.Invoke(response);
                 }
             }
         }
@@ -174,7 +174,7 @@ namespace Backtrace.Services
             }
             catch (Exception exception)
             {
-                WhenServerUnvailable?.Invoke(exception);
+                OnServerError?.Invoke(exception);
             }
         }
     }

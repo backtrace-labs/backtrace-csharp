@@ -47,30 +47,30 @@ namespace Backtrace.Base
         /// <summary>
         /// Set an event executed when received bad request, unauthorize request or other information from server
         /// </summary>
-        public Action<Exception> WhenServerUnvailable
+        public Action<Exception> OnServerError
         {
             get
             {
-                return _backtraceApi.WhenServerUnvailable;
+                return _backtraceApi.OnServerError;
             }
             set
             {
-                _backtraceApi.WhenServerUnvailable = value;
+                _backtraceApi.OnServerError = value;
             }
         }
 
         /// <summary>
         /// Set an event executed when Backtrace API return information about send report
         /// </summary>
-        public Action<BacktraceServerResponse> OnServerAnswer
+        public Action<BacktraceServerResponse> OnServerResponse
         {
             get
             {
-                return _backtraceApi.OnServerAnswer;
+                return _backtraceApi.OnServerResponse;
             }
             set
             {
-                _backtraceApi.OnServerAnswer = value;
+                _backtraceApi.OnServerResponse = value;
             }
         }
 
@@ -82,7 +82,7 @@ namespace Backtrace.Base
         /// <summary>
         /// Set event executed when client site report limit reached
         /// </summary>
-        public Action OnClientSiteRatingLimit = null;
+        public Action OnClientReportLimitReached = null;
 
         /// <summary>
         /// Set event executed before sending data to Backtrace API
@@ -164,7 +164,7 @@ namespace Backtrace.Base
             bool watcherValidation = _reportWatcher.WatchReport(report);
             if (!watcherValidation)
             {
-                OnClientSiteRatingLimit?.Invoke();
+                OnClientReportLimitReached?.Invoke();
                 return;
             }
             //generate minidump and add minidump to report 
@@ -215,11 +215,11 @@ namespace Backtrace.Base
             AsyncRequest = false;
             int maximumTry = 10;
             bool shutdown = false;
-            OnServerAnswer = (BacktraceServerResponse r) =>
+            OnServerResponse = (BacktraceServerResponse r) =>
             {
                 shutdown = true;
             };
-            WhenServerUnvailable = (Exception ex) =>
+            OnServerError = (Exception ex) =>
             {
                 shutdown = true;
             };

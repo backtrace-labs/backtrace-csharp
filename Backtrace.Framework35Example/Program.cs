@@ -27,7 +27,7 @@ namespace Backtrace.Framework35Example
                 Name = "Backtrace",
                 Type = "Library"
             };
-            backtraceClient.OnServerAnswer = (BacktraceServerResponse response) =>
+            backtraceClient.OnServerResponse = (BacktraceServerResponse response) =>
             {
                 System.Diagnostics.Trace.WriteLine(response.Object);
             };

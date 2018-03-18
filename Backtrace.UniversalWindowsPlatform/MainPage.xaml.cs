@@ -48,8 +48,8 @@ namespace Backtrace.UniversalWindowsPlatform
             }
             catch (Exception e)
             {
-                System.Diagnostics.Trace.WriteLine(e.Message);
-                System.Diagnostics.Trace.WriteLine(e.ToString());
+                Trace.WriteLine(e.Message);
+                Trace.WriteLine(e.ToString());
                 backtraceClient.Send(e);
             }
         }
@@ -58,19 +58,20 @@ namespace Backtrace.UniversalWindowsPlatform
         {
             try
             {
-                Trace.WriteLine(localFolder.Path);
                 backtraceClient = new BacktraceClient(
                     credentials,
                     databaseDirectory: localFolder.Path
-                );
-                backtraceClient.OnServerAnswer = (BacktraceServerResponse response) =>
+                )
                 {
-                    Trace.WriteLine(response);
-                };
+                    OnServerResponse = (BacktraceServerResponse response) =>
+                    {
+                        Trace.WriteLine(response);
+                    },
 
-                backtraceClient.WhenServerUnvailable = (Exception e) =>
-                {
-                    Trace.WriteLine(e.Message);
+                    OnServerError = (Exception e) =>
+                    {
+                        Trace.WriteLine(e.Message);
+                    }
                 };
 
 

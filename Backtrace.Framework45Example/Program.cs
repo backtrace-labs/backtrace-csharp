@@ -27,11 +27,11 @@ namespace Backtrace.Framework45Example
                 Name = "Backtrace",
                 Type = "Library"
             };
-            backtraceClient.OnServerAnswer = (BacktraceServerResponse response) =>
+            backtraceClient.OnServerResponse = (BacktraceServerResponse response) =>
             {
                 System.Diagnostics.Trace.WriteLine(response.Object);
             };
-            backtraceClient.WhenServerUnvailable = (Exception e) =>
+            backtraceClient.OnServerError = (Exception e) =>
             {
                 System.Diagnostics.Trace.WriteLine(e.Message);
             };

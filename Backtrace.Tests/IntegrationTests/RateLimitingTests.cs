@@ -148,7 +148,7 @@ namespace Backtrace.Tests.IntegrationTests
 
             Assert.DoesNotThrow(() => { _backtraceClient.ChangeRateLimiting(rpm); });
             Assert.DoesNotThrow(() => { _backtraceClient.Send($"{DateTime.Now}: Library Initialized for threaded integration test with rate limiting"); });
-            _backtraceClient.OnClientSiteRatingLimit += () =>
+            _backtraceClient.OnClientReportLimitReached += () =>
             {
                 count_drops++;
             };

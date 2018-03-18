@@ -11,7 +11,7 @@ namespace Backtrace.Extensions
     {
         /// <summary>
         /// Convert long to Guid
-        /// </summary
+        /// </summary>
         /// <returns>new Guid based on long</returns>
         public static Guid FromLong(long source)
         {

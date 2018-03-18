@@ -236,8 +236,8 @@ backtraceClient.BeforeSend =
 - `OnReportStart`
 - `OnClientReportLimitReached`
 - `OnUnhandledApplicationException`
-- `OnServerAnswer`
-- `WhenServerUnavailable`
+- `OnServerResponse`
+- `OnServerError`
 
 ## Reporting unhandled application exceptions
 `BacktraceClient` also supports reporting of unhandled application exceptions not captured by your try-catch blocks. To enable reporting of unhandled exceptions:
