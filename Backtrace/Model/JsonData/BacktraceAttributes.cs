@@ -70,8 +70,7 @@ namespace Backtrace.Model.JsonData
         /// Generate unique machine identifier. Value should be with guid key in Attributes dictionary. 
         /// Machine id is equal to mac address of first network interface. If network interface in unvailable, random long will be generated.
         /// </summary>
-        /// <returns></returns>
-
+        /// <returns>Machine uuid</returns>
         private Guid GenerateMachineId()
         {
             var networkInterface = NetworkInterface.GetAllNetworkInterfaces().FirstOrDefault(n => n.OperationalStatus == OperationalStatus.Up);
@@ -122,35 +121,39 @@ namespace Backtrace.Model.JsonData
             {
                 return;
             }
-            //How long the application has been running] = in millisecounds
-            Attributes["process.age"] = Math.Round(process.TotalProcessorTime.TotalMilliseconds);
+            //How long the application has been running  in secounds
+            Attributes["process.age"] = Math.Round(process.TotalProcessorTime.TotalSeconds);
             try
             {
                 Attributes["cpu.process.count"] = Process.GetProcesses().Count();
 
                 //Resident memory usage.
-                var pagedMemorySize = process.PagedMemorySize64;
+                int pagedMemorySize = unchecked((int)(process.PagedMemorySize64 / 1024));
+                pagedMemorySize = pagedMemorySize == -1 ? int.MaxValue : pagedMemorySize;
                 if (pagedMemorySize > 0)
                 {
                     Attributes["vm.rss.size"] = pagedMemorySize;
                 }
 
                 //Peak resident memory usage.
-                var peakPagedMemorySize = process.PeakPagedMemorySize64;
+                int peakPagedMemorySize = unchecked((int)(process.PeakPagedMemorySize64 / 1024));
+                peakPagedMemorySize = peakPagedMemorySize == -1 ? int.MaxValue : peakPagedMemorySize;
                 if (peakPagedMemorySize > 0)
                 {
                     Attributes["vm.rss.peak"] = peakPagedMemorySize;
                 }
 
                 //Virtual memory usage
-                var virtualMemorySize = process.VirtualMemorySize64;
+                int virtualMemorySize = unchecked((int)(process.VirtualMemorySize64 / 1024));
+                virtualMemorySize = virtualMemorySize == -1 ? int.MaxValue : virtualMemorySize;
                 if (virtualMemorySize > 0)
                 {
                     Attributes["vm.vma.size"] = virtualMemorySize;
                 }
 
                 //Peak virtual memory usage
-                var peakVirtualMemorySize = process.PeakVirtualMemorySize64;
+                int peakVirtualMemorySize = unchecked((int)(process.PeakVirtualMemorySize64 / 1024));
+                peakVirtualMemorySize = peakVirtualMemorySize == -1 ? int.MaxValue : peakVirtualMemorySize;
                 if (peakVirtualMemorySize > 0)
                 {
                     Attributes["vm.vma.peak"] = peakVirtualMemorySize;

@@ -159,7 +159,6 @@ namespace Backtrace.Core
         {
             threads.Add(new Thread(new ThreadStart(() => { TryClean(); })));
             threads.Add(new Thread(new ThreadStart(() => { GenerateRandomStrings(); })));
-
         }
 
         unsafe static void DividePtrParam(int* p, int* j)
