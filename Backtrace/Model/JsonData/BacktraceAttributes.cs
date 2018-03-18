@@ -21,19 +21,17 @@ namespace Backtrace.Model.JsonData
         /// <summary>
         /// Get built-in attributes
         /// </summary>
-        public Dictionary<string, string> Attributes = new Dictionary<string, string>();
+        public Dictionary<string, object> Attributes = new Dictionary<string, object>();
 
         /// <summary>
         /// Create instance of Backtrace Attribute
         /// </summary>
         /// <param name="report">Received report</param>
-        /// <param name="scopedAttributes">Client scoped attributes</param>
+        /// <param name="scopedAttributes">Client's attributes (report and client)</param>
         public BacktraceAttributes(BacktraceReportBase<T> report, Dictionary<string, T> scopedAttributes)
         {
             //Environment attributes override user attributes
-            Attributes = BacktraceReportBase<T>.ConcatAttributes(report, scopedAttributes)
-                .ToDictionary(n => n.Key, v => JsonConvert.SerializeObject(v.Value));
-
+            Attributes = ConvertAttributes(report, scopedAttributes);
             //A unique identifier of a machine
             Attributes["guid"] = GenerateMachineId().ToString();
             //Base name of application generating the report
@@ -42,6 +40,31 @@ namespace Backtrace.Model.JsonData
             SetProcessAttributes();
             SetExceptionAttributes(report);
         }
+
+        /// <summary>
+        /// Convert custom user attributes
+        /// </summary>
+        /// <param name="report">Received report</param>
+        /// <param name="scopedAttributes">Client's attributes (report and client)</param>
+        /// <returns>Dictionary of custom user attributes </returns>
+        private Dictionary<string, object> ConvertAttributes(BacktraceReportBase<T> report, Dictionary<string, T> scopedAttributes)
+        {
+            return BacktraceReportBase<T>.ConcatAttributes(report, scopedAttributes)
+                .ToDictionary(n => n.Key, v =>
+                {
+                    var type = v.Value.GetType();
+                    if (type.IsPrimitive || type == typeof(string))
+                    {
+                        return (object)v.Value;
+                    }
+                    else
+                    {
+                        return JsonConvert.SerializeObject(v.Value);
+                    }
+                });
+        }
+
+
 
         /// <summary>
         /// Generate unique machine identifier. Value should be with guid key in Attributes dictionary. 
@@ -92,7 +115,7 @@ namespace Backtrace.Model.JsonData
         /// </summary>
         private void SetProcessAttributes()
         {
-            Attributes["gc.heap.used"] = GC.GetTotalMemory(false).ToString();
+            Attributes["gc.heap.used"] = GC.GetTotalMemory(false);
 
             var process = Process.GetCurrentProcess();
             if (process.HasExited)
@@ -100,37 +123,37 @@ namespace Backtrace.Model.JsonData
                 return;
             }
             //How long the application has been running] = in millisecounds
-            Attributes["process.age"] = Math.Round(process.TotalProcessorTime.TotalMilliseconds).ToString();
+            Attributes["process.age"] = Math.Round(process.TotalProcessorTime.TotalMilliseconds);
             try
             {
-                Attributes["cpu.process.count"] = Process.GetProcesses().Count().ToString();
+                Attributes["cpu.process.count"] = Process.GetProcesses().Count();
 
                 //Resident memory usage.
                 var pagedMemorySize = process.PagedMemorySize64;
                 if (pagedMemorySize > 0)
                 {
-                    Attributes["vm.rss.size"] = pagedMemorySize.ToString();
+                    Attributes["vm.rss.size"] = pagedMemorySize;
                 }
 
                 //Peak resident memory usage.
                 var peakPagedMemorySize = process.PeakPagedMemorySize64;
                 if (peakPagedMemorySize > 0)
                 {
-                    Attributes["vm.rss.peak"] = peakPagedMemorySize.ToString();
+                    Attributes["vm.rss.peak"] = peakPagedMemorySize;
                 }
 
                 //Virtual memory usage
                 var virtualMemorySize = process.VirtualMemorySize64;
                 if (virtualMemorySize > 0)
                 {
-                    Attributes["vm.vma.size"] = virtualMemorySize.ToString();
+                    Attributes["vm.vma.size"] = virtualMemorySize;
                 }
 
                 //Peak virtual memory usage
                 var peakVirtualMemorySize = process.PeakVirtualMemorySize64;
                 if (peakVirtualMemorySize > 0)
                 {
-                    Attributes["vm.vma.peak"] = peakVirtualMemorySize.ToString();
+                    Attributes["vm.vma.peak"] = peakVirtualMemorySize;
                 }
             }
             catch (Exception exception)
@@ -158,7 +181,7 @@ namespace Backtrace.Model.JsonData
             var cpuCount = Environment.ProcessorCount;
             if (cpuCount > 0)
             {
-                Attributes["cpu.count"] = cpuCount.ToString();
+                Attributes["cpu.count"] = cpuCount;
             }
 
             //CPU brand string or type.
@@ -170,12 +193,11 @@ namespace Backtrace.Model.JsonData
             }
             //Time when system was booted
             int boottime = Environment.TickCount;
-            string bootTimeString = boottime.ToString();
             if (boottime <= 0)
             {
-                bootTimeString = "More than 30 days";
+                boottime = int.MaxValue;
             }
-            Attributes["cpu.boottime"] = bootTimeString;
+            Attributes["cpu.boottime"] = boottime;
 
             //The hostname of the crashing system.
             Attributes["hostname"] = Environment.MachineName;

@@ -40,7 +40,7 @@ namespace Backtrace.Tests.ClientTests
         [Test(Author = "Konrad Dysput", Description = "Test messages with attributes")]
         public void TestMessageAttributes(string message)
         {
-            Dictionary<string, string> currentAttributes = new Dictionary<string, string>();
+            Dictionary<string, object> currentAttributes = new Dictionary<string, object>();
             _backtraceClient.BeforeSend =
                 (Model.BacktraceData<object> model) =>
                 {

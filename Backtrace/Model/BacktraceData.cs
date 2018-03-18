@@ -87,7 +87,7 @@ namespace Backtrace.Model
         /// Get built-in attributes
         /// </summary>
         [JsonProperty(PropertyName = "attributes")]
-        public Dictionary<string, string> Attributes
+        public Dictionary<string, object> Attributes
         {
             get
             {

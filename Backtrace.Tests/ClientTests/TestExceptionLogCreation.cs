@@ -33,7 +33,7 @@ namespace Backtrace.Tests.ClientTests
         [Test]
         public void TestExceptionAttributes([ValueSource("_exceptions")]Exception exception)
         {
-            Dictionary<string, string> currentAttributes = new Dictionary<string, string>();
+            Dictionary<string, object> currentAttributes = new Dictionary<string, object>();
             _backtraceClient.BeforeSend =
                 (BacktraceData<object> model) =>
                 {
