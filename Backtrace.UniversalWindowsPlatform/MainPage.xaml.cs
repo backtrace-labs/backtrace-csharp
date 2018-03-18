@@ -56,38 +56,32 @@ namespace Backtrace.UniversalWindowsPlatform
 
         public MainPage()
         {
-            try
+            backtraceClient = new BacktraceClient(
+                credentials,
+                databaseDirectory: localFolder.Path
+            )
             {
-                backtraceClient = new BacktraceClient(
-                    credentials,
-                    databaseDirectory: localFolder.Path
-                )
+                OnServerResponse = (BacktraceServerResponse response) =>
                 {
-                    OnServerResponse = (BacktraceServerResponse response) =>
-                    {
-                        Trace.WriteLine(response);
-                    },
+                    Trace.WriteLine(response);
+                },
 
-                    OnServerError = (Exception e) =>
-                    {
-                        Trace.WriteLine(e.Message);
-                    }
-                };
-
-
-                this.InitializeComponent();
-                var thread = new Thread(new ThreadStart(() =>
+                OnServerError = (Exception e) =>
                 {
-                    Thread.CurrentThread.Name = "Universal windows platform main thread";
-                    StartJob();
-                }));
-                thread.Start();
-                thread.Join();
-            }
-            catch (Exception e)
+                    Trace.WriteLine(e.Message);
+                }
+            };
+
+
+            this.InitializeComponent();
+            var thread = new Thread(new ThreadStart(() =>
             {
-                Trace.WriteLine(e);
-            }
+                Thread.CurrentThread.Name = "Universal windows platform main thread";
+                StartJob();
+            }));
+            thread.Start();
+            thread.Join();
+
         }
     }
 }

@@ -42,6 +42,8 @@ namespace Backtrace.Model.JsonData
         [JsonProperty(PropertyName = "column")]
         public int Column { get; set; }
 
+        [JsonProperty(PropertyName = "address")]
+        public int ILOffset { get; set; }
         /// <summary>
         /// Source code file name where exception occurs
         /// </summary>
@@ -67,10 +69,12 @@ namespace Backtrace.Model.JsonData
             {
                 return null;
             }
+
             return new ExceptionStack()
             {
                 Column = stackFrame.GetFileColumnNumber(),
                 Library = libraryName,
+                ILOffset = stackFrame.GetILOffset(),
                 FunctionName = stackFrame.GetMethod().Name,
                 Line = stackFrame.GetFileLineNumber(),
                 SourceCode = generatedByException ? Guid.NewGuid().ToString() : string.Empty,
