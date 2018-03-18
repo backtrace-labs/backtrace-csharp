@@ -36,6 +36,8 @@ namespace Backtrace.Model.JsonData
             Attributes["guid"] = GenerateMachineId().ToString();
             //Base name of application generating the report
             Attributes["application"] = report.CallingAssembly.GetName().Name;
+            Attributes["lang.name"] = "C#";
+
             SetMachineAttributes();
             SetProcessAttributes();
             SetExceptionAttributes(report);
