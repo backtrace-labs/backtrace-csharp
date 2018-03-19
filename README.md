@@ -5,7 +5,10 @@
 ## Usage
 
 ```csharp
-var backtraceCredentials = new BacktraceCredentials(@"backtrace_endpoint_url", "token"); // replace with your endpoint url and token
+var backtraceCredentials = 
+	new BacktraceCredentials(@"backtrace_endpoint_url", "token"); 
+	// replace with your endpoint url and token
+
 var backtraceClient = new BacktraceClient(backtraceCredentials);
 
 try{
