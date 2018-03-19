@@ -6,7 +6,7 @@
 
 ```csharp
 var backtraceCredentials = 
-	new BacktraceCredentials(@"backtrace_endpoint_url", "token"); 
+	new BacktraceCredentials(@"https://myserver.sp.backtrace.io", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
 	// replace with your endpoint url and token
 
 var backtraceClient = new BacktraceClient(backtraceCredentials);
