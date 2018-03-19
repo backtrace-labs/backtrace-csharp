@@ -54,6 +54,9 @@ namespace Backtrace.Common
 
         internal static string Name(string architecture)
         {
+#if WINDOWS_UWP
+            return "Windows";
+#else
             var platform = Environment.OSVersion.Platform;
             switch (platform)
             {
@@ -92,6 +95,7 @@ namespace Backtrace.Common
                 default:
                     return "NaCl";
             }
+#endif
         }
 
         internal static string CpuArchitecture()

@@ -55,7 +55,7 @@ namespace Backtrace.Model.JsonData
                 .ToDictionary(n => n.Key, v =>
                 {
                     var type = v.Value.GetType();
-                    if (type.IsPrimitive || type == typeof(string))
+                    if (type == typeof(string) || type != typeof(object))
                     {
                         return (object)v.Value;
                     }
@@ -117,7 +117,7 @@ namespace Backtrace.Model.JsonData
         private void SetProcessAttributes()
         {
             Attributes["gc.heap.used"] = GC.GetTotalMemory(false);
-
+#if !WINDOWS_UWP
             var process = Process.GetCurrentProcess();
             if (process.HasExited)
             {
@@ -165,6 +165,7 @@ namespace Backtrace.Model.JsonData
             {
                 Trace.TraceWarning($"Cannot retrieve information about process memory: ${exception.Message}");
             }
+#endif
         }
 
         /// <summary>
@@ -180,8 +181,9 @@ namespace Backtrace.Model.JsonData
             Attributes["uname.sysname"] = SystemHelper.Name(cpuArchitecture);
 
             //The version of the operating system
+#if !WINDOWS_UWP
             Attributes["uname.version"] = Environment.OSVersion.Version.ToString();
-
+#endif
             //The count of processors on the system
             var cpuCount = Environment.ProcessorCount;
             if (cpuCount > 0)
@@ -203,9 +205,10 @@ namespace Backtrace.Model.JsonData
                 boottime = int.MaxValue;
             }
             Attributes["cpu.boottime"] = boottime;
-
+#if !WINDOWS_UWP
             //The hostname of the crashing system.
             Attributes["hostname"] = Environment.MachineName;
+#endif
         }
     }
 }

@@ -6,12 +6,6 @@ using System.Text;
 
 namespace Backtrace.Common
 {
-    //typedef struct _MINIDUMP_EXCEPTION_INFORMATION {
-    //    DWORD ThreadId;
-    //    PEXCEPTION_POINTERS ExceptionPointers;
-    //    BOOL ClientPointers;
-    //} MINIDUMP_EXCEPTION_INFORMATION, *PMINIDUMP_EXCEPTION_INFORMATION;
-
     /// <summary>
     /// Exception information for current minidump method
     /// Pack=4 is important! So it works also for x64!
@@ -47,7 +41,7 @@ namespace Backtrace.Common
             exp.ClientPointers = false;
             exp.ExceptionPointers = IntPtr.Zero;
             //right now GetExceptionPointers method is not available in .NET Standard 
-#if !NETSTANDARD2_0
+#if !NETSTANDARD2_0 && !WINDOWS_UWP
             if (exceptionInfo == MinidumpException.Present)
             {
                 exp.ExceptionPointers = Marshal.GetExceptionPointers();

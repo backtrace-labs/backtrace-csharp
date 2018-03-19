@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+#if !WINDOWS_UWP
 using System.Configuration;
+#endif
 using System.Text;
 
 namespace Backtrace
