@@ -40,8 +40,8 @@ catch(Exception exception){
 
 
 # Supported .NET Frameworks <a name="supported-frameworks"></a>
-* .NET Framework 3.5 >
-* .NET Framework 4.5 > 
+* .NET Framework 3.5 +
+* .NET Framework 4.5 + 
     - getting information about application thread,
     - handling unhandled application exceptions
 * .NET Standard:
@@ -81,7 +81,7 @@ dotnet add package Backtrace
 
 ## Visual Studio <a name="sample-app-vs"></a>
 
-Visual Studio allows you to build project and run all available samples (prepared for .NET Core, .NET Framework 4.5, .NET Framework 3.5). 
+Visual Studio allows you to build a project and run all available samples (prepared for .NET Core, .NET Framework 4.5, .NET Framework 3.5). 
 - Double click `.sln` file or `open` project directory in Visual Studio.
 - In `Solution Explorer` navigate to directory `Sample` and set preffered project (.NET Core/Framework) as startup project.
 
@@ -94,7 +94,7 @@ Visual Studio allows you to build project and run all available samples (prepare
 
 - Press `Ctrl+Shift+B` to `build` solution
 - Press `F5` to run the project
-- You should see new errors in your Backtrace I/O dashboard.
+- You should see new errors in your Backtrace instance. Refresh the Project page or Query Builder to see new details in real-time.
 
 
 ## .NET Core command line <a name="sample-app-cli"></a>
@@ -113,11 +113,11 @@ You can use .NET Core's CLI to run sample project on Windows, Mac OS and Linux. 
 ```
     dotnet build  
 ``` 
-- When build completes, run the project:
+- When the build completes, run the project:
 ``` 
     dotnet run  
 ``` 
-- You should see new errors in your Backtrace I/O dashboard.
+- You should see new errors in your Backtrace instance. Refresh the Project page or Query Builder to see new details in real-time.
 
 
 
@@ -134,7 +134,7 @@ You can use .NET Core's CLI to run sample project on Windows, Mac OS and Linux. 
 
 - Build the project. 
 - Upon successful build, run the project.
-- You should see new errors in your Backtrace I/O dashboard.
+- You should see new errors in your Backtrace instance. Refresh the Project page or Query Builder to see new details in real-time.
 
 
 
