@@ -103,7 +103,7 @@ namespace Backtrace.Model
         {
             get
             {
-                return new Annotations(_report.CallingAssembly);
+                return new Annotations(_report.CallingAssembly, _backtraceAttributes.ComplexAttributes);
             }
         }
 
