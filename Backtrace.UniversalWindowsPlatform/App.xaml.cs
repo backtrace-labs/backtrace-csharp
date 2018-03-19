@@ -27,7 +27,7 @@ namespace Backtrace.UniversalWindowsPlatform
 
         private static Windows.Storage.StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
 
-        private static BacktraceCredentials credentials = new BacktraceCredentials(@"https://myserver.sp.backtrace.io", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
+        private static BacktraceCredentials credentials = new BacktraceCredentials(@"https://myserver.sp.backtrace.io:6097", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
         private static BacktraceClient backtraceClient;
 
         private static void StartJob()

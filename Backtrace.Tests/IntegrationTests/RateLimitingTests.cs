@@ -24,7 +24,7 @@ namespace Backtrace.Tests.IntegrationTests
         public void Setup()
         {
             _backtraceClient = new BacktraceClient(
-                new BacktraceCredentials(@"https://myserver.sp.backtrace.io", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0"),
+                new BacktraceCredentials(@"https://myserver.sp.backtrace.io:6097", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0"),
                 reportPerMin: 0 //unlimited number of reports per secound
             );
             //Add new scoped attributes

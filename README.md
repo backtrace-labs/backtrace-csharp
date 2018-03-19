@@ -6,7 +6,7 @@
 
 ```csharp
 var backtraceCredentials = 
-	new BacktraceCredentials(@"https://myserver.sp.backtrace.io", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
+	new BacktraceCredentials(@"https://myserver.sp.backtrace.io:6097", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
 	// replace with your endpoint url and token
 
 var backtraceClient = new BacktraceClient(backtraceCredentials);
@@ -93,7 +93,7 @@ Visual Studio allows you to build a project and run all available samples (prepa
 
 - Open `Program.cs` class in any **Backtrace Sample project** and replace `BacktraceCredential` constructor patemeters with with your `Backtrace endpoint URL` (e.g. https://xxx.sp.backtrace.io:6098) and `submission token`:
 ```csharp
-    var backtraceCredentials = new BacktraceCredentials(@"https://myserver.sp.backtrace.io", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
+    var backtraceCredentials = new BacktraceCredentials(@"https://myserver.sp.backtrace.io:6097", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
 ```
 
 - Press `Ctrl+Shift+B` to `build` solution
@@ -111,7 +111,7 @@ You can use .NET Core's CLI to run sample project on Windows, Mac OS and Linux. 
 ``` 
 - Open `Program.cs` in project **Backtrace.Core** and replace `BacktraceCredential` constructor patemeters with with your `Backtrace endpoint URL` (e.g. https://xxx.sp.backtrace.io:6098) and `submission token`:
 ```csharp
-    var backtraceCredentials = new BacktraceCredentials(@"https://myserver.sp.backtrace.io", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
+    var backtraceCredentials = new BacktraceCredentials(@"https://myserver.sp.backtrace.io:6097", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
 ```
 - Build the project:  
 ```
@@ -133,7 +133,7 @@ You can use .NET Core's CLI to run sample project on Windows, Mac OS and Linux. 
 
 - Open `Program.cs` class in project **Backtrace.Core** and replace `BacktraceCredential` constructor patemeters with with your `Backtrace endpoint URL` (e.g. https://xxx.sp.backtrace.io:6098) and `submission token`:
 ```csharp
-    var backtraceCredentials = new BacktraceCredentials(@"https://myserver.sp.backtrace.io", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
+    var backtraceCredentials = new BacktraceCredentials(@"https://myserver.sp.backtrace.io:6097", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
 ```
 
 - Build the project. 
