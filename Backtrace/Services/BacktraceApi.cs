@@ -19,10 +19,6 @@ namespace Backtrace.Services
     /// </summary>
     internal class BacktraceApi<T> : IBacktraceApi<T>
     {
-        //ssl and tls12 flags used in ssl communiaction
-        public const SslProtocols _Tls12 = (SslProtocols)0x00000C00;
-        public const SecurityProtocolType Tls12 = (SecurityProtocolType)_Tls12;
-
         /// <summary>
         /// Asynchronous request flag. If value is equal to true, data will be send to server asynchronous
         /// </summary>
@@ -37,7 +33,7 @@ namespace Backtrace.Services
         /// Url to server
         /// </summary>
         private readonly string _serverurl;
-        
+
         /// <summary>
         /// Event triggered when server is unvailable
         /// </summary>
@@ -54,26 +50,17 @@ namespace Backtrace.Services
         /// <param name="credentials">API credentials</param>
         public BacktraceApi(BacktraceCredentials credentials)
         {
-             _serverurl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
+            _serverurl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
             bool isHttps = credentials.BacktraceHostUri.Scheme == "https";
             //prepare web client to send a data to ssl API
             if (isHttps)
             {
-                SslProtocols _Tls12 = (SslProtocols)0x00000C00;
-                SslProtocols _Tls11 = (SslProtocols)0x00000300;
-                SecurityProtocolType Tls12 = (SecurityProtocolType)_Tls12;
-                SecurityProtocolType Tls11 = (SecurityProtocolType)_Tls11;
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 |
-                                           SecurityProtocolType.Tls |
-                                           Tls11 |
-                                           Tls12;
-                ServicePointManager.ServerCertificateValidationCallback += TlsValidationCallback;
+                ServicePointManager.SecurityProtocol =
+                     SecurityProtocolType.Tls
+                    | (SecurityProtocolType)0x00000300
+                    | (SecurityProtocolType)0x00000C00;
+                ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true;
             }
-        }
-
-        private bool TlsValidationCallback(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
-        {
-            return true;
         }
 
         /// <summary>
@@ -132,7 +119,6 @@ namespace Backtrace.Services
             {
                 using (Stream requestStream = request.GetRequestStream())
                 {
-                    SslProtocols sslprotocol = ExtractSslProtocol(requestStream);
                     requestStream.Write(formData, 0, formData.Length);
                     requestStream.Close();
                 }
@@ -142,17 +128,6 @@ namespace Backtrace.Services
             {
                 OnServerError?.Invoke(exception);
             }
-        }
-
-        private SslProtocols ExtractSslProtocol(Stream stream)
-        {
-            BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public |
-                                        BindingFlags.NonPublic | BindingFlags.Static;
-
-            var _objConnection = stream.GetType().GetField("m_Connection", bindingFlags).GetValue(stream);
-            var _objTlsStream = _objConnection.GetType().GetProperty("NetworkStream", bindingFlags).GetValue(_objConnection, null);
-            var _objSslState = _objTlsStream.GetType().GetField("m_Worker", bindingFlags).GetValue(_objTlsStream);
-            return (SslProtocols)_objSslState.GetType().GetProperty("SslProtocol", bindingFlags).GetValue(_objSslState, null);
         }
 
         /// <summary>
