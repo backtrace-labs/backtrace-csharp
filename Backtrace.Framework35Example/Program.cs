@@ -14,10 +14,10 @@ namespace Backtrace.Framework35Example
         {
             //initialize new BacktraceClient with custom configuration section readed from file App.config
             //Client will be initialized with values stored in default section name "BacktraceCredentials"
-            BacktraceClient backtraceClient = new BacktraceClient();
+            BacktraceClient backtraceClientWithSectionCredentials = new BacktraceClient();
 
-            var credentials = new BacktraceCredentials(@"https://myserver.sp.backtrace.io:6097", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
-            var backtraceClientWithCredentials = new BacktraceClient(credentials);
+            var credentials = new BacktraceCredentials(@"https://yolo.sp.backtrace.io:6098/", "328174ab5c377e2cdcb6c763ec2bbdf1f9aa5282c1f6bede693efe06a479db54");
+            var backtraceClient = new BacktraceClient(credentials);
 
             //Add new scoped attributes
             backtraceClient.Attributes["ClientAttributeNumber"] = 1;

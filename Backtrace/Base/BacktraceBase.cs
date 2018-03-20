@@ -118,12 +118,12 @@ namespace Backtrace.Base
         /// <summary>
         /// Backtrace database instance that allows to manage minidump files 
         /// </summary>
-        private readonly BacktraceDatabase<T> _database;
+        internal IBacktraceDatabase<T> _database;
 
         /// <summary>
         /// Backtrace report watcher that controls number of request sending per minute
         /// </summary>
-        private readonly ReportWatcher<T> _reportWatcher;
+        internal ReportWatcher<T> _reportWatcher;
 
 
         /// <summary>

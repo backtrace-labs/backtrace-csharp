@@ -7,6 +7,9 @@ using System.Net;
 using System.IO;
 using System.Security.Authentication;
 using Backtrace.Common;
+using System.Reflection;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Services
@@ -57,9 +60,20 @@ namespace Backtrace.Services
             if (isHttps)
             {
                 SslProtocols _Tls12 = (SslProtocols)0x00000C00;
+                SslProtocols _Tls11 = (SslProtocols)0x00000300;
                 SecurityProtocolType Tls12 = (SecurityProtocolType)_Tls12;
-                ServicePointManager.SecurityProtocol = Tls12;
+                SecurityProtocolType Tls11 = (SecurityProtocolType)_Tls11;
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 |
+                                           SecurityProtocolType.Tls |
+                                           Tls11 |
+                                           Tls12;
+                ServicePointManager.ServerCertificateValidationCallback += TlsValidationCallback;
             }
+        }
+
+        private bool TlsValidationCallback(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            return true;
         }
 
         /// <summary>
@@ -118,6 +132,7 @@ namespace Backtrace.Services
             {
                 using (Stream requestStream = request.GetRequestStream())
                 {
+                    SslProtocols sslprotocol = ExtractSslProtocol(requestStream);
                     requestStream.Write(formData, 0, formData.Length);
                     requestStream.Close();
                 }
@@ -128,7 +143,18 @@ namespace Backtrace.Services
                 OnServerError?.Invoke(exception);
             }
         }
-        
+
+        private SslProtocols ExtractSslProtocol(Stream stream)
+        {
+            BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public |
+                                        BindingFlags.NonPublic | BindingFlags.Static;
+
+            var _objConnection = stream.GetType().GetField("m_Connection", bindingFlags).GetValue(stream);
+            var _objTlsStream = _objConnection.GetType().GetProperty("NetworkStream", bindingFlags).GetValue(_objConnection, null);
+            var _objSslState = _objTlsStream.GetType().GetField("m_Worker", bindingFlags).GetValue(_objTlsStream);
+            return (SslProtocols)_objSslState.GetType().GetProperty("SslProtocol", bindingFlags).GetValue(_objSslState, null);
+        }
+
         /// <summary>
         /// Handle server respond for synchronous request
         /// </summary>
