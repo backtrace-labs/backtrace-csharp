@@ -4,12 +4,12 @@
     <TargetFrameworks>netstandard2.0;net45;net35</TargetFrameworks>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>Backtrace Error Diagnostic Tools Debug Bug Bugs StackTrace</PackageTags>
-    <PackageVersion>1.0.1</PackageVersion>
+    <PackageVersion>1.0.3</PackageVersion>
     <Product>Backtrace</Product>
     <PackageLicenseUrl>https://github.com/backtrace-labs/backtrace-csharp/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/backtrace-labs/backtrace-csharp</PackageProjectUrl>
     <PackageIconUrl>http://backtrace.io/images/icon.png</PackageIconUrl>
-    <Description>Backtrace C# client is an error reporting tool for C# developers. The client allows you to integrate Backtrace API into your C# application. You can use the library in Xamarin, UWP, .NET Framework and .NET Core projects!</Description>
+    <Description>Backtrace's integration with C# applications allows customers to capture and report handled and unhandled C# exceptions to their Backtrace instance, instantly offering the ability to prioritize and debug software errors.</Description>
     <RepositoryUrl>https://github.com/backtrace-labs/backtrace-csharp</RepositoryUrl>
     <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
