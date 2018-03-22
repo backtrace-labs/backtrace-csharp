@@ -10,7 +10,7 @@ namespace Backtrace.Interfaces
     /// Backtrace Database Interface
     /// Before start: Be sure that used directory is empty!
     /// </summary>
-    internal interface IBacktraceDatabase<T>
+    public interface IBacktraceDatabase<T>
     {
         /// <summary>
         /// Create new minidump file in database directory path. Minidump file name is a random Guid

@@ -37,6 +37,7 @@ namespace Backtrace.Tests.IntegrationTests
             var database = new Mock<IBacktraceDatabase<object>>();
             database.Setup(n => n.GenerateMiniDump(It.IsAny<BacktraceReportBase<object>>(), It.IsAny<MiniDumpType>()));
 
+            //setup new client
             var credentials = new BacktraceCredentials("https://validurl.com/", "validToken");
             _backtraceClient = new BacktraceClient(credentials)
             {
@@ -79,7 +80,7 @@ namespace Backtrace.Tests.IntegrationTests
             x[1] = 1 - 1;
         }
 
-        private void ThreadTest(int threadIndex, int totalSend = 0)
+        private void ThreadTest(int threadIndex, ref int totalSend)
         {
             _backtraceClient.Send($"Custom client message");
             try
@@ -111,19 +112,27 @@ namespace Backtrace.Tests.IntegrationTests
         [Test(Author = "Arthur Tu and Konrad Dysput", Description = "Test rate limiting on single/multiple thread thread")]
         public void SingleThreadWithoutRateLimiting(int numberOfThreads)
         {
-            reportLimitReached = false;
-            _backtraceClient.ChangeRateLimiting(0);
-            List<Thread> threads = new List<Thread>();
+            // one thread = 4 request to API 
+            int expectedNumberOfReports = numberOfThreads * 4;
+            int totalSend = 0;
 
+            //set rate limiting to unlimite
+            _backtraceClient.ChangeRateLimiting(0);
+            reportLimitReached = false;
+
+            //prepare thread and catch 2 exception per thread and send two custom messages
+            List<Thread> threads = new List<Thread>();
             for (int threadIndex = 0; threadIndex < numberOfThreads; threadIndex++)
             {
                 threads.Add(new Thread(new ThreadStart(() =>
                 {
-                    ThreadTest(threadIndex);
+                    ThreadTest(threadIndex, ref totalSend);
                 })));
             }
             threads.ForEach(n => n.Start());
             threads.ForEach(n => n.Join());
+
+            Assert.AreEqual(expectedNumberOfReports, totalSend);
             Assert.IsFalse(reportLimitReached);
         }
 
@@ -137,16 +146,20 @@ namespace Backtrace.Tests.IntegrationTests
         [TestCase(5, 10)]
         [TestCase(5, 20)]
         [Test(Author = "Arthur Tu and Konrad Dysput", Description = "Test a initialization and submission sequence for backtrace client w/ threading w/o rate limiting")]
-        public void ThreadedWithRateLimiting(int numberOfThread, uint rateLimiting)
+        public void ThreadedWithRateLimiting(int numberOfThread, int rateLimiting)
         {
             //set rate limiting
             reportLimitReached = false;
-            _backtraceClient.ChangeRateLimiting(rateLimiting);
+            _backtraceClient.ChangeRateLimiting((uint)rateLimiting);
 
 
             //set expected number of drop and request
             int expectedNumberofRequest = 4 * numberOfThread;
             int expectedNumberOfDropRequest = expectedNumberofRequest - (int)rateLimiting;
+            if (expectedNumberOfDropRequest < 0)
+            {
+                expectedNumberOfDropRequest = 0;
+            }
 
             List<Thread> threads = new List<Thread>();
             int totalSend = 0;
@@ -161,7 +174,7 @@ namespace Backtrace.Tests.IntegrationTests
             {
                 threads.Add(new Thread(new ThreadStart(() =>
                 {
-                    ThreadTest(threadIndex, totalSend);
+                    ThreadTest(threadIndex, ref totalSend);
                 })));
             }
 
@@ -170,6 +183,7 @@ namespace Backtrace.Tests.IntegrationTests
 
             Assert.AreEqual(totalSend, expectedNumberofRequest);
             Assert.AreEqual(totalDrop, expectedNumberOfDropRequest);
+            Assert.IsTrue(reportLimitReached);
         }
     }
 }

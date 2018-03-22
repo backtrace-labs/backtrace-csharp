@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Services
 {
     /// <summary>

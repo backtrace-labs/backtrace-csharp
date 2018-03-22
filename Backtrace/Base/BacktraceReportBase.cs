@@ -67,7 +67,7 @@ namespace Backtrace.Base
         /// <summary>
         /// Get a report exception
         /// </summary>
-        internal Exception Exception;
+        public Exception Exception;
 
         /// <summary>
         /// Get an assembly where report was created (or should be created)
