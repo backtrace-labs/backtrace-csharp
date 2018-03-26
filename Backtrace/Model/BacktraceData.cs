@@ -174,7 +174,7 @@ namespace Backtrace.Model
         {
             get
             {
-                return _report._attachmentPaths;
+                return _report.AttachmentPaths;
             }
         }
 

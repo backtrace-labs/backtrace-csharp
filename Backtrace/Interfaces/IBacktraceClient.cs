@@ -1,5 +1,8 @@
 ﻿using Backtrace.Model;
 using System;
+#if !NET35
+using System.Threading.Tasks;
+#endif
 
 namespace Backtrace.Interfaces
 {
@@ -12,6 +15,14 @@ namespace Backtrace.Interfaces
         /// Send a new report to a Backtrace API
         /// </summary>
         /// <param name="report">New backtrace report</param>
-        void Send(BacktraceReport report);
+        BacktraceServerResponse Send(BacktraceReport report);
+
+#if !NET35
+        /// <summary>
+        /// Send new asynchronous report to a Backtrace API
+        /// </summary>
+        /// <param name="report">New backtrace report</param>
+        Task<BacktraceServerResponse> SendAsync(BacktraceReport report);
+#endif
     }
 }

@@ -10,6 +10,12 @@ using Backtrace.Common;
 using System.Reflection;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
+#if !NET35
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
+using System.Net.Http;
+#endif
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Services
@@ -22,6 +28,7 @@ namespace Backtrace.Services
         /// <summary>
         /// Asynchronous request flag. If value is equal to true, data will be send to server asynchronous
         /// </summary>
+        [Obsolete]
         public bool AsynchronousRequest { get; set; } = false;
 
         /// <summary>
@@ -30,20 +37,28 @@ namespace Backtrace.Services
         public Action<string, string, byte[]> RequestHandler { get; set; } = null;
 
         /// <summary>
-        /// Url to server
-        /// </summary>
-        private readonly string _serverurl;
-
-        /// <summary>
         /// Event triggered when server is unvailable
         /// </summary>
+        [Obsolete]
         public Action<Exception> OnServerError { get; set; }
 
         /// <summary>
         /// Event triggered when server respond to diagnostic data
         /// </summary>
+        [Obsolete]
         public Action<BacktraceServerResponse> OnServerResponse { get; set; }
 
+        /// <summary>
+        /// Url to server
+        /// </summary>
+        private readonly string _serverurl;
+
+#if !NET35
+        /// <summary>
+        /// The http client.
+        /// </summary>
+        private readonly HttpClient _http;
+#endif
         /// <summary>
         /// Create a new instance of Backtrace API
         /// </summary>
@@ -51,100 +66,98 @@ namespace Backtrace.Services
         public BacktraceApi(BacktraceCredentials credentials)
         {
             _serverurl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
-            bool isHttps = credentials.BacktraceHostUri.Scheme == "https";
-            //prepare web client to send a data to ssl API
-            if (isHttps)
+#if !NET35
+            _http = new HttpClient
             {
-                ServicePointManager.SecurityProtocol =
+                BaseAddress = credentials.BacktraceHostUri
+            };
+#endif
+        }
+
+        /// <summary>
+        /// Setting all necessary security protocols for https requests
+        /// </summary>
+        public void SetTlsSupport()
+        {
+            ServicePointManager.SecurityProtocol =
                      SecurityProtocolType.Tls
                     | (SecurityProtocolType)0x00000300
                     | (SecurityProtocolType)0x00000C00;
-                ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true;
-            }
+            ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true;
         }
 
         /// <summary>
         /// Get serialization settings
         /// </summary>
         /// <returns></returns>
-        private JsonSerializerSettings GetSerializerSettings()
+        private JsonSerializerSettings JsonSerializerSettings { get; } = new JsonSerializerSettings
         {
-            return new JsonSerializerSettings
-            {
-                NullValueHandling = NullValueHandling.Ignore,
-                DefaultValueHandling = DefaultValueHandling.Ignore
-            };
+            NullValueHandling = NullValueHandling.Ignore,
+            DefaultValueHandling = DefaultValueHandling.Ignore
+        };
+
+#if !NET35
+        public async Task<BacktraceServerResponse> SendAsync(BacktraceData<T> data)
+        {
+            Guid requestId = Guid.NewGuid();
+            var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
+
+            var formData = FormDataHelper.GetFormData(json, data.Attachments, requestId);
+            string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
+
+            var request = new HttpRequestMessage(HttpMethod.Post, _serverurl);
+            var content = new ByteArrayContent(formData);
+
+            // clear and add content type with boundary tag
+            content.Headers.Remove("Content-Type");
+            content.Headers.TryAddWithoutValidation("Content-Type", contentType);
+
+            request.Content = content;
+            var response = await _http.SendAsync(request);
+            var fullResponse = await response.Content.ReadAsStringAsync();
+            var serverResponse = JsonConvert.DeserializeObject<BacktraceServerResponse>(fullResponse, JsonSerializerSettings);
+            return serverResponse;
         }
+#endif
 
         /// <summary>
         /// Sending a diagnostic report data to server API. 
         /// </summary>
         /// <param name="data">Diagnostic data</param>
-        /// <returns>False if operation fail or true if API return OK</returns>
-        public void Send(BacktraceData<T> data)
-        {
-            string json = JsonConvert.SerializeObject(data, GetSerializerSettings());
-            List<string> attachments = data.Attachments;
-            Send(json, attachments);
-        }
-
-        /// <summary>
-        /// Sending a diagnostic report data to server API. 
-        /// </summary>
-        /// <param name="json">Diagnostics json</param>
-        /// <param name="attachmentPaths">Attachments path</param>
-        private void Send(string json, List<string> attachmentPaths)
+        /// <returns>Server response</returns>
+        public BacktraceServerResponse Send(BacktraceData<T> data)
         {
             Guid requestId = Guid.NewGuid();
-            var formData = FormDataHelper.GetFormData(json, attachmentPaths, requestId);
+            string json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
+
+            var formData = FormDataHelper.GetFormData(json, data.Attachments, requestId);
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
-            if (RequestHandler != null)
-            {
-                RequestHandler.Invoke(_serverurl, contentType, formData);
-                return;
-            }
             HttpWebRequest request = WebRequest.Create(_serverurl) as HttpWebRequest;
 
             //Set up the request properties.
             request.Method = "POST";
             request.ContentType = contentType;
             request.ContentLength = formData.Length;
-
-            if (AsynchronousRequest)
+            using (Stream requestStream = request.GetRequestStream())
             {
-                request.BeginGetRequestStream(new AsyncCallback((n) => RequestStreamCallback(n, formData)), request);
-                return;
+                requestStream.Write(formData, 0, formData.Length);
+                requestStream.Close();
             }
-            try
-            {
-                using (Stream requestStream = request.GetRequestStream())
-                {
-                    requestStream.Write(formData, 0, formData.Length);
-                    requestStream.Close();
-                }
-                ReadServerResponse(request);
-            }
-            catch (Exception exception)
-            {
-                OnServerError?.Invoke(exception);
-            }
+            return ReadServerResponse(request);
         }
 
         /// <summary>
         /// Handle server respond for synchronous request
         /// </summary>
         /// <param name="request">Current HttpWebRequest</param>
-        private void ReadServerResponse(HttpWebRequest request)
+        private BacktraceServerResponse ReadServerResponse(HttpWebRequest request)
         {
             using (WebResponse webResponse = request.GetResponse() as HttpWebResponse)
             {
                 StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
                 string fullResponse = responseReader.ReadToEnd();
-                if (OnServerResponse != null)
-                {
-                    var response = JsonConvert.DeserializeObject<BacktraceServerResponse>(fullResponse);
-                    OnServerResponse.Invoke(response);
-                }
+                var response = JsonConvert.DeserializeObject<BacktraceServerResponse>(fullResponse);
+                return response;
             }
         }
 
