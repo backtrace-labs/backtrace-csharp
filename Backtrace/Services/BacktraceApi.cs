@@ -105,18 +105,19 @@ namespace Backtrace.Services
             var formData = FormDataHelper.GetFormData(json, data.Attachments, requestId);
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
 
-            var request = new HttpRequestMessage(HttpMethod.Post, _serverurl);
-            var content = new ByteArrayContent(formData);
+            using (var request = new HttpRequestMessage(HttpMethod.Post, _serverurl))
+            using (var content = new ByteArrayContent(formData))
+            {
+                // clear and add content type with boundary tag
+                content.Headers.Remove("Content-Type");
+                content.Headers.TryAddWithoutValidation("Content-Type", contentType);
+                request.Content = content;
 
-            // clear and add content type with boundary tag
-            content.Headers.Remove("Content-Type");
-            content.Headers.TryAddWithoutValidation("Content-Type", contentType);
-
-            request.Content = content;
-            var response = await _http.SendAsync(request);
-            var fullResponse = await response.Content.ReadAsStringAsync();
-            var serverResponse = JsonConvert.DeserializeObject<BacktraceServerResponse>(fullResponse, JsonSerializerSettings);
-            return serverResponse;
+                var response = await _http.SendAsync(request);
+                var fullResponse = await response.Content.ReadAsStringAsync();
+                var serverResponse = JsonConvert.DeserializeObject<BacktraceServerResponse>(fullResponse, JsonSerializerSettings);
+                return serverResponse;
+            }
         }
 #endif
 
@@ -190,6 +191,38 @@ namespace Backtrace.Services
             {
                 OnServerError?.Invoke(exception);
             }
+        }
+
+        private bool _disposed = false; // To detect redundant calls
+
+        public void Dispose()
+        {
+            Dispose(true);
+
+            // Use SupressFinalize in case a subclass
+            // of this type implements a finalizer.
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            // If you need thread safety, use a lock around these 
+            // operations, as well as in your methods that use the resource.
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+#if !NET35
+                    _http.Dispose();
+#endif
+                }
+                _disposed = true;
+            }
+        }
+
+        ~BacktraceApi()
+        {
+            Dispose(false);
         }
     }
 }

@@ -10,7 +10,7 @@ namespace Backtrace.Interfaces
     /// Backtrace API sender interface
     /// </summary>
     /// <typeparam name="T">Attribute type</typeparam>
-    public interface IBacktraceApi<T>
+    public interface IBacktraceApi<T> : IDisposable
     {
         /// <summary>
         /// Send a Backtrace report to Backtrace API
