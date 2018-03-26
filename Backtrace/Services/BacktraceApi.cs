@@ -1,18 +1,11 @@
 ﻿using System;
 using Backtrace.Model;
-using System.Collections.Generic;
 using Backtrace.Interfaces;
 using Newtonsoft.Json;
 using System.Net;
 using System.IO;
-using System.Security.Authentication;
 using Backtrace.Common;
-using System.Reflection;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 #if !NET35
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Net.Http;
 #endif
