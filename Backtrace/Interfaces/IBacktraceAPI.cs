@@ -33,13 +33,11 @@ namespace Backtrace.Interfaces
         /// <summary>
         /// Set an event executed when received bad request, unauthorize request or other information from server
         /// </summary>
-        [Obsolete]
         Action<Exception> OnServerError { get; set; }
 
         /// <summary>
         /// Set an event executed when server return information after sending data to API
-        /// </summary>
-        [Obsolete]
+        /// </summary>]
         Action<BacktraceServerResponse> OnServerResponse { get; set; }
 
         /// <summary>
@@ -51,7 +49,6 @@ namespace Backtrace.Interfaces
         /// <summary>
         /// Set custom request method to prepare HTTP request to Backtrace API
         /// </summary>
-        [Obsolete]
-        Action<string, string, byte[]> RequestHandler { get; set; }
+        Func<string, string, BacktraceData<T>, BacktraceServerResponse> RequestHandler { get; set; }
     }
 }

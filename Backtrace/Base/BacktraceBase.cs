@@ -20,8 +20,7 @@ namespace Backtrace.Base
         /// <summary>
         /// Custom request handler for HTTP call to server
         /// </summary>
-        [Obsolete]
-        public Action<string, string, byte[]> RequestHandler
+        public Func<string, string, BacktraceData<T>, BacktraceServerResponse> RequestHandler
         {
             get
             {
@@ -52,7 +51,6 @@ namespace Backtrace.Base
         /// <summary>
         /// Set an event executed when received bad request, unauthorize request or other information from server
         /// </summary>
-        [Obsolete]
         public Action<Exception> OnServerError
         {
             get
@@ -68,7 +66,6 @@ namespace Backtrace.Base
         /// <summary>
         /// Set an event executed when Backtrace API return information about send report
         /// </summary>
-        [Obsolete]
         public Action<BacktraceServerResponse> OnServerResponse
         {
             get
@@ -230,30 +227,8 @@ namespace Backtrace.Base
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var assembly = System.Reflection.Assembly.GetCallingAssembly();
-            var exception = e.ExceptionObject as Exception;
-            AsyncRequest = false;
-            int maximumTry = 10;
-            bool shutdown = false;
-            OnServerResponse = (BacktraceServerResponse r) =>
-            {
-                shutdown = true;
-            };
-            OnServerError = (Exception ex) =>
-            {
-                shutdown = true;
-            };
-
-            Send(new BacktraceReportBase<T>(exception, assembly));
-
-
-            //wait till request send from application or when maximu try will be equal to zero
-            while (maximumTry != 0 && shutdown != true)
-            {
-                System.Threading.Thread.Sleep(1000);
-                maximumTry--;
-            }
-            //System.Threading.Thread.Sleep(20000);
-            OnUnhandledApplicationException?.Invoke(exception);
+            var exception = e.ExceptionObject as Exception; 
+            var result = Send(new BacktraceReportBase<T>(exception, assembly));
         }
 #endif
 

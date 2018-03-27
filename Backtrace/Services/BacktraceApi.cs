@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System.Net;
 using System.IO;
 using Backtrace.Common;
+using System.Collections.Generic;
 #if !NET35
 using System.Threading.Tasks;
 using System.Net.Http.Headers;
@@ -28,18 +29,16 @@ namespace Backtrace.Services
         /// <summary>
         /// User custom request method
         /// </summary>
-        public Action<string, string, byte[]> RequestHandler { get; set; } = null;
+        public Func<string, string, BacktraceData<T>, BacktraceServerResponse> RequestHandler { get; set; } = null;
 
         /// <summary>
         /// Event triggered when server is unvailable
         /// </summary>
-        [Obsolete]
-        public Action<Exception> OnServerError { get; set; }
+        public Action<Exception> OnServerError { get; set; } = null;
 
         /// <summary>
         /// Event triggered when server respond to diagnostic data
         /// </summary>
-        [Obsolete]
         public Action<BacktraceServerResponse> OnServerResponse { get; set; }
 
         /// <summary>
@@ -47,12 +46,7 @@ namespace Backtrace.Services
         /// </summary>
         private readonly string _serverurl;
 
-#if !NET35
-        /// <summary>
-        /// The http client.
-        /// </summary>
-        private readonly HttpClient _http;
-#endif
+
         /// <summary>
         /// Create a new instance of Backtrace API
         /// </summary>
@@ -60,42 +54,27 @@ namespace Backtrace.Services
         public BacktraceApi(BacktraceCredentials credentials)
         {
             _serverurl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
-#if !NET35
-            _http = new HttpClient
-            {
-                BaseAddress = credentials.BacktraceHostUri
-            };
-#endif
         }
 
-        /// <summary>
-        /// Setting all necessary security protocols for https requests
-        /// </summary>
-        public void SetTlsSupport()
-        {
-            ServicePointManager.SecurityProtocol =
-                     SecurityProtocolType.Tls
-                    | (SecurityProtocolType)0x00000300
-                    | (SecurityProtocolType)0x00000C00;
-            ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true;
-        }
-
-        /// <summary>
-        /// Get serialization settings
-        /// </summary>
-        /// <returns></returns>
-        private JsonSerializerSettings JsonSerializerSettings { get; } = new JsonSerializerSettings
-        {
-            NullValueHandling = NullValueHandling.Ignore,
-            DefaultValueHandling = DefaultValueHandling.Ignore
-        };
-
 #if !NET35
+        /// <summary>
+        /// The http client.
+        /// </summary>
+        private readonly HttpClient _http = new HttpClient();
+
         public async Task<BacktraceServerResponse> SendAsync(BacktraceData<T> data)
         {
             Guid requestId = Guid.NewGuid();
             var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
+            if (RequestHandler != null)
+            {
+                RequestHandler?.Invoke(_serverurl, FormDataHelper.GetContentTypeWithBoundary(requestId), data);
+            }
+            return await SendAsync(requestId, json, data.Attachments);
+        }
 
+        private async Task<BacktraceServerResponse> SendAsync(Guid requestId, string json, List<string> attachments)
+        {
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
             string boundary = FormDataHelper.GetBoundary(requestId);
 
@@ -113,7 +92,7 @@ namespace Backtrace.Services
                     };
 
                 content.Add(jsonContent);
-                foreach (var file in data.Attachments)
+                foreach (var file in attachments)
                 {
                     if (!File.Exists(file))
                     {
@@ -145,6 +124,20 @@ namespace Backtrace.Services
         }
 #endif
 
+
+        /// <summary>
+        /// Setting all security protocols for https requests via
+        /// </summary>
+        public void SetTlsSupport()
+        {
+            ServicePointManager.SecurityProtocol =
+                     SecurityProtocolType.Tls
+                    | (SecurityProtocolType)0x00000300
+                    | (SecurityProtocolType)0x00000C00;
+            ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true;
+        }
+
+        #region synchronousRequest
         /// <summary>
         /// Sending a diagnostic report data to server API. 
         /// </summary>
@@ -185,53 +178,26 @@ namespace Backtrace.Services
                 return response;
             }
         }
-
+        #endregion
         /// <summary>
-        /// Send a diagnostic bytes to server
+        /// Get serialization settings
         /// </summary>
-        /// <param name="asyncResult">Asynchronous result</param>
-        /// <param name="form">diagnostic data bytes</param>
-        private void RequestStreamCallback(IAsyncResult asyncResult, byte[] form)
+        /// <returns></returns>
+        private JsonSerializerSettings JsonSerializerSettings { get; } = new JsonSerializerSettings
         {
-            var webRequest = (HttpWebRequest)asyncResult.AsyncState;
-            Stream postStream = webRequest.EndGetRequestStream(asyncResult);
-            postStream.Write(form, 0, form.Length);
-            postStream.Close();
-            webRequest.BeginGetResponse(new AsyncCallback(GetResponseCallback), webRequest);
-        }
-
-        /// <summary>
-        /// Handle server respond
-        /// </summary>
-        /// <param name="asyncResult">Asynchronous reuslt</param>
-        private void GetResponseCallback(IAsyncResult asyncResult)
-        {
-            try
-            {
-                HttpWebRequest webRequest = (HttpWebRequest)asyncResult.AsyncState;
-                ReadServerResponse(webRequest);
-            }
-            catch (Exception exception)
-            {
-                OnServerError?.Invoke(exception);
-            }
-        }
+            NullValueHandling = NullValueHandling.Ignore,
+            DefaultValueHandling = DefaultValueHandling.Ignore
+        };
 
         private bool _disposed = false; // To detect redundant calls
-
         public void Dispose()
         {
             Dispose(true);
-
-            // Use SupressFinalize in case a subclass
-            // of this type implements a finalizer.
             GC.SuppressFinalize(this);
         }
 
         protected virtual void Dispose(bool disposing)
         {
-            // If you need thread safety, use a lock around these 
-            // operations, as well as in your methods that use the resource.
             if (!_disposed)
             {
                 if (disposing)
