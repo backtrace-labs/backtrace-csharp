@@ -183,7 +183,7 @@ namespace Backtrace.Tests.IntegrationTests
 
             Assert.AreEqual(totalSend, expectedNumberofRequest);
             Assert.AreEqual(totalDrop, expectedNumberOfDropRequest);
-            Assert.IsTrue(reportLimitReached);
+            Assert.IsTrue(reportLimitReached || totalDrop == 0);
         }
     }
 }

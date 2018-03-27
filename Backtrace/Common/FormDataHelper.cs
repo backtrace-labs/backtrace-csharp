@@ -105,21 +105,5 @@ namespace Backtrace.Common
             // Write the file data directly to the Stream, rather than serializing it to a string.
             formDataStream.Write(data, 0, data.Length);
         }
-#if !NET35
-        public static StreamContent CreateFileContent(byte[] data, string fileName, string contentType)
-        {
-            var stream = new MemoryStream(data);
-            var fileContent = new StreamContent(stream);
-            fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
-            {
-                Name = "\"files\"",
-                FileName = "\"" + fileName + "\""
-            }; // the extra quotes are key here
-            fileContent.Headers.ContentType = new MediaTypeHeaderValue(contentType);
-            return fileContent;
-        }
-
-#endif
-
     }
 }

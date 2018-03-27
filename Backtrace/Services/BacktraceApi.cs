@@ -5,8 +5,10 @@ using Newtonsoft.Json;
 using System.Net;
 using System.IO;
 using Backtrace.Common;
+using System.Collections.Generic;
 #if !NET35
 using System.Threading.Tasks;
+using System.Net.Http.Headers;
 using System.Net.Http;
 #endif
 
@@ -27,31 +29,24 @@ namespace Backtrace.Services
         /// <summary>
         /// User custom request method
         /// </summary>
-        public Action<string, string, byte[]> RequestHandler { get; set; } = null;
+        public Func<string, string, BacktraceData<T>, BacktraceResult> RequestHandler { get; set; } = null;
 
         /// <summary>
         /// Event triggered when server is unvailable
         /// </summary>
-        [Obsolete]
-        public Action<Exception> OnServerError { get; set; }
+        public Action<Exception> OnServerError { get; set; } = null;
 
         /// <summary>
         /// Event triggered when server respond to diagnostic data
         /// </summary>
-        [Obsolete]
-        public Action<BacktraceServerResponse> OnServerResponse { get; set; }
+        public Action<BacktraceResult> OnServerResponse { get; set; }
 
         /// <summary>
         /// Url to server
         /// </summary>
         private readonly string _serverurl;
 
-#if !NET35
-        /// <summary>
-        /// The http client.
-        /// </summary>
-        private readonly HttpClient _http;
-#endif
+
         /// <summary>
         /// Create a new instance of Backtrace API
         /// </summary>
@@ -59,16 +54,93 @@ namespace Backtrace.Services
         public BacktraceApi(BacktraceCredentials credentials)
         {
             _serverurl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
-#if !NET35
-            _http = new HttpClient
-            {
-                BaseAddress = credentials.BacktraceHostUri
-            };
-#endif
         }
 
+#if !NET35
         /// <summary>
-        /// Setting all necessary security protocols for https requests
+        /// The http client.
+        /// </summary>
+        private readonly HttpClient _http = new HttpClient();
+
+        public async Task<BacktraceResult> SendAsync(BacktraceData<T> data)
+        {
+            Guid requestId = Guid.NewGuid();
+            var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
+            if (RequestHandler != null)
+            {
+                RequestHandler?.Invoke(_serverurl, FormDataHelper.GetContentTypeWithBoundary(requestId), data);
+            }
+            return await SendAsync(requestId, json, data.Attachments);
+        }
+
+        private async Task<BacktraceResult> SendAsync(Guid requestId, string json, List<string> attachments)
+        {
+            string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
+            string boundary = FormDataHelper.GetBoundary(requestId);
+
+            using (var request = new HttpRequestMessage(HttpMethod.Post, _serverurl))
+            using (var content = new MultipartFormDataContent(boundary))
+            {
+                var jsonContent = new StringContent(json);
+                jsonContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
+
+                jsonContent.Headers.ContentDisposition =
+                    new ContentDispositionHeaderValue("form-data")
+                    {
+                        Name = "upload_file",
+                        FileName = "\"upload_file.json\""
+                    };
+
+                content.Add(jsonContent);
+                foreach (var file in attachments)
+                {
+                    if (!File.Exists(file))
+                    {
+                        continue;
+                    }
+                    string fileName = $"attachment_{Path.GetFileName(file)}";
+                    var fileContent = new StreamContent(File.OpenRead(file));
+                    fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+                    {
+                        Name = $"\"{fileName}\"",
+                        FileName = $"\"{fileName}\""
+                    };
+                    fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
+                    content.Add(fileContent);
+                }
+
+                //// clear and add content type with boundary tag
+                content.Headers.Remove("Content-Type");
+                content.Headers.TryAddWithoutValidation("Content-Type", contentType);
+                request.Content = content;
+                try
+                {
+                    using (var response = await _http.SendAsync(request))
+                    {
+                        var fullResponse = await response.Content.ReadAsStringAsync();
+                        if(response.StatusCode != HttpStatusCode.OK)
+                        {
+                            var err = new WebException(response.ReasonPhrase);
+                            OnServerError?.Invoke(err);
+                            return BacktraceResult.OnError(err);
+                        }
+                        var result = JsonConvert.DeserializeObject<BacktraceResult>(fullResponse);
+                        OnServerResponse?.Invoke(result);
+                        return result;
+                    }
+                }
+                catch(Exception exception)
+                {
+                    OnServerError?.Invoke(exception);
+                    return BacktraceResult.OnError(exception);
+                }
+            }
+        }
+#endif
+
+
+        /// <summary>
+        /// Setting all security protocols for https requests via
         /// </summary>
         public void SetTlsSupport()
         {
@@ -79,47 +151,13 @@ namespace Backtrace.Services
             ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true;
         }
 
-        /// <summary>
-        /// Get serialization settings
-        /// </summary>
-        /// <returns></returns>
-        private JsonSerializerSettings JsonSerializerSettings { get; } = new JsonSerializerSettings
-        {
-            NullValueHandling = NullValueHandling.Ignore,
-            DefaultValueHandling = DefaultValueHandling.Ignore
-        };
-
-#if !NET35
-        public async Task<BacktraceServerResponse> SendAsync(BacktraceData<T> data)
-        {
-            Guid requestId = Guid.NewGuid();
-            var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
-
-            var formData = FormDataHelper.GetFormData(json, data.Attachments, requestId);
-            string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
-
-            using (var request = new HttpRequestMessage(HttpMethod.Post, _serverurl))
-            using (var content = new ByteArrayContent(formData))
-            {
-                // clear and add content type with boundary tag
-                content.Headers.Remove("Content-Type");
-                content.Headers.TryAddWithoutValidation("Content-Type", contentType);
-                request.Content = content;
-                
-                var response = await _http.SendAsync(request);
-                var fullResponse = await response.Content.ReadAsStringAsync();
-                var serverResponse = JsonConvert.DeserializeObject<BacktraceServerResponse>(fullResponse, JsonSerializerSettings);
-                return serverResponse;
-            }
-        }
-#endif
-
+        #region synchronousRequest
         /// <summary>
         /// Sending a diagnostic report data to server API. 
         /// </summary>
         /// <param name="data">Diagnostic data</param>
         /// <returns>Server response</returns>
-        public BacktraceServerResponse Send(BacktraceData<T> data)
+        public BacktraceResult Send(BacktraceData<T> data)
         {
             Guid requestId = Guid.NewGuid();
             string json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
@@ -132,75 +170,57 @@ namespace Backtrace.Services
             request.Method = "POST";
             request.ContentType = contentType;
             request.ContentLength = formData.Length;
-            using (Stream requestStream = request.GetRequestStream())
+            try
             {
-                requestStream.Write(formData, 0, formData.Length);
-                requestStream.Close();
+                using (Stream requestStream = request.GetRequestStream())
+                {
+                    requestStream.Write(formData, 0, formData.Length);
+                    requestStream.Close();
+                }
+                return ReadServerResponse(request);
             }
-            return ReadServerResponse(request);
+            catch (Exception exception)
+            {
+                OnServerError?.Invoke(exception);
+                return BacktraceResult.OnError(exception);
+            }
         }
 
         /// <summary>
         /// Handle server respond for synchronous request
         /// </summary>
         /// <param name="request">Current HttpWebRequest</param>
-        private BacktraceServerResponse ReadServerResponse(HttpWebRequest request)
+        private BacktraceResult ReadServerResponse(HttpWebRequest request)
         {
             using (WebResponse webResponse = request.GetResponse() as HttpWebResponse)
             {
                 StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
                 string fullResponse = responseReader.ReadToEnd();
-                var response = JsonConvert.DeserializeObject<BacktraceServerResponse>(fullResponse);
+                var response = JsonConvert.DeserializeObject<BacktraceResult>(fullResponse);
+                OnServerResponse.Invoke(response);
                 return response;
             }
         }
-
+        #endregion
         /// <summary>
-        /// Send a diagnostic bytes to server
+        /// Get serialization settings
         /// </summary>
-        /// <param name="asyncResult">Asynchronous result</param>
-        /// <param name="form">diagnostic data bytes</param>
-        private void RequestStreamCallback(IAsyncResult asyncResult, byte[] form)
+        /// <returns></returns>
+        private JsonSerializerSettings JsonSerializerSettings { get; } = new JsonSerializerSettings
         {
-            var webRequest = (HttpWebRequest)asyncResult.AsyncState;
-            Stream postStream = webRequest.EndGetRequestStream(asyncResult);
-            postStream.Write(form, 0, form.Length);
-            postStream.Close();
-            webRequest.BeginGetResponse(new AsyncCallback(GetResponseCallback), webRequest);
-        }
-
-        /// <summary>
-        /// Handle server respond
-        /// </summary>
-        /// <param name="asyncResult">Asynchronous reuslt</param>
-        private void GetResponseCallback(IAsyncResult asyncResult)
-        {
-            try
-            {
-                HttpWebRequest webRequest = (HttpWebRequest)asyncResult.AsyncState;
-                ReadServerResponse(webRequest);
-            }
-            catch (Exception exception)
-            {
-                OnServerError?.Invoke(exception);
-            }
-        }
+            NullValueHandling = NullValueHandling.Ignore,
+            DefaultValueHandling = DefaultValueHandling.Ignore
+        };
 
         private bool _disposed = false; // To detect redundant calls
-
         public void Dispose()
         {
             Dispose(true);
-
-            // Use SupressFinalize in case a subclass
-            // of this type implements a finalizer.
             GC.SuppressFinalize(this);
         }
 
         protected virtual void Dispose(bool disposing)
         {
-            // If you need thread safety, use a lock around these 
-            // operations, as well as in your methods that use the resource.
             if (!_disposed)
             {
                 if (disposing)

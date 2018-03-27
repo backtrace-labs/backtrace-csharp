@@ -19,9 +19,14 @@ namespace Backtrace.Model.JsonData
     public class BacktraceAttributes<T>
     {
         /// <summary>
-        /// Get built-in attributes
+        /// Get built-in primitive attributes
         /// </summary>
         public Dictionary<string, object> Attributes = new Dictionary<string, object>();
+
+        /// <summary>
+        /// Get built-in complex attributes
+        /// </summary>
+        public Dictionary<string, object> ComplexAttributes = new Dictionary<string, object>();
 
         /// <summary>
         /// Create instance of Backtrace Attribute
@@ -31,7 +36,7 @@ namespace Backtrace.Model.JsonData
         public BacktraceAttributes(BacktraceReportBase<T> report, Dictionary<string, T> scopedAttributes)
         {
             //Environment attributes override user attributes
-            Attributes = ConvertAttributes(report, scopedAttributes);
+            ConvertAttributes(report, scopedAttributes);
             //A unique identifier of a machine
             Attributes["guid"] = GenerateMachineId().ToString();
             //Base name of application generating the report
@@ -47,23 +52,23 @@ namespace Backtrace.Model.JsonData
         /// Convert custom user attributes
         /// </summary>
         /// <param name="report">Received report</param>
-        /// <param name="scopedAttributes">Client's attributes (report and client)</param>
+        /// <param name="clientAttributes">Client's attributes (report and client)</param>
         /// <returns>Dictionary of custom user attributes </returns>
-        private Dictionary<string, object> ConvertAttributes(BacktraceReportBase<T> report, Dictionary<string, T> scopedAttributes)
+        private void ConvertAttributes(BacktraceReportBase<T> report, Dictionary<string, T> clientAttributes)
         {
-            return BacktraceReportBase<T>.ConcatAttributes(report, scopedAttributes)
-                .ToDictionary(n => n.Key, v =>
+            var attributes = BacktraceReportBase<T>.ConcatAttributes(report, clientAttributes);
+            foreach (var attribute in attributes)
+            {
+                var type = attribute.Value.GetType();
+                if (type.IsPrimitive || type == typeof(string))
                 {
-                    var type = v.Value.GetType();
-                    if (type == typeof(string) || type != typeof(object))
-                    {
-                        return (object)v.Value;
-                    }
-                    else
-                    {
-                        return JsonConvert.SerializeObject(v.Value);
-                    }
-                });
+                    Attributes.Add(attribute.Key, attribute.Value);
+                }
+                else
+                {
+                    ComplexAttributes.Add(attribute.Key, attribute.Value);
+                }
+            }
         }
 
 
