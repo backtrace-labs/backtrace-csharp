@@ -17,7 +17,7 @@ namespace Backtrace.WinFoms
         static void Main()
         {
             BacktraceClient backtraceClient = new BacktraceClient(
-                    new BacktraceCredentials(@"http://yolo.sp.backtrace.io:6097/", "328174ab5c377e2cdcb6c763ec2bbdf1f9aa5282c1f6bede693efe06a479db54"),
+                    new BacktraceCredentials(ApplicationCredentials.Host, ApplicationCredentials.Token),
                     reportPerMin: 0 //unlimited number of reports per secound
             );
             backtraceClient.OnUnhandledApplicationException += (Exception e) =>

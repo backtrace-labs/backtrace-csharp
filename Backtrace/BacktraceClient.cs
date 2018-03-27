@@ -4,6 +4,9 @@ using Backtrace.Model;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+#if !NET35
+using System.Threading.Tasks;
+#endif
 
 namespace Backtrace
 {
@@ -22,7 +25,7 @@ namespace Backtrace
         /// </summary>
         public Action<BacktraceReport> AfterSend;
 
-#if NET35 || NET45
+#if !NETSTANDARD2_0
         /// <summary>
         /// Initializing Backtrace client instance
         /// </summary>
@@ -30,14 +33,15 @@ namespace Backtrace
         /// <param name="attributes">Client's attributes</param>
         /// <param name="databaseDirectory">Database path used to store minidumps and temporary reports</param>
         /// <param name="reportPerMin">Numbers of records sending per one min</param>
+        /// <param name="tlsSupport">Set SSL and TLS flags for https request to Backtrace API</param>
         public BacktraceClient(
                 string sectionName = "BacktraceCredentials",
                 Dictionary<string, object> attributes = null,
                 string databaseDirectory = "",
-                uint reportPerMin = 3
-            )
-            : base(BacktraceCredentials.ReadConfigurationSection(sectionName),
-                  attributes, databaseDirectory, reportPerMin)
+                uint reportPerMin = 3,
+                bool tlsSupport = false)
+                : base(BacktraceCredentials.ReadConfigurationSection(sectionName),
+                  attributes, databaseDirectory, reportPerMin,tlsSupport)
         { }
 #endif
 
@@ -48,28 +52,113 @@ namespace Backtrace
         /// <param name="attributes">Client's attributes</param>
         /// <param name="databaseDirectory">Database path used to store minidumps and temporary reports</param>
         /// <param name="reportPerMin">Numbers of records sending per one minute</param>
+        /// <param name="tlsSupport">Set SSL and TLS flags for https request to Backtrace API</param>
         public BacktraceClient(
             BacktraceCredentials backtraceCredentials,
             Dictionary<string, object> attributes = null,
             string databaseDirectory = "",
-            uint reportPerMin = 3)
-            : base(backtraceCredentials, attributes, databaseDirectory, reportPerMin)
+            uint reportPerMin = 3,
+            bool tlsSupport = false)
+            : base(backtraceCredentials, attributes, databaseDirectory, reportPerMin, tlsSupport)
         { }
+
+        /// <summary>
+        /// Sending an exception to Backtrace API
+        /// </summary>
+        /// <param name="exception">Current exception</param>
+        /// <param name="attributes">Additional information about application state</param>
+        /// <param name="attachmentPaths">Path to all report attachments</param>
+        public virtual BacktraceServerResponse Send(
+            Exception exception,
+            Dictionary<string, object> attributes = null,
+            List<string> attachmentPaths = null)
+        {
+            var report = new BacktraceReport(exception, attributes, attachmentPaths);
+            var result = Send(report);
+            HandleInnerException(report);
+            return result;
+        }
+
+        /// <summary>
+        /// Sending a message to Backtrace API
+        /// </summary>
+        /// <param name="message">Custom client message</param>
+        /// <param name="attributes">Additional information about application state</param>
+        /// <param name="attachmentPaths">Path to all report attachments</param>
+        public virtual BacktraceServerResponse Send(
+            string message,
+            Dictionary<string, object> attributes = null,
+            List<string> attachmentPaths = null)
+        {
+            return Send(new BacktraceReport(message, attributes, attachmentPaths));
+        }
 
         /// <summary>
         /// Sending a backtrace report to Backtrace API
         /// </summary>
         /// <param name="backtraceReport">Current report</param>
-        public void Send(BacktraceReport backtraceReport)
+        public BacktraceServerResponse Send(BacktraceReport backtraceReport)
         {
             OnReportStart?.Invoke(backtraceReport);
-            base.Send(backtraceReport);
+            var result =  base.Send(backtraceReport);
             AfterSend?.Invoke(backtraceReport);
 
             //check if there is more errors to send
             //handle inner exception
             HandleInnerException(backtraceReport);
+            return result;
         }
+
+#if !NET35
+        /// <summary>
+        /// Sending asynchronous Backtrace report to Backtrace API
+        /// </summary>
+        /// <param name="backtraceReport">Current report</param>
+        /// <returns>Server response</returns>
+        public async Task<BacktraceServerResponse> SendAsync(BacktraceReport backtraceReport)
+        {
+            OnReportStart?.Invoke(backtraceReport);
+            var response = await base.SendAsync(backtraceReport);
+            AfterSend?.Invoke(backtraceReport);
+
+            //check if there is more errors to send
+            //handle inner exception
+            HandleInnerException(backtraceReport);
+
+            return response;
+        }
+
+        /// <summary>
+        /// Sending a message to Backtrace API
+        /// </summary>
+        /// <param name="message">Custom client message</param>
+        /// <param name="attributes">Additional information about application state</param>
+        /// <param name="attachmentPaths">Path to all report attachments</param>
+        public virtual async Task<BacktraceServerResponse> SendAsync(
+            string message,
+            Dictionary<string, object> attributes = null,
+            List<string> attachmentPaths = null)
+        {
+            return await SendAsync(new BacktraceReport(message, attributes, attachmentPaths));
+        }
+
+        /// <summary>
+        /// Sending asynchronous exception to Backtrace API
+        /// </summary>
+        /// <param name="exception">Current exception</param>
+        /// <param name="attributes">Additional information about application state</param>
+        /// <param name="attachmentPaths">Path to all report attachments</param>
+        public virtual async Task<BacktraceServerResponse> SendAsync(
+            Exception exception,
+            Dictionary<string, object> attributes = null,
+            List<string> attachmentPaths = null)
+        {
+            var report = new BacktraceReport(exception, attributes, attachmentPaths);
+            var response = await SendAsync(report);
+            HandleInnerException(report);
+            return response;
+        }
+#endif
 
         /// <summary>
         /// Handle inner exception in current backtrace report
@@ -90,34 +179,7 @@ namespace Backtrace
             Send(innerExceptionReport);
         }
 
-        /// <summary>
-        /// Sending an exception to Backtrace API
-        /// </summary>
-        /// <param name="exception">Current exception</param>
-        /// <param name="attributes">Additional information about application state</param>
-        /// <param name="attachmentPaths">Path to all report attachments</param>
-        public virtual void Send(
-            Exception exception,
-            Dictionary<string, object> attributes = null,
-            List<string> attachmentPaths = null)
-        {
-            var report = new BacktraceReport(exception, attributes, attachmentPaths);
-            Send(report);
-            HandleInnerException(report);
-        }
-        /// <summary>
-        /// Sending a message to Backtrace API
-        /// </summary>
-        /// <param name="message">Custom client message</param>
-        /// <param name="attributes">Additional information about application state</param>
-        /// <param name="attachmentPaths">Path to all report attachments</param>
-        public virtual void Send(
-            string message,
-            Dictionary<string, object> attributes = null,
-            List<string> attachmentPaths = null)
-        {
-            var report = new BacktraceReport(message, attributes, attachmentPaths);
-            Send(report);
-        }
+       
+
     }
 }

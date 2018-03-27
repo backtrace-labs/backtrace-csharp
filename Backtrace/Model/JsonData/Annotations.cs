@@ -28,7 +28,7 @@ namespace Backtrace.Model.JsonData
         /// Get application dependencies
         /// </summary>
         [JsonProperty(PropertyName = "Dependencies")]
-        public Dictionary<string, Dependency> Dependencies
+        public Dictionary<string, string> Dependencies
         {
             get
             {

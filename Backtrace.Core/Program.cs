@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Backtrace.Core
 {
@@ -16,8 +17,9 @@ namespace Backtrace.Core
         //initialize new BacktraceClient with custom configuration section readed from file App.config
         //Client will be initialized with values stored in default section name "BacktraceCredentials"
         private BacktraceClient backtraceClient = new BacktraceClient(
-            new BacktraceCredentials(@"http://yolo.sp.backtrace.io:6097/", "328174ab5c377e2cdcb6c763ec2bbdf1f9aa5282c1f6bede693efe06a479db54"),
-            reportPerMin: 0 //unlimited number of reports per secound
+            new BacktraceCredentials(ApplicationCredentials.Host, ApplicationCredentials.Token),
+            reportPerMin: 0, //unlimited number of reports per secound
+            tlsSupport: true
         );
 
         public Program()
@@ -63,7 +65,7 @@ namespace Backtrace.Core
             return new string(tempString);
         }
 
-        private void GenerateRandomStrings()
+        private async Task GenerateRandomStrings()
         {
             Random random = new Random();
             int totalStrings = random.Next(20, 25);
@@ -90,21 +92,21 @@ namespace Backtrace.Core
                 }
                 catch (Exception exception)
                 {
-                    backtraceClient.Send(exception);
+                    var response = await backtraceClient.SendAsync(exception);
                     //we catch exception inside three add method
                     continue;
                 }
             }
             Thread.Sleep(150);
-            EndTreeGeneration();
+            await EndTreeGeneration();
         }
 
-        private void TryClean()
+        private async Task TryClean()
         {
             if (!treeGenerated)
             {
                 Thread.Sleep(100);
-                TryClean();
+                await TryClean();
                 return;
             }
 
@@ -119,10 +121,10 @@ namespace Backtrace.Core
             orderedWords.Add(GetRandomString(5));
             orderedWords.Add(string.Empty);
             var shuffledWords = orderedWords.OrderBy(x => random.Next()).ToArray();
-            RemoveWords(shuffledWords);
+            await RemoveWords(shuffledWords);
         }
 
-        private void RemoveWords(string[] shuffledWords)
+        private async Task RemoveWords(string[] shuffledWords)
         {
             for (int i = 0; i < shuffledWords.Length; i++)
             {
@@ -137,19 +139,19 @@ namespace Backtrace.Core
                     continue;
                 }
             }
-            EndCleaning();
+            await EndCleaning();
 
         }
 
-        private void EndCleaning()
+        private async Task EndCleaning()
         {
-            backtraceClient.Send($"{DateTime.Now}: Tree clean");
+            var response = await backtraceClient.SendAsync($"{DateTime.Now}: Tree clean");
         }
 
-        private void EndTreeGeneration()
+        private async Task EndTreeGeneration()
         {
             treeGenerated = true;
-            backtraceClient.Send($"{DateTime.Now}: Tree generated");
+            var response = await backtraceClient.SendAsync($"{DateTime.Now}: Tree generated");
         }
 
         /// <summary>
@@ -157,8 +159,8 @@ namespace Backtrace.Core
         /// </summary>
         private void SetupStartupTasks()
         {
-            threads.Add(new Thread(new ThreadStart(() => { TryClean(); })));
-            threads.Add(new Thread(new ThreadStart(() => { GenerateRandomStrings(); })));
+            threads.Add(new Thread(new ThreadStart(() => { TryClean().Wait(); })));
+            threads.Add(new Thread(new ThreadStart(() => { GenerateRandomStrings().Wait(); })));
         }
 
         unsafe static void DividePtrParam(int* p, int* j)
@@ -200,7 +202,7 @@ namespace Backtrace.Core
                    return data;
                };
 
-            backtraceClient.Send($"{DateTime.Now}: Library Initialized");
+            //backtraceClient.Send($"{DateTime.Now}: Library Initialized");
         }
         static void Main(string[] args)
         {

@@ -12,10 +12,10 @@ namespace Backtrace.Model.JsonData
     public class ApplicationDependencies
     {
         /// <summary>
-        /// All listed dependencies
+        /// All listed dependencies with version
         /// </summary>
         [JsonProperty(PropertyName = "dependencies")]
-        public Dictionary<string, Dependency> AvailableDependencies = new Dictionary<string, Dependency>();
+        public Dictionary<string, string> AvailableDependencies = new Dictionary<string, string>();
 
         /// <summary>
         /// Create new instance of application dependecies object
@@ -43,11 +43,7 @@ namespace Backtrace.Model.JsonData
             }
             foreach (var refAssembly in referencedAssemblies)
             {
-                var dependency = new Dependency()
-                { 
-                    InstalledVersion = refAssembly.Version.ToString()
-                };
-                AvailableDependencies.Add(refAssembly.Name, dependency);
+                AvailableDependencies.Add(refAssembly.Name, refAssembly.Version.ToString());
             }
         }
 

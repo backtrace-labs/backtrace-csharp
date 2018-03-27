@@ -5,7 +5,11 @@
 ## Usage
 
 ```csharp
-var backtraceClient = new BacktraceClient(credentials);
+var backtraceCredentials = 
+	new BacktraceCredentials(@"https://myserver.sp.backtrace.io:6097", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
+	// replace with your endpoint url and token
+
+var backtraceClient = new BacktraceClient(backtraceCredentials);
 
 try{
     //throw exception here
@@ -40,9 +44,9 @@ catch(Exception exception){
 
 
 # Supported .NET Frameworks <a name="supported-frameworks"></a>
-* .NET Framework 3.5 >
-* .NET Framework 4.5 > 
-    - getting information about application thread,
+* .NET Framework 3.5 +
+* .NET Framework 4.5 + 
+    - getting information about application thread
     - handling unhandled application exceptions
 * .NET Standard:
   * .NET Core 2.0 application
@@ -56,7 +60,7 @@ catch(Exception exception){
 
 ### Development Environment
 - On `Windows`, we recommend `Visual Studio 2017` or above for IDE. You can download and install `Visual Studio` [here](https://www.visualstudio.com/downloads/). As an alternative to `Visual Studio` you can use .NET Core command line interface, see installation guide [here](https://docs.microsoft.com/en-us/dotnet/core/windows-prerequisites?tabs=netcore2x)
-- On Mac OS X, you can download and install `Visual Studio` [here](https://www.visualstudio.com/downloads/) if you prefer using an IDE. For command line, you should to download and install [.NET Core 2.0 or above](https://www.microsoft.com/net/download/macos).  
+- On `Mac OS X`, you can download and install `Visual Studio` [here](https://www.visualstudio.com/downloads/) if you prefer using an IDE. For command line, you should to download and install [.NET Core 2.0 or above](https://www.microsoft.com/net/download/macos).  
 - On `Linux`, [Visual Studio Code](https://code.visualstudio.com/) is available as a light-weight IDE. Similarly, you can use .NET Core command line interface, see instruction for `Linux` [here](https://docs.microsoft.com/en-US/dotnet/core/linux-prerequisites?tabs=netcore2x)
 
 ### NuGet  
@@ -81,7 +85,7 @@ dotnet add package Backtrace
 
 ## Visual Studio <a name="sample-app-vs"></a>
 
-Visual Studio allows you to build project and run all available samples (prepared for .NET Core, .NET Framework 4.5, .NET Framework 3.5). 
+Visual Studio allows you to build a project and run all available samples (prepared for .NET Core, .NET Framework 4.5, .NET Framework 3.5). 
 - Double click `.sln` file or `open` project directory in Visual Studio.
 - In `Solution Explorer` navigate to directory `Sample` and set preffered project (.NET Core/Framework) as startup project.
 
@@ -89,12 +93,12 @@ Visual Studio allows you to build project and run all available samples (prepare
 
 - Open `Program.cs` class in any **Backtrace Sample project** and replace `BacktraceCredential` constructor patemeters with with your `Backtrace endpoint URL` (e.g. https://xxx.sp.backtrace.io:6098) and `submission token`:
 ```csharp
-    var backtraceCredentials = new BacktraceCredentials(@"backtrace_endpoint_url", "token");
+    var backtraceCredentials = new BacktraceCredentials(@"https://myserver.sp.backtrace.io:6097", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
 ```
 
 - Press `Ctrl+Shift+B` to `build` solution
 - Press `F5` to run the project
-- You should see new errors in your Backtrace I/O dashboard.
+- You should see new errors in your Backtrace instance. Refresh the Project page or Query Builder to see new details in real-time.
 
 
 ## .NET Core command line <a name="sample-app-cli"></a>
@@ -107,17 +111,17 @@ You can use .NET Core's CLI to run sample project on Windows, Mac OS and Linux. 
 ``` 
 - Open `Program.cs` in project **Backtrace.Core** and replace `BacktraceCredential` constructor patemeters with with your `Backtrace endpoint URL` (e.g. https://xxx.sp.backtrace.io:6098) and `submission token`:
 ```csharp
-    var backtraceCredentials = new BacktraceCredentials(@"backtrace_endpoint_url", "token");
+    var backtraceCredentials = new BacktraceCredentials(@"https://myserver.sp.backtrace.io:6097", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
 ```
 - Build the project:  
 ```
     dotnet build  
 ``` 
-- When build completes, run the project:
+- When the build completes, run the project:
 ``` 
     dotnet run  
 ``` 
-- You should see new errors in your Backtrace I/O dashboard.
+- You should see new errors in your Backtrace instance. Refresh the Project page or Query Builder to see new details in real-time.
 
 
 
@@ -129,12 +133,12 @@ You can use .NET Core's CLI to run sample project on Windows, Mac OS and Linux. 
 
 - Open `Program.cs` class in project **Backtrace.Core** and replace `BacktraceCredential` constructor patemeters with with your `Backtrace endpoint URL` (e.g. https://xxx.sp.backtrace.io:6098) and `submission token`:
 ```csharp
-    var backtraceCredentials = new BacktraceCredentials(@"backtrace_endpoint_url", "token");
+    var backtraceCredentials = new BacktraceCredentials(@"https://myserver.sp.backtrace.io:6097", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
 ```
 
 - Build the project. 
 - Upon successful build, run the project.
-- You should see new errors in your Backtrace I/O dashboard.
+- You should see new errors in your Backtrace instance. Refresh the Project page or Query Builder to see new details in real-time.
 
 
 
@@ -264,8 +268,8 @@ You can extend `BacktraceReportBase` and `BacktraceBase` to create your own Back
 ## BacktraceApi  <a name="architecture-BacktraceApi"></a>
 **`BacktraceApi`** is a class that sends diagnostic JSON to the Backtrace endpoint. `BacktraceApi` is instantiated when the `BacktraceClient` constructor is called. You use the following event handlers in `BacktraceApi` to customize how you want to handle JSON data:
 - `RequestHandler` - attach an event handler to this event to override the default `BacktraceApi.Send` method. A `RequestHandler` handler requires 3 parameters - `uri`, `header` and `formdata` bytes. Default `Send` method won't execute when a `RequestHandler` handler is attached.
-- `WhenServerUnavailable` - attach an event handler to be invoked when the server returns with a `400 bad request`, `401 unauthorized` or other HTTP error codes.
-- `OnServerAnswer` - attach an event handler to be invoked when the server returns with a valid response.
+- `OnServerError` - attach an event handler to be invoked when the server returns with a `400 bad request`, `401 unauthorized` or other HTTP error codes.
+- `OnServerResponse` - attach an event handler to be invoked when the server returns with a valid response.
 
 `BacktraceApi` can send synchronous and asynchronous reports to the Backtrace endpoint. To prepare asynchronous report (default is synchronous) you have to set `AsynchronousRequest` property to `true`.
 

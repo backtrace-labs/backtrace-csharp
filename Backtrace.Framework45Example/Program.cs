@@ -16,7 +16,7 @@ namespace Backtrace.Framework45Example
             //Client will be initialized with values stored in default section name "BacktraceCredentials"
             BacktraceClient backtraceClient = new BacktraceClient();
 
-            var credentials = new BacktraceCredentials("https://yourHostUrl.com", "accessToken");
+            var credentials = new BacktraceCredentials(ApplicationCredentials.Host, ApplicationCredentials.Token);
             var backtraceClientWithCredentials = new BacktraceClient(credentials);
 
             //Add new scoped attributes
