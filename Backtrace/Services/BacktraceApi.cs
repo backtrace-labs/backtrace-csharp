@@ -104,7 +104,7 @@ namespace Backtrace.Services
             {
                 var jsonContent = new StringContent(json);
                 jsonContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
-                
+
                 jsonContent.Headers.ContentDisposition =
                     new ContentDispositionHeaderValue("form-data")
                     {
@@ -120,14 +120,13 @@ namespace Backtrace.Services
                         continue;
                     }
                     string fileName = $"attachment_{Path.GetFileName(file)}";
-
                     var fileContent = new StreamContent(File.OpenRead(file));
                     fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
                     {
-                        Name = "\"files\"",
-                        FileName = "\"" + fileName + "\""
+                        Name = $"\"{fileName}\"",
+                        FileName = $"\"{fileName}\""
                     };
-                    fileContent.Headers.ContentType = new MediaTypeHeaderValue(contentType);
+                    fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
                     content.Add(fileContent);
                 }
 
@@ -136,10 +135,12 @@ namespace Backtrace.Services
                 content.Headers.TryAddWithoutValidation("Content-Type", contentType);
                 request.Content = content;
 
-                var response = await _http.SendAsync(request);
-                var fullResponse = await response.Content.ReadAsStringAsync();
-                var serverResponse = JsonConvert.DeserializeObject<BacktraceServerResponse>(fullResponse, JsonSerializerSettings);
-                return serverResponse;
+                using (var response = await _http.SendAsync(request))
+                {
+                    var fullResponse = await response.Content.ReadAsStringAsync();
+                    var serverResponse = JsonConvert.DeserializeObject<BacktraceServerResponse>(fullResponse, JsonSerializerSettings);
+                    return serverResponse;
+                }
             }
         }
 #endif
