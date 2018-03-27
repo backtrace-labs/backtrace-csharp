@@ -11,7 +11,6 @@ namespace Backtrace.Model.JsonData
     /// </summary>
     public class Annotations
     {
-
         /// <summary>
         /// Get system environment variables
         /// </summary>
@@ -37,6 +36,12 @@ namespace Backtrace.Model.JsonData
         }
 
         /// <summary>
+        /// Get built-in complex attributes
+        /// </summary>
+        [JsonExtensionData]
+        public Dictionary<string, object> ComplexAttributes = new Dictionary<string, object>();
+
+        /// <summary>
         /// System environment variables
         /// </summary>
         private readonly EnvironmentVariables environment;
@@ -50,10 +55,12 @@ namespace Backtrace.Model.JsonData
         /// Create new instance of Annotations class
         /// </summary>
         /// <param name="callingAssembly">Calling assembly</param>
-        public Annotations(Assembly callingAssembly)
+        /// <param name="complexAttributes">Built-in complex attributes</param>
+        public Annotations(Assembly callingAssembly, Dictionary<string, object> complexAttributes)
         {
             appDependencies = new ApplicationDependencies(callingAssembly);
             environment = new EnvironmentVariables();
+            ComplexAttributes = complexAttributes;
         }
     }
 }
