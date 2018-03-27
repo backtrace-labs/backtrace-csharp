@@ -29,7 +29,7 @@ namespace Backtrace.Services
         /// <summary>
         /// User custom request method
         /// </summary>
-        public Func<string, string, BacktraceData<T>, BacktraceServerResponse> RequestHandler { get; set; } = null;
+        public Func<string, string, BacktraceData<T>, BacktraceResult> RequestHandler { get; set; } = null;
 
         /// <summary>
         /// Event triggered when server is unvailable
@@ -39,7 +39,7 @@ namespace Backtrace.Services
         /// <summary>
         /// Event triggered when server respond to diagnostic data
         /// </summary>
-        public Action<BacktraceServerResponse> OnServerResponse { get; set; }
+        public Action<BacktraceResult> OnServerResponse { get; set; }
 
         /// <summary>
         /// Url to server
@@ -62,7 +62,7 @@ namespace Backtrace.Services
         /// </summary>
         private readonly HttpClient _http = new HttpClient();
 
-        public async Task<BacktraceServerResponse> SendAsync(BacktraceData<T> data)
+        public async Task<BacktraceResult> SendAsync(BacktraceData<T> data)
         {
             Guid requestId = Guid.NewGuid();
             var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
@@ -73,7 +73,7 @@ namespace Backtrace.Services
             return await SendAsync(requestId, json, data.Attachments);
         }
 
-        private async Task<BacktraceServerResponse> SendAsync(Guid requestId, string json, List<string> attachments)
+        private async Task<BacktraceResult> SendAsync(Guid requestId, string json, List<string> attachments)
         {
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
             string boundary = FormDataHelper.GetBoundary(requestId);
@@ -87,7 +87,7 @@ namespace Backtrace.Services
                 jsonContent.Headers.ContentDisposition =
                     new ContentDispositionHeaderValue("form-data")
                     {
-                        Name = "\"upload_file\"",
+                        Name = "upload_file",
                         FileName = "\"upload_file.json\""
                     };
 
@@ -113,12 +113,26 @@ namespace Backtrace.Services
                 content.Headers.Remove("Content-Type");
                 content.Headers.TryAddWithoutValidation("Content-Type", contentType);
                 request.Content = content;
-
-                using (var response = await _http.SendAsync(request))
+                try
                 {
-                    var fullResponse = await response.Content.ReadAsStringAsync();
-                    var serverResponse = JsonConvert.DeserializeObject<BacktraceServerResponse>(fullResponse, JsonSerializerSettings);
-                    return serverResponse;
+                    using (var response = await _http.SendAsync(request))
+                    {
+                        var fullResponse = await response.Content.ReadAsStringAsync();
+                        if(response.StatusCode != HttpStatusCode.OK)
+                        {
+                            var err = new WebException(response.ReasonPhrase);
+                            OnServerError?.Invoke(err);
+                            return BacktraceResult.OnError(err);
+                        }
+                        var result = JsonConvert.DeserializeObject<BacktraceResult>(fullResponse);
+                        OnServerResponse?.Invoke(result);
+                        return result;
+                    }
+                }
+                catch(Exception exception)
+                {
+                    OnServerError?.Invoke(exception);
+                    return BacktraceResult.OnError(exception);
                 }
             }
         }
@@ -143,7 +157,7 @@ namespace Backtrace.Services
         /// </summary>
         /// <param name="data">Diagnostic data</param>
         /// <returns>Server response</returns>
-        public BacktraceServerResponse Send(BacktraceData<T> data)
+        public BacktraceResult Send(BacktraceData<T> data)
         {
             Guid requestId = Guid.NewGuid();
             string json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
@@ -156,25 +170,34 @@ namespace Backtrace.Services
             request.Method = "POST";
             request.ContentType = contentType;
             request.ContentLength = formData.Length;
-            using (Stream requestStream = request.GetRequestStream())
+            try
             {
-                requestStream.Write(formData, 0, formData.Length);
-                requestStream.Close();
+                using (Stream requestStream = request.GetRequestStream())
+                {
+                    requestStream.Write(formData, 0, formData.Length);
+                    requestStream.Close();
+                }
+                return ReadServerResponse(request);
             }
-            return ReadServerResponse(request);
+            catch (Exception exception)
+            {
+                OnServerError?.Invoke(exception);
+                return BacktraceResult.OnError(exception);
+            }
         }
 
         /// <summary>
         /// Handle server respond for synchronous request
         /// </summary>
         /// <param name="request">Current HttpWebRequest</param>
-        private BacktraceServerResponse ReadServerResponse(HttpWebRequest request)
+        private BacktraceResult ReadServerResponse(HttpWebRequest request)
         {
             using (WebResponse webResponse = request.GetResponse() as HttpWebResponse)
             {
                 StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
                 string fullResponse = responseReader.ReadToEnd();
-                var response = JsonConvert.DeserializeObject<BacktraceServerResponse>(fullResponse);
+                var response = JsonConvert.DeserializeObject<BacktraceResult>(fullResponse);
+                OnServerResponse.Invoke(response);
                 return response;
             }
         }
