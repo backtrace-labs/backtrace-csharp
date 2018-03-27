@@ -105,7 +105,7 @@ namespace Backtrace.Services
                 content.Headers.Remove("Content-Type");
                 content.Headers.TryAddWithoutValidation("Content-Type", contentType);
                 request.Content = content;
-
+                
                 var response = await _http.SendAsync(request);
                 var fullResponse = await response.Content.ReadAsStringAsync();
                 var serverResponse = JsonConvert.DeserializeObject<BacktraceServerResponse>(fullResponse, JsonSerializerSettings);

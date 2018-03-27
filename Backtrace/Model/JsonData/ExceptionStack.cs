@@ -100,7 +100,7 @@ namespace Backtrace.Model.JsonData
 
             //if there is no stack trace 
             //return stack trace from exception
-            if (result == null || result.Count == 0)
+            if (result == null || !result.Any())
             {
                 return exceptionStack;
             }

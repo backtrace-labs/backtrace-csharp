@@ -57,7 +57,9 @@ namespace Backtrace.Common
             {
                 return false;
             }
-
+#if WINDOWS_UWP
+            return false;
+#else
             Process currentProcess = Process.GetCurrentProcess();
             IntPtr currentProcessHandle = currentProcess.Handle;
             uint currentProcessId = (uint)currentProcess.Id;
@@ -68,6 +70,7 @@ namespace Backtrace.Common
                     ? MiniDumpWriteDump(currentProcessHandle, currentProcessId, fileHandle.SafeFileHandle, (uint)options, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero)
                     : MiniDumpWriteDump(currentProcessHandle, currentProcessId, fileHandle.SafeFileHandle, (uint)options, ref exceptionInformation, IntPtr.Zero, IntPtr.Zero);
             }
+#endif
         }
     }
 }

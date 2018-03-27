@@ -185,7 +185,7 @@ namespace Backtrace.Base
             _database.ClearMiniDump(report.MinidumpFile);
             return result;
         }
-#if !NET35 && !WINDOWS_UWP
+#if !NET35
         /// <summary>
         /// Send asynchronous report to Backtrace API
         /// </summary>
