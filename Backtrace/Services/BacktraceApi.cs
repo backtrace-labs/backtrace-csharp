@@ -7,6 +7,7 @@ using System.IO;
 using Backtrace.Common;
 #if !NET35
 using System.Threading.Tasks;
+using System.Net.Http.Headers;
 using System.Net.Http;
 #endif
 
@@ -95,13 +96,42 @@ namespace Backtrace.Services
             Guid requestId = Guid.NewGuid();
             var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
 
-            var formData = FormDataHelper.GetFormData(json, data.Attachments, requestId);
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
+            string boundary = FormDataHelper.GetBoundary(requestId);
 
             using (var request = new HttpRequestMessage(HttpMethod.Post, _serverurl))
-            using (var content = new ByteArrayContent(formData))
+            using (var content = new MultipartFormDataContent(boundary))
             {
-                // clear and add content type with boundary tag
+                var jsonContent = new StringContent(json);
+                jsonContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
+                
+                jsonContent.Headers.ContentDisposition =
+                    new ContentDispositionHeaderValue("form-data")
+                    {
+                        Name = "\"upload_file\"",
+                        FileName = "\"upload_file.json\""
+                    };
+
+                content.Add(jsonContent);
+                foreach (var file in data.Attachments)
+                {
+                    if (!File.Exists(file))
+                    {
+                        continue;
+                    }
+                    string fileName = $"attachment_{Path.GetFileName(file)}";
+
+                    var fileContent = new StreamContent(File.OpenRead(file));
+                    fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+                    {
+                        Name = "\"files\"",
+                        FileName = "\"" + fileName + "\""
+                    };
+                    fileContent.Headers.ContentType = new MediaTypeHeaderValue(contentType);
+                    content.Add(fileContent);
+                }
+
+                //// clear and add content type with boundary tag
                 content.Headers.Remove("Content-Type");
                 content.Headers.TryAddWithoutValidation("Content-Type", contentType);
                 request.Content = content;
