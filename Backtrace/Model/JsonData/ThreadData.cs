@@ -64,18 +64,11 @@ namespace Backtrace.Model.JsonData
         /// </summary>
         private void ProcessThreads()
         {
+#if !WINDOWS_UWP
             ProcessThreadCollection currentThreads = null;
-            try
+            currentThreads = Process.GetCurrentProcess().Threads;
+            if (currentThreads == null)
             {
-                currentThreads = Process.GetCurrentProcess().Threads;
-                if(currentThreads == null)
-                {
-                    return;
-                }
-            }
-            catch
-            {
-                //handle UWP
                 return;
             }
             foreach (ProcessThread thread in currentThreads)
@@ -89,6 +82,7 @@ namespace Backtrace.Model.JsonData
                 string threadId = thread.Id.ToString();
                 ThreadInformations.Add(Guid.NewGuid().ToString(), new ThreadInformation(threadId, false, null));
             }
+#endif
         }
 
 #if NET45

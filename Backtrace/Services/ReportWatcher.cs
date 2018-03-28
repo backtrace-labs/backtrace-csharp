@@ -49,7 +49,6 @@ namespace Backtrace.Services
         /// <returns>true if user can add a new report</returns>
         public bool WatchReport(BacktraceReportBase<T> report)
         {
-            System.Diagnostics.Trace.WriteLine($"{report.Message} : {report.Timestamp}");
             if (!_watcherEnable)
             {
                 return true;
@@ -88,7 +87,6 @@ namespace Backtrace.Services
         internal void Reset()
         {
             _reportQue.Clear();
-
         }
 
     }

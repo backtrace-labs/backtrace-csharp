@@ -12,12 +12,13 @@ namespace Backtrace.Interfaces
     /// <typeparam name="T">Attribute type</typeparam>
     public interface IBacktraceApi<T> : IDisposable
     {
+#if !WINDOWS_UWP
         /// <summary>
         /// Send a Backtrace report to Backtrace API
         /// </summary>
         /// <param name="data">Library diagnostic data</param>
         BacktraceResult Send(BacktraceData<T> data);
-
+#endif
 #if !NET35
         /// <summary>
         /// Send asynchronous Backtrace report to Backtrace API

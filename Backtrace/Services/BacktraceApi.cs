@@ -118,7 +118,7 @@ namespace Backtrace.Services
                     using (var response = await _http.SendAsync(request))
                     {
                         var fullResponse = await response.Content.ReadAsStringAsync();
-                        if(response.StatusCode != HttpStatusCode.OK)
+                        if (response.StatusCode != HttpStatusCode.OK)
                         {
                             var err = new WebException(response.ReasonPhrase);
                             OnServerError?.Invoke(err);
@@ -129,7 +129,7 @@ namespace Backtrace.Services
                         return result;
                     }
                 }
-                catch(Exception exception)
+                catch (Exception exception)
                 {
                     OnServerError?.Invoke(exception);
                     return BacktraceResult.OnError(exception);
@@ -144,14 +144,17 @@ namespace Backtrace.Services
         /// </summary>
         public void SetTlsSupport()
         {
+#if !WINDOWS_UWP
             ServicePointManager.SecurityProtocol =
                      SecurityProtocolType.Tls
                     | (SecurityProtocolType)0x00000300
                     | (SecurityProtocolType)0x00000C00;
             ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true;
+#endif
         }
 
         #region synchronousRequest
+#if !WINDOWS_UWP
         /// <summary>
         /// Sending a diagnostic report data to server API. 
         /// </summary>
@@ -201,6 +204,7 @@ namespace Backtrace.Services
                 return response;
             }
         }
+#endif
         #endregion
         /// <summary>
         /// Get serialization settings

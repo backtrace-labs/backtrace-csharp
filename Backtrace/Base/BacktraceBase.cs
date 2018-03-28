@@ -225,7 +225,7 @@ namespace Backtrace.Base
             _database.ClearMiniDump(report.MinidumpFile);
             return result;
         }
-
+#if !WINDOWS_UWP
         /// <summary>
         /// Add automatic exception handling for current application
         /// </summary>
@@ -256,6 +256,7 @@ namespace Backtrace.Base
             var exception = e.ExceptionObject as Exception; 
             var result = Send(new BacktraceReportBase<T>(exception, assembly));
         }
+#endif
 #endif
     }
 }

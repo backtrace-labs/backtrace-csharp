@@ -25,7 +25,7 @@ namespace Backtrace
         /// </summary>
         public Action<BacktraceReport> AfterSend;
 
-#if !NETSTANDARD2_0
+#if !NETSTANDARD2_0 && !WINDOWS_UWP
         /// <summary>
         /// Initializing Backtrace client instance
         /// </summary>
