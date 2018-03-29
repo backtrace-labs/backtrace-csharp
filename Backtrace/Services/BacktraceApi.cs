@@ -197,7 +197,7 @@ namespace Backtrace.Services
                 StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
                 string fullResponse = responseReader.ReadToEnd();
                 var response = JsonConvert.DeserializeObject<BacktraceResult>(fullResponse);
-                OnServerResponse.Invoke(response);
+                OnServerResponse?.Invoke(response);
                 return response;
             }
         }

@@ -1,4 +1,4 @@
-﻿using Backtrace.Core.Model.DataStructures.Trees;
+﻿using Backtrace.Core.Model;
 using Backtrace.Model;
 using System;
 using System.Collections.Generic;

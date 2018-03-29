@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
@@ -34,9 +35,9 @@ namespace Backtrace.UniversalWindowsPlatform
 
         private static void StartJob()
         {
-            CalculateDifference(-12);
+            Task.Run(() => CalculateDifference(-12)).Wait();
         }
-        private static void CalculateDifference(int i = 0)
+        private static async Task CalculateDifference(int i = 0)
         {
             if (i == 2)
             {
@@ -44,14 +45,13 @@ namespace Backtrace.UniversalWindowsPlatform
             }
             try
             {
-                CalculateDifference(++i);
+                await CalculateDifference(++i);
 
             }
             catch (Exception e)
             {
-                Trace.WriteLine(e.Message);
-                Trace.WriteLine(e.ToString());
-                backtraceClient.Send(e);
+                backtraceClient.Send($"{DateTime.Now} : CalculateDifference error received");
+                await backtraceClient.SendAsync(e);                
             }
         }
 
@@ -63,7 +63,8 @@ namespace Backtrace.UniversalWindowsPlatform
         {
             backtraceClient = new BacktraceClient(
                credentials,
-               databaseDirectory: localFolder.Path
+               databaseDirectory: localFolder.Path,
+               tlsSupport:true
            );
             this.InitializeComponent();
             this.Suspending += OnSuspending;

@@ -16,6 +16,11 @@ namespace Backtrace.Mobile
             BacktraceClient client = new BacktraceClient(
                 new BacktraceCredentials(ApplicationCredentials.Host, ApplicationCredentials.Token)
             );
+            client.OnServerError = (Exception e) =>
+            {
+                System.Diagnostics.Trace.Write(e.Message);
+                throw e;
+            };
             client.SendAsync("Hello from Xamarin").Wait();
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.Main);

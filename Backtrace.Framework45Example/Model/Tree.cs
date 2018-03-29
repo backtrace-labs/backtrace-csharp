@@ -1,8 +1,10 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Backtrace.Core.Model
+namespace Backtrace.Framework45Example.Model
 {
     public class Tree : IEnumerable<String>
     {
