@@ -163,7 +163,21 @@ var backtraceClient = new BacktraceClient(
     reportPerMin: 0
 );
 ```
-`BacktraceClient` for .NET 4.5 (and earlier version) can prepare necessary TLS and SSL flags to make sure application will use correctl SSL and TLS settings. If you pass to `BacktraceClient` constructor `tlsSupport` flag, `BacktraceClient` will set all TLS and SSL flags. 
+
+#### TLS/SSL Support
+
+For .NET Standard 2.0 and .NET Framework 4.6+, TLS 1.2 support is built-in.
+
+For .NET Framework 4.5 (and below) as well as .NET Standard 2.0 (and below), TLS 1.2 support may not be available, but you can use still enable lower TLS/SSL support by supplying `tlsSupport` parameter to `BacktraceClient` constructor, like so:
+```
+var backtraceClient = new BacktraceClient(
+    sectionName: "BacktraceCredentials",
+    attributes: new Dictionary<string, object>() { { "Attribute", "value" } },
+    databaseDirectory: "pathToDatabaseDirectory",
+    reportPerMin: 0,
+    tlsSupport: true
+);
+```
 
 Note:
 - `databaseDirectory` parameter is optional. Make sure the directory designated is empty. BacktraceClient will use this directory to save additional information relating to program execution. If a `databaseDirectory` path is supplied, the Backtrace library will generate and attach a minidump to each error report automatically.
@@ -176,7 +190,7 @@ Note:
 
 ### Using BacktraceReport
 
-The `BacktraceReport` class extends `BacktraceReportBase` and represents a single error report. (Optional) You can also submit custom attributes using the `attributes` parameter, or attach files by supplying an array of file paths in the `attachmentPaths` parameter. If you want to send diagnostic data by using `Send` method, make sure you set all necessary SSL or TLS flags required by API. `BacktraceClient` can set all necessary flags for you, if you pass `tlsSupport` boolean to `BacktraceClient` constructor.
+The `BacktraceReport` class extends `BacktraceReportBase` and represents a single error report. (Optional) You can also submit custom attributes using the `attributes` parameter, or attach files by supplying an array of file paths in the `attachmentPaths` parameter.
 
 ```csharp
 try
@@ -194,7 +208,9 @@ catch (Exception exception)
 }
 ```
 
-For developers that use .NET 4.5+ and .NET Standard we recommend to use `SendAsync` method. `SendAsync` use `async Task` to send diagnostic data to API. .NET 4.6+ and .NET Standard `HttpClient` API support by default SSL, TLS, TLS11 and TLS12 so you don't need set `TLS` and `SSL` flags. 
+#### Asynchronous Send Support
+
+For developers that use .NET 4.5+ and .NET Standard we recommend using `SendAsync` method, which uses asynchourous Tasks. Both `Send` and `SendAsync` method returns `BacktraceResult`. See example below:
 
 ```csharp
 try
@@ -211,8 +227,6 @@ catch (Exception exception)
     var result = await backtraceClient.SendAsync(backtraceReport);
 }
 ```
-
-`Send` and `SendAsync` method returns `BacktraceResult`. If you want to check API `ObjectId`, `error message` or request status you check data available in `BacktraceResult`.
 
 ### Other BacktraceReport Overloads
 
@@ -292,12 +306,14 @@ You can extend `BacktraceReportBase` and `BacktraceBase` to create your own Back
 
 `BacktraceApi` can send synchronous and asynchronous reports to the Backtrace endpoint. To prepare asynchronous report (default is synchronous) you have to set `AsynchronousRequest` property to `true`.
 
+## BacktraceResult  <a name="architecture-BacktraceResult"></a>
+**`BacktraceResult`** is a class that holds response and result from a `Send` or `SendAsync` call. The class contains a `Status` property that indicates whether the call was completed (`OK`), the call returned with an error (`ServerError`), or the call was abored because client reporting limit was reached (`LimitReached`). Additionally, the class has a `Message` property that contains details about the status. Note that the `Send` call may produce an error report on an inner exception, in this case you can find an additional `BacktraceResult` object in the `InnerExceptionResult` property.
+
 ## BacktraceDatabase  <a name="architecture-BacktraceDatabase"></a>
 **`BacktraceDatabase`** is a class stores data in your local harddrive. An `BacktraceDatabase` instance is instantiated when the `BacktraceClient` constructor is called. If `databaseDirectory` isn't set in the `BacktraceClient` constructor call, `BacktraceDatabase` won't generate minidump files. Before start - make sure that the directory designed in **BacktraceClient.databaseDirectory** is **empty**. 
 
 ## ReportWatcher  <a name="architecture-ReportWatcher"></a>
 **`ReportWatcher`** is a class that validate send requests to the Backtrace endpoint. If `reportPerMin` is set in the `BacktraceClient` constructor call, `ReportWatcher` will drop error reports that go over the limit.
-
 
 
 # Good to know <a name="good-to-know"></a>
@@ -314,8 +330,11 @@ You can use this Backtrace library with Xamarin if you change your `HttpClient` 
 #Release Notes
 
 ##Version 1.1.0 - 30.03.2018
-- BacktraceClient `Send` method support `async task`,
-- `BacktraceClient` use `StreamContent` to send attachments via `SendAsync` method,
-- `AfterSend` event parameter change. Now `AfterSend` event require `BacktraceResult` parameter, not `BacktraceReport`,
+- BacktraceClient now supports an asynchronously `SendAsync` method that works with `async task`
+- For .NET Framework 4.5 and .NET Standard 2.0, `BacktraceClient` now streams file attachment content directly from disk via `SendAsync` method.
+- `AfterSend` event parameter changed. Now `AfterSend` event require `BacktraceResult` parameter, not `BacktraceReport`,
 - `Send` and `SendAsync` method now returns `BacktraceResult` with information about report state,
 - `OnServerResponse` now require `BacktraceResult` as a parameter. 
+
+##Version 1.0.0 - 19.03.2018
+- First release.
