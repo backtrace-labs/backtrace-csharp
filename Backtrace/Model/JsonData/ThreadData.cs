@@ -120,7 +120,7 @@ namespace Backtrace.Model.JsonData
                         threadName = thread.ManagedThreadId.ToString();
                     }
                     var frames = ExceptionStack.Convert(thread.StackTrace);
-                    ThreadInformations.Add(threadName, new ThreadInformation(threadName, false, frames));
+                    ThreadInformations[threadName] = new ThreadInformation(threadName, false, frames);
                 }
             }
         }

@@ -19,7 +19,7 @@ namespace Backtrace.WinFoms
             BacktraceClient backtraceClient = new BacktraceClient(
                     new BacktraceCredentials(ApplicationCredentials.Host, ApplicationCredentials.Token),
                     reportPerMin: 0, //unlimited number of reports per secound
-                    tlsSupport: true
+                    tlsLegacySupport: true
             );
             backtraceClient.OnServerError += (Exception e) =>
             {

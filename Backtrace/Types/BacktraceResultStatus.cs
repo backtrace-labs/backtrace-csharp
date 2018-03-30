@@ -5,9 +5,9 @@ using System.Text;
 namespace Backtrace.Types
 {
     /// <summary>
-    /// Existing server response types
+    /// Existing send method result statuses
     /// </summary>
-    public enum BacktraceResultType
+    public enum BacktraceResultStatus
     {
         /// <summary>
         /// Set when client limit is reached

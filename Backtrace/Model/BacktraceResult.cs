@@ -11,6 +11,16 @@ namespace Backtrace.Model
     /// </summary>
     public class BacktraceResult
     {
+        /// <summary>
+        /// Current report
+        /// </summary>
+        public BacktraceReport BacktraceReport { get; set; }
+
+        /// <summary>
+        /// Inner exception Backtrace status
+        /// </summary>
+        public BacktraceResult InnerExceptionResult { get; set; } = null;
+
         private string _message;
         /// <summary>
         /// Message
@@ -25,14 +35,14 @@ namespace Backtrace.Model
             set
             {
                 _message = value;
-                Result = BacktraceResultType.ServerError;
+                Result = BacktraceResultStatus.ServerError;
             }
         }
 
         /// <summary>
         /// Result
         /// </summary>
-        BacktraceResultType Result { get; set; }
+        BacktraceResultStatus Result { get; set; } = BacktraceResultStatus.Ok;
 
         private string _object;
         /// <summary>
@@ -48,19 +58,22 @@ namespace Backtrace.Model
             set
             {
                 _object = value;
-                Result = BacktraceResultType.Ok;
+                Result = BacktraceResultStatus.Ok;
             }
         }
+
 
         /// <summary>
         /// Set result when client rate limit reached
         /// </summary>
+        /// <param name="report">Executed report</param>
         /// <returns>BacktraceResult with limit reached information</returns>
-        internal static BacktraceResult OnLimitReached()
+        internal static BacktraceResult OnLimitReached(BacktraceReport report)
         {
             return new BacktraceResult()
             {
-                Result = BacktraceResultType.LimitReached,
+                BacktraceReport = report,
+                Result = BacktraceResultStatus.LimitReached,
                 Message = "Rate limiting reached"
             };
         }
@@ -68,12 +81,14 @@ namespace Backtrace.Model
         /// <summary>
         /// Set result when error occurs while sending data to API
         /// </summary>
+        /// <param name="report">Executed report</param>
         /// <param name="exception">Exception</param>
         /// <returns>BacktraceResult with exception information</returns>
-        internal static BacktraceResult OnError(Exception exception)
+        internal static BacktraceResult OnError(BacktraceReport report, Exception exception)
         {
             return new BacktraceResult()
             {
+                BacktraceReport = report,
                 Message = exception.Message
             };
         }

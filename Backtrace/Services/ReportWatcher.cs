@@ -88,8 +88,7 @@ namespace Backtrace.Services
         internal void Reset()
         {
             _reportQue.Clear();
-
         }
-
+        
     }
 }

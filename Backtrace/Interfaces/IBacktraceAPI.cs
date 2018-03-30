@@ -26,7 +26,7 @@ namespace Backtrace.Interfaces
         System.Threading.Tasks.Task<BacktraceResult> SendAsync(BacktraceData<T> data);
 #endif
         /// <summary>
-        /// Set tls support for https requests to Backtrace API
+        /// Set tls and ssl legacy support for https requests to Backtrace API
         /// </summary>
         void SetTlsSupport();
 

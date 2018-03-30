@@ -19,7 +19,7 @@ namespace Backtrace.Core
         private BacktraceClient backtraceClient = new BacktraceClient(
             new BacktraceCredentials(ApplicationCredentials.Host, ApplicationCredentials.Token),
             reportPerMin: 0, //unlimited number of reports per secound
-            tlsSupport: true
+            tlsLegacySupport: true
         );
 
         public Program()

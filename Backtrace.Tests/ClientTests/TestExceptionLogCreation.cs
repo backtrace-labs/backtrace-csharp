@@ -13,8 +13,8 @@ namespace Backtrace.Tests.ClientTests
     {
         private static IEnumerable<Exception> _exceptions = new List<Exception>()
             {
-                null,
-                new Exception("exception"),
+                //null,
+                //new Exception("exception"),
                 new InvalidOperationException("invalidOperation", new ArgumentException("argumentException"))
             };
 
@@ -27,6 +27,7 @@ namespace Backtrace.Tests.ClientTests
         public void TestLogCreation([ValueSource("_exceptions")]Exception exception)
         {
             Assert.DoesNotThrow(() => _backtraceClient.Send(exception: exception));
+            Assert.DoesNotThrow(() => _backtraceClient.Send(message: "test message"));
             Assert.DoesNotThrow(() => _backtraceClient.Send(new BacktraceReport(exception)));
         }
 

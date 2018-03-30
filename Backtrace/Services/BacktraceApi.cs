@@ -46,7 +46,6 @@ namespace Backtrace.Services
         /// </summary>
         private readonly string _serverurl;
 
-
         /// <summary>
         /// Create a new instance of Backtrace API
         /// </summary>
@@ -55,7 +54,7 @@ namespace Backtrace.Services
         {
             _serverurl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
         }
-
+        #region asyncRequest
 #if !NET35
         /// <summary>
         /// The http client.
@@ -70,13 +69,14 @@ namespace Backtrace.Services
             {
                 RequestHandler?.Invoke(_serverurl, FormDataHelper.GetContentTypeWithBoundary(requestId), data);
             }
-            return await SendAsync(requestId, json, data.Attachments);
+            return await SendAsync(requestId, json, data);
         }
 
-        private async Task<BacktraceResult> SendAsync(Guid requestId, string json, List<string> attachments)
+        private async Task<BacktraceResult> SendAsync(Guid requestId, string json, BacktraceData<T> data)
         {
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
             string boundary = FormDataHelper.GetBoundary(requestId);
+            var report = data.Report as BacktraceReport;
 
             using (var request = new HttpRequestMessage(HttpMethod.Post, _serverurl))
             using (var content = new MultipartFormDataContent(boundary))
@@ -92,7 +92,7 @@ namespace Backtrace.Services
                     };
 
                 content.Add(jsonContent);
-                foreach (var file in attachments)
+                foreach (var file in data.Attachments)
                 {
                     if (!File.Exists(file))
                     {
@@ -118,29 +118,31 @@ namespace Backtrace.Services
                     using (var response = await _http.SendAsync(request))
                     {
                         var fullResponse = await response.Content.ReadAsStringAsync();
-                        if(response.StatusCode != HttpStatusCode.OK)
+                        if (response.StatusCode != HttpStatusCode.OK)
                         {
                             var err = new WebException(response.ReasonPhrase);
                             OnServerError?.Invoke(err);
-                            return BacktraceResult.OnError(err);
+                            return BacktraceResult.OnError(report, err);
                         }
                         var result = JsonConvert.DeserializeObject<BacktraceResult>(fullResponse);
+                        result.BacktraceReport = report;
                         OnServerResponse?.Invoke(result);
                         return result;
                     }
                 }
-                catch(Exception exception)
+                catch (Exception exception)
                 {
                     OnServerError?.Invoke(exception);
-                    return BacktraceResult.OnError(exception);
+                    return BacktraceResult.OnError(report, exception);
                 }
             }
         }
 #endif
+        #endregion
 
 
         /// <summary>
-        /// Setting all security protocols for https requests via
+        /// Set tls and ssl legacy support for https requests to Backtrace API
         /// </summary>
         public void SetTlsSupport()
         {
@@ -161,6 +163,7 @@ namespace Backtrace.Services
         {
             Guid requestId = Guid.NewGuid();
             string json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
+            var report = data.Report as BacktraceReport;
 
             var formData = FormDataHelper.GetFormData(json, data.Attachments, requestId);
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
@@ -177,12 +180,12 @@ namespace Backtrace.Services
                     requestStream.Write(formData, 0, formData.Length);
                     requestStream.Close();
                 }
-                return ReadServerResponse(request);
+                return ReadServerResponse(request, report);
             }
             catch (Exception exception)
             {
                 OnServerError?.Invoke(exception);
-                return BacktraceResult.OnError(exception);
+                return BacktraceResult.OnError(report, exception);
             }
         }
 
@@ -190,13 +193,14 @@ namespace Backtrace.Services
         /// Handle server respond for synchronous request
         /// </summary>
         /// <param name="request">Current HttpWebRequest</param>
-        private BacktraceResult ReadServerResponse(HttpWebRequest request)
+        private BacktraceResult ReadServerResponse(HttpWebRequest request, BacktraceReport report)
         {
             using (WebResponse webResponse = request.GetResponse() as HttpWebResponse)
             {
                 StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
                 string fullResponse = responseReader.ReadToEnd();
                 var response = JsonConvert.DeserializeObject<BacktraceResult>(fullResponse);
+                response.BacktraceReport = report;
                 OnServerResponse?.Invoke(response);
                 return response;
             }
@@ -211,7 +215,7 @@ namespace Backtrace.Services
             NullValueHandling = NullValueHandling.Ignore,
             DefaultValueHandling = DefaultValueHandling.Ignore
         };
-
+        #region dispose
         private bool _disposed = false; // To detect redundant calls
         public void Dispose()
         {
@@ -237,5 +241,6 @@ namespace Backtrace.Services
         {
             Dispose(false);
         }
+        #endregion
     }
 }

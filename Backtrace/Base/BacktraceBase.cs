@@ -138,19 +138,19 @@ namespace Backtrace.Base
         /// <param name="attributes">Additional information about current application</param>
         /// <param name="databaseDirectory">Database path</param>
         /// <param name="reportPerMin">Number of reports sending per one minute. If value is equal to zero, there is no request sending to API. Value have to be greater than or equal to 0</param>
-        /// <param name="tlsSupport"></param>
+        /// <param name="tlsLegacySupport">Set SSL and TLS flags for https request to Backtrace API</param>
         public BacktraceBase(
             BacktraceCredentials backtraceCredentials,
             Dictionary<string, T> attributes = null,
             string databaseDirectory = "",
             uint reportPerMin = 3,
-            bool tlsSupport = false)
+            bool tlsLegacySupport = false)
         {
             _attributes = attributes ?? new Dictionary<string, T>();
             _database = new BacktraceDatabase<T>(databaseDirectory);
             _backtraceApi = new BacktraceApi<T>(backtraceCredentials);
             _reportWatcher = new ReportWatcher<T>(reportPerMin);
-            if (tlsSupport)
+            if (tlsLegacySupport)
             {
                 _backtraceApi.SetTlsSupport();
             }
@@ -176,7 +176,7 @@ namespace Backtrace.Base
             if (!watcherValidation)
             {
                 OnClientReportLimitReached?.Invoke();
-                return BacktraceResult.OnLimitReached();
+                return BacktraceResult.OnLimitReached(report as BacktraceReport);
             }
             //generate minidump and add minidump to report 
             string minidumpPath = _database.GenerateMiniDump(report, MiniDumpType);
@@ -208,7 +208,7 @@ namespace Backtrace.Base
             if (!watcherValidation)
             {
                 OnClientReportLimitReached?.Invoke();
-                return BacktraceResult.OnLimitReached();
+                return BacktraceResult.OnLimitReached(report as BacktraceReport);
             }
             //generate minidump and add minidump to report 
             string minidumpPath = _database.GenerateMiniDump(report, MiniDumpType);
