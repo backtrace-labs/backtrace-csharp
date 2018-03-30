@@ -89,7 +89,7 @@ Visual Studio allows you to build a project and run all available samples (prepa
 - Double click `.sln` file or `open` project directory in Visual Studio.
 - In `Solution Explorer` navigate to directory `Sample` and set preffered project (.NET Core/Framework) as startup project.
 
-![Visual Studio](https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/VisualStudio.PNG)
+![Visual Studio](https://github.com/backtrace-labs/backtrace-csharp/raw/master/Backtrace/Documents/Images/VisualStudio.PNG)
 
 - Open `Program.cs` class in any **Backtrace Sample project** and replace `BacktraceCredential` constructor patemeters with with your `Backtrace endpoint URL` (e.g. https://xxx.sp.backtrace.io:6098) and `submission token`:
 ```csharp
@@ -129,7 +129,7 @@ You can use .NET Core's CLI to run sample project on Windows, Mac OS and Linux. 
 
 - Open the **Backtrace** solution in Visual Studio, unload all projects except **Backtrace**, **Backtrace.Tests** and **Backtrace.Core**, and set **Backtrace.Core** as your startup project:
 
-![VisualStudioMacOS](https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/VisualStudioMacOS.PNG)
+![VisualStudioMacOS](https://github.com/backtrace-labs/backtrace-csharp/raw/master/Backtrace/Documents/Images/VisualStudioMacOS.PNG)
 
 - Open `Program.cs` class in project **Backtrace.Core** and replace `BacktraceCredential` constructor patemeters with with your `Backtrace endpoint URL` (e.g. https://xxx.sp.backtrace.io:6098) and `submission token`:
 ```csharp
@@ -163,6 +163,7 @@ var backtraceClient = new BacktraceClient(
     reportPerMin: 0
 );
 ```
+`BacktraceClient` for .NET 4.5 (and earlier version) can prepare necessary TLS and SSL flags to make sure application will use correctl SSL and TLS settings. If you pass to `BacktraceClient` constructor `tlsSupport` flag, `BacktraceClient` will set all TLS and SSL flags. 
 
 Note:
 - `databaseDirectory` parameter is optional. Make sure the directory designated is empty. BacktraceClient will use this directory to save additional information relating to program execution. If a `databaseDirectory` path is supplied, the Backtrace library will generate and attach a minidump to each error report automatically.
@@ -175,7 +176,8 @@ Note:
 
 ### Using BacktraceReport
 
-The `BacktraceReport` class extends `BacktraceReportBase` and represents a single error report. (Optional) You can also submit custom attributes using the `attributes` parameter, or attach files by supplying an array of file paths in the `attachmentPaths` parameter. 
+The `BacktraceReport` class extends `BacktraceReportBase` and represents a single error report. (Optional) You can also submit custom attributes using the `attributes` parameter, or attach files by supplying an array of file paths in the `attachmentPaths` parameter. If you want to send diagnostic data by using `Send` method, make sure you set all necessary SSL or TLS flags required by API. `BacktraceClient` can set all necessary flags for you, if you pass `tlsSupport` boolean to `BacktraceClient` constructor.
+
 ```csharp
 try
 {
@@ -188,9 +190,29 @@ catch (Exception exception)
         attributes: new Dictionary<string, object>() { { "key", "value" } },
         attachmentPaths: new List<string>() { @"file_path_1", @"file_path_2" }
     );
-    backtraceClient.Send(backtraceReport);
+    var result = backtraceClient.Send(backtraceReport);
 }
 ```
+
+For developers that use .NET 4.5+ and .NET Standard we recommend to use `SendAsync` method. `SendAsync` use `async Task` to send diagnostic data to API. .NET 4.6+ and .NET Standard `HttpClient` API support by default SSL, TLS, TLS11 and TLS12 so you don't need set `TLS` and `SSL` flags. 
+
+```csharp
+try
+{
+  //throw exception here
+}
+catch (Exception exception)
+{
+    var report = new BacktraceReport(
+        exception: exception,
+        attributes: new Dictionary<string, object>() { { "key", "value" } },
+        attachmentPaths: new List<string>() { @"file_path_1", @"file_path_2" }
+    );
+    var result = await backtraceClient.SendAsync(backtraceReport);
+}
+```
+
+`Send` and `SendAsync` method returns `BacktraceResult`. If you want to check API `ObjectId`, `error message` or request status you check data available in `BacktraceResult`.
 
 ### Other BacktraceReport Overloads
 
@@ -204,7 +226,7 @@ try
 catch (Exception exception)
 {
   backtraceClient.Send(exception);
-  backtraceClient.Send("Message");
+  await backtraceClient.SendAsync("Message");
 }
 ```
 
@@ -220,11 +242,8 @@ backtraceClient.BeforeSend =
     (Model.BacktraceData<object> model) =>
     {
         var data = model;
-
-        //do something with data for example:    
-    
+        //do something with data for example:        
         data.Attributes.Add("eventAtrtibute", "EventAttributeValue");
-
         if(data.Classifier == null || !data.Classifier.Any())
         {
             data.Attachments.Add("path to attachment");
@@ -289,4 +308,4 @@ You can use this Backtrace library with Xamarin if you change your `HttpClient` 
 
 ![Xamarin Android Support][androidSupport]
 
-[androidSupport]: https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/AndroidSupport.PNG "Xamarin Android Support"
+[androidSupport]: https://github.com/backtrace-labs/backtrace-csharp/raw/master/Backtrace/Documents/Images/AndroidSupport.PNG "Xamarin Android Support"
