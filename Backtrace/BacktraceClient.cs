@@ -23,7 +23,7 @@ namespace Backtrace
         /// <summary>
         /// Set an event executed after sending data to Backtrace API
         /// </summary>
-        public Action<BacktraceReport> AfterSend;
+        public Action<BacktraceResult> AfterSend;
 
 #if !NETSTANDARD2_0
         /// <summary>
@@ -101,7 +101,7 @@ namespace Backtrace
         {
             OnReportStart?.Invoke(backtraceReport);
             var result =  base.Send(backtraceReport);
-            AfterSend?.Invoke(backtraceReport);
+            AfterSend?.Invoke(result);
 
             //check if there is more errors to send
             //handle inner exception
@@ -119,7 +119,7 @@ namespace Backtrace
         {
             OnReportStart?.Invoke(backtraceReport);
             var response = await base.SendAsync(backtraceReport);
-            AfterSend?.Invoke(backtraceReport);
+            AfterSend?.Invoke(response);
 
             //check if there is more errors to send
             //handle inner exception
