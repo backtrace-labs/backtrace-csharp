@@ -168,14 +168,14 @@ var backtraceClient = new BacktraceClient(
 
 For .NET Standard 2.0 and .NET Framework 4.6+, TLS 1.2 support is built-in.
 
-For .NET Framework 4.5 (and below) as well as .NET Standard 2.0 (and below), TLS 1.2 support may not be available, but you can use still enable lower TLS/SSL support by supplying `tlsSupport` parameter to `BacktraceClient` constructor, like so:
+For .NET Framework 4.5 (and below) as well as .NET Standard 2.0 (and below), TLS 1.2 support may not be available, but you can use still enable lower TLS/SSL support by supplying `tlsLegacySupport` parameter to `BacktraceClient` constructor, like so:
 ```
 var backtraceClient = new BacktraceClient(
     sectionName: "BacktraceCredentials",
     attributes: new Dictionary<string, object>() { { "Attribute", "value" } },
     databaseDirectory: "pathToDatabaseDirectory",
     reportPerMin: 0,
-    tlsSupport: true
+    tlsLegacySupport: true
 );
 ```
 
