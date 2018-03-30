@@ -309,3 +309,13 @@ You can use this Backtrace library with Xamarin if you change your `HttpClient` 
 ![Xamarin Android Support][androidSupport]
 
 [androidSupport]: https://github.com/backtrace-labs/backtrace-csharp/raw/master/Backtrace/Documents/Images/AndroidSupport.PNG "Xamarin Android Support"
+
+
+#Release Notes
+
+##Version 1.1.0 - 30.03.2018
+- BacktraceClient `Send` method support `async task`,
+- `BacktraceClient` use `StreamContent` to send attachments via `SendAsync` method,
+- `AfterSend` event parameter change. Now `AfterSend` event require `BacktraceResult` parameter, not `BacktraceReport`,
+- `Send` and `SendAsync` method now returns `BacktraceResult` with information about report state,
+- `OnServerResponse` now require `BacktraceResult` as a parameter. 
