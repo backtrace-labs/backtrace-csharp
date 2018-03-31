@@ -27,8 +27,8 @@ namespace Backtrace.Tests.ServicesTests
             Assert.IsTrue(reportWatcher.WatchReport(new BacktraceReport("last available information")));
             Assert.IsFalse(reportWatcher.WatchReport(new BacktraceReport("invalid message")));
             reportWatcher.Reset();
-            Assert.IsTrue(reportWatcher.WatchReport(new BacktraceReport("after clean + available message")));
-            Assert.IsTrue(reportWatcher._reportQue.Count == 2);
+            Assert.IsTrue(reportWatcher.WatchReport(new BacktraceReport("after clean ")));
+            Assert.IsTrue(reportWatcher._reportQue.Count == 1);
         }
 
         /// <summary>

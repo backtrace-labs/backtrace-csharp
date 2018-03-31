@@ -12,7 +12,7 @@ using System.Net.Http.Headers;
 using System.Net.Http;
 #endif
 
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("DynamicProxyGenAssembly2")]
 namespace Backtrace.Services
 {
     /// <summary>
@@ -56,10 +56,11 @@ namespace Backtrace.Services
         }
         #region asyncRequest
 #if !NET35
+
         /// <summary>
         /// The http client.
         /// </summary>
-        private readonly HttpClient _http = new HttpClient();
+        internal HttpClient HttpClient = new HttpClient();
 
         public async Task<BacktraceResult> SendAsync(BacktraceData<T> data)
         {
@@ -115,7 +116,7 @@ namespace Backtrace.Services
                 request.Content = content;
                 try
                 {
-                    using (var response = await _http.SendAsync(request))
+                    using (var response = await HttpClient.SendAsync(request))
                     {
                         var fullResponse = await response.Content.ReadAsStringAsync();
                         if (response.StatusCode != HttpStatusCode.OK)
@@ -230,7 +231,7 @@ namespace Backtrace.Services
                 if (disposing)
                 {
 #if !NET35
-                    _http.Dispose();
+                    HttpClient.Dispose();
 #endif
                 }
                 _disposed = true;

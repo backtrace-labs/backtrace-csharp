@@ -1,7 +1,5 @@
 ﻿using Backtrace.Model;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Interfaces

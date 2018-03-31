@@ -35,14 +35,14 @@ namespace Backtrace.Model
             set
             {
                 _message = value;
-                Result = BacktraceResultStatus.ServerError;
+                Status = BacktraceResultStatus.ServerError;
             }
         }
 
         /// <summary>
         /// Result
         /// </summary>
-        BacktraceResultStatus Result { get; set; } = BacktraceResultStatus.Ok;
+        public BacktraceResultStatus Status { get; set; } = BacktraceResultStatus.Ok;
 
         private string _object;
         /// <summary>
@@ -58,7 +58,7 @@ namespace Backtrace.Model
             set
             {
                 _object = value;
-                Result = BacktraceResultStatus.Ok;
+                Status = BacktraceResultStatus.Ok;
             }
         }
 
@@ -73,7 +73,7 @@ namespace Backtrace.Model
             return new BacktraceResult()
             {
                 BacktraceReport = report,
-                Result = BacktraceResultStatus.LimitReached,
+                Status = BacktraceResultStatus.LimitReached,
                 Message = "Rate limiting reached"
             };
         }

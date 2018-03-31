@@ -31,7 +31,7 @@ namespace Backtrace.Tests.IntegrationTests
             //prepare mock object
             //mock api
             var api = new Mock<IBacktraceApi<object>>();
-            api.Setup(n => n.Send(It.IsAny<BacktraceData<object>>()));
+            api.Setup(n => n.Send(It.IsAny<BacktraceData<object>>())).Returns(new BacktraceResult());
 
             //mock database
             var database = new Mock<IBacktraceDatabase<object>>();
