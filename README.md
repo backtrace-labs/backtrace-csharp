@@ -307,7 +307,7 @@ You can extend `BacktraceReportBase` and `BacktraceBase` to create your own Back
 `BacktraceApi` can send synchronous and asynchronous reports to the Backtrace endpoint. To prepare asynchronous report (default is synchronous) you have to set `AsynchronousRequest` property to `true`.
 
 ## BacktraceResult  <a name="architecture-BacktraceResult"></a>
-**`BacktraceResult`** is a class that holds response and result from a `Send` or `SendAsync` call. The class contains a `Status` property that indicates whether the call was completed (`OK`), the call returned with an error (`ServerError`), or the call was abored because client reporting limit was reached (`LimitReached`). Additionally, the class has a `Message` property that contains details about the status. Note that the `Send` call may produce an error report on an inner exception, in this case you can find an additional `BacktraceResult` object in the `InnerExceptionResult` property.
+**`BacktraceResult`** is a class that holds response and result from a `Send` or `SendAsync` call. The class contains a `Status` property that indicates whether the call was completed (`OK`), the call returned with an error (`ServerError`), or the call was aborted because client reporting limit was reached (`LimitReached`). Additionally, the class has a `Message` property that contains details about the status. Note that the `Send` call may produce an error report on an inner exception, in this case you can find an additional `BacktraceResult` object in the `InnerExceptionResult` property.
 
 ## BacktraceDatabase  <a name="architecture-BacktraceDatabase"></a>
 **`BacktraceDatabase`** is a class stores data in your local harddrive. An `BacktraceDatabase` instance is instantiated when the `BacktraceClient` constructor is called. If `databaseDirectory` isn't set in the `BacktraceClient` constructor call, `BacktraceDatabase` won't generate minidump files. Before start - make sure that the directory designed in **BacktraceClient.databaseDirectory** is **empty**. 
@@ -327,14 +327,14 @@ You can use this Backtrace library with Xamarin if you change your `HttpClient` 
 [androidSupport]: https://github.com/backtrace-labs/backtrace-csharp/raw/master/Backtrace/Documents/Images/AndroidSupport.PNG "Xamarin Android Support"
 
 
-#Release Notes
+# Release Notes
 
-##Version 1.1.0 - 30.03.2018
+## Version 1.1.0 - 30.03.2018
 - BacktraceClient now supports an asynchronously `SendAsync` method that works with `async task`
 - For .NET Framework 4.5 and .NET Standard 2.0, `BacktraceClient` now streams file attachment content directly from disk via `SendAsync` method.
 - `AfterSend` event parameter changed. Now `AfterSend` event require `BacktraceResult` parameter, not `BacktraceReport`,
 - `Send` and `SendAsync` method now returns `BacktraceResult` with information about report state,
 - `OnServerResponse` now require `BacktraceResult` as a parameter. 
 
-##Version 1.0.0 - 19.03.2018
+## Version 1.0.0 - 19.03.2018
 - First release.
