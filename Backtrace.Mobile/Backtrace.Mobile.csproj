@@ -56,6 +56,8 @@
     <AotAssemblies>false</AotAssemblies>
     <EnableLLVM>false</EnableLLVM>
     <BundleAssemblies>false</BundleAssemblies>
+    <AndroidSupportedAbis />
+    <AndroidTlsProvider>btls</AndroidTlsProvider>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -65,6 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainActivity.cs" />
+    <Compile Include="Model\ApplicationCredentials.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

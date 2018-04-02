@@ -89,7 +89,7 @@ Visual Studio allows you to build a project and run all available samples (prepa
 - Double click `.sln` file or `open` project directory in Visual Studio.
 - In `Solution Explorer` navigate to directory `Sample` and set preffered project (.NET Core/Framework) as startup project.
 
-![Visual Studio](https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/VisualStudio.PNG)
+![Visual Studio](https://github.com/backtrace-labs/backtrace-csharp/raw/master/Backtrace/Documents/Images/VisualStudio.PNG)
 
 - Open `Program.cs` class in any **Backtrace Sample project** and replace `BacktraceCredential` constructor patemeters with with your `Backtrace endpoint URL` (e.g. https://xxx.sp.backtrace.io:6098) and `submission token`:
 ```csharp
@@ -129,7 +129,7 @@ You can use .NET Core's CLI to run sample project on Windows, Mac OS and Linux. 
 
 - Open the **Backtrace** solution in Visual Studio, unload all projects except **Backtrace**, **Backtrace.Tests** and **Backtrace.Core**, and set **Backtrace.Core** as your startup project:
 
-![VisualStudioMacOS](https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/VisualStudioMacOS.PNG)
+![VisualStudioMacOS](https://github.com/backtrace-labs/backtrace-csharp/raw/master/Backtrace/Documents/Images/VisualStudioMacOS.PNG)
 
 - Open `Program.cs` class in project **Backtrace.Core** and replace `BacktraceCredential` constructor patemeters with with your `Backtrace endpoint URL` (e.g. https://xxx.sp.backtrace.io:6098) and `submission token`:
 ```csharp
@@ -164,6 +164,21 @@ var backtraceClient = new BacktraceClient(
 );
 ```
 
+#### TLS/SSL Support
+
+For .NET Standard 2.0 and .NET Framework 4.6+, TLS 1.2 support is built-in.
+
+For .NET Framework 4.5 (and below) as well as .NET Standard 2.0 (and below), TLS 1.2 support may not be available, but you can use still enable lower TLS/SSL support by supplying `tlsLegacySupport` parameter to `BacktraceClient` constructor, like so:
+```
+var backtraceClient = new BacktraceClient(
+    sectionName: "BacktraceCredentials",
+    attributes: new Dictionary<string, object>() { { "Attribute", "value" } },
+    databaseDirectory: "pathToDatabaseDirectory",
+    reportPerMin: 0,
+    tlsLegacySupport: true
+);
+```
+
 Note:
 - `databaseDirectory` parameter is optional. Make sure the directory designated is empty. BacktraceClient will use this directory to save additional information relating to program execution. If a `databaseDirectory` path is supplied, the Backtrace library will generate and attach a minidump to each error report automatically.
 - If parameter `reportPerMin` is equal to 0, there is no limit on the number of error reports per minute. When an error is submitted when the `reportPerMin` cap is reached, `BacktraceClient.Send` method will return false.
@@ -175,7 +190,8 @@ Note:
 
 ### Using BacktraceReport
 
-The `BacktraceReport` class extends `BacktraceReportBase` and represents a single error report. (Optional) You can also submit custom attributes using the `attributes` parameter, or attach files by supplying an array of file paths in the `attachmentPaths` parameter. 
+The `BacktraceReport` class extends `BacktraceReportBase` and represents a single error report. (Optional) You can also submit custom attributes using the `attributes` parameter, or attach files by supplying an array of file paths in the `attachmentPaths` parameter.
+
 ```csharp
 try
 {
@@ -188,7 +204,27 @@ catch (Exception exception)
         attributes: new Dictionary<string, object>() { { "key", "value" } },
         attachmentPaths: new List<string>() { @"file_path_1", @"file_path_2" }
     );
-    backtraceClient.Send(backtraceReport);
+    var result = backtraceClient.Send(backtraceReport);
+}
+```
+
+#### Asynchronous Send Support
+
+For developers that use .NET 4.5+ and .NET Standard we recommend using `SendAsync` method, which uses asynchourous Tasks. Both `Send` and `SendAsync` method returns `BacktraceResult`. See example below:
+
+```csharp
+try
+{
+  //throw exception here
+}
+catch (Exception exception)
+{
+    var report = new BacktraceReport(
+        exception: exception,
+        attributes: new Dictionary<string, object>() { { "key", "value" } },
+        attachmentPaths: new List<string>() { @"file_path_1", @"file_path_2" }
+    );
+    var result = await backtraceClient.SendAsync(backtraceReport);
 }
 ```
 
@@ -204,7 +240,7 @@ try
 catch (Exception exception)
 {
   backtraceClient.Send(exception);
-  backtraceClient.Send("Message");
+  await backtraceClient.SendAsync("Message");
 }
 ```
 
@@ -220,11 +256,8 @@ backtraceClient.BeforeSend =
     (Model.BacktraceData<object> model) =>
     {
         var data = model;
-
-        //do something with data for example:    
-    
+        //do something with data for example:        
         data.Attributes.Add("eventAtrtibute", "EventAttributeValue");
-
         if(data.Classifier == null || !data.Classifier.Any())
         {
             data.Attachments.Add("path to attachment");
@@ -273,12 +306,14 @@ You can extend `BacktraceReportBase` and `BacktraceBase` to create your own Back
 
 `BacktraceApi` can send synchronous and asynchronous reports to the Backtrace endpoint. To prepare asynchronous report (default is synchronous) you have to set `AsynchronousRequest` property to `true`.
 
+## BacktraceResult  <a name="architecture-BacktraceResult"></a>
+**`BacktraceResult`** is a class that holds response and result from a `Send` or `SendAsync` call. The class contains a `Status` property that indicates whether the call was completed (`OK`), the call returned with an error (`ServerError`), or the call was aborted because client reporting limit was reached (`LimitReached`). Additionally, the class has a `Message` property that contains details about the status. Note that the `Send` call may produce an error report on an inner exception, in this case you can find an additional `BacktraceResult` object in the `InnerExceptionResult` property.
+
 ## BacktraceDatabase  <a name="architecture-BacktraceDatabase"></a>
 **`BacktraceDatabase`** is a class stores data in your local harddrive. An `BacktraceDatabase` instance is instantiated when the `BacktraceClient` constructor is called. If `databaseDirectory` isn't set in the `BacktraceClient` constructor call, `BacktraceDatabase` won't generate minidump files. Before start - make sure that the directory designed in **BacktraceClient.databaseDirectory** is **empty**. 
 
 ## ReportWatcher  <a name="architecture-ReportWatcher"></a>
 **`ReportWatcher`** is a class that validate send requests to the Backtrace endpoint. If `reportPerMin` is set in the `BacktraceClient` constructor call, `ReportWatcher` will drop error reports that go over the limit.
-
 
 
 # Good to know <a name="good-to-know"></a>
@@ -289,4 +324,17 @@ You can use this Backtrace library with Xamarin if you change your `HttpClient` 
 
 ![Xamarin Android Support][androidSupport]
 
-[androidSupport]: https://github.com/backtrace-labs/backtrace-csharp/raw/dev/Backtrace/Documents/Images/AndroidSupport.PNG "Xamarin Android Support"
+[androidSupport]: https://github.com/backtrace-labs/backtrace-csharp/raw/master/Backtrace/Documents/Images/AndroidSupport.PNG "Xamarin Android Support"
+
+
+# Release Notes
+
+## Version 1.1.0 - 30.03.2018
+- BacktraceClient now supports an asynchronously `SendAsync` method that works with `async task`
+- For .NET Framework 4.5 and .NET Standard 2.0, `BacktraceClient` now streams file attachment content directly from disk via `SendAsync` method.
+- `AfterSend` event parameter changed. Now `AfterSend` event require `BacktraceResult` parameter, not `BacktraceReport`,
+- `Send` and `SendAsync` method now returns `BacktraceResult` with information about report state,
+- `OnServerResponse` now require `BacktraceResult` as a parameter. 
+
+## Version 1.0.0 - 19.03.2018
+- First release.

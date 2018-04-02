@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-
+#if !NET35
+using System.Net.Http;
+using System.Net.Http.Headers;
+#endif
 namespace Backtrace.Common
 {
     /// <summary>
@@ -101,7 +104,6 @@ namespace Backtrace.Common
 
             // Write the file data directly to the Stream, rather than serializing it to a string.
             formDataStream.Write(data, 0, data.Length);
-
         }
     }
 }

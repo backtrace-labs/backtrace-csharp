@@ -82,5 +82,13 @@ namespace Backtrace.Services
             }
         }
 
+        /// <summary>
+        /// This method only is used in test class project. Use Reset method to reset current counter and available reports
+        /// </summary>
+        internal void Reset()
+        {
+            _reportQue.Clear();
+        }
+        
     }
 }

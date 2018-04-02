@@ -1,5 +1,9 @@
-﻿using Backtrace.Model;
+﻿using Backtrace.Base;
+using Backtrace.Interfaces;
+using Backtrace.Model;
 using Backtrace.Services;
+using Backtrace.Types;
+using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -16,6 +20,7 @@ namespace Backtrace.Tests.IntegrationTests
     public class RateLimitingTests
     {
         private BacktraceClient _backtraceClient;
+        private bool reportLimitReached = false;
 
         /// <summary>
         /// Prepare basic setup of Backtrace client
@@ -23,10 +28,23 @@ namespace Backtrace.Tests.IntegrationTests
         [SetUp]
         public void Setup()
         {
-            _backtraceClient = new BacktraceClient(
-                new BacktraceCredentials(@"https://myserver.sp.backtrace.io:6097", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0"),
-                reportPerMin: 0 //unlimited number of reports per secound
-            );
+            //prepare mock object
+            //mock api
+            var api = new Mock<IBacktraceApi<object>>();
+            api.Setup(n => n.Send(It.IsAny<BacktraceData<object>>())).Returns(new BacktraceResult());
+
+            //mock database
+            var database = new Mock<IBacktraceDatabase<object>>();
+            database.Setup(n => n.GenerateMiniDump(It.IsAny<BacktraceReportBase<object>>(), It.IsAny<MiniDumpType>()));
+
+            //setup new client
+            var credentials = new BacktraceCredentials("https://validurl.com/", "validToken");
+            _backtraceClient = new BacktraceClient(credentials)
+            {
+                _backtraceApi = api.Object,
+                _database = database.Object
+            };
+
             //Add new scoped attributes
             _backtraceClient.Attributes["ClientAttributeNumber"] = 1;
             _backtraceClient.Attributes["ClientAttributeString"] = "string attribute";
@@ -41,259 +59,131 @@ namespace Backtrace.Tests.IntegrationTests
                 {"Google url" , new Uri("http://google.com") }
             };
 
-            //Add your own handler to client API
-            _backtraceClient.BeforeSend =
-               (BacktraceData<object> model) =>
-               {
-                   var data = model;
-                   data.Attributes.Add("eventAtrtibute", "EventAttributeValue");
-                   if (data.Classifier == null || !data.Classifier.Any())
-                   {
-                       data.Attachments.Add("path to attachment");
-                   }
-                   return data;
-               };
+
+            //to check if client report limit reached use OnClientReportLimitReached 
+            _backtraceClient.OnClientReportLimitReached += () =>
+            {
+                reportLimitReached = true;
+            };
         }
 
-        private void ExceptionMethod()
+        private void DivideByZeroMethod()
         {
 
             int x = 0;
             var result = 5 / x;
         }
-        /// <summary>
-        /// Test a initialization and submission sequence for backtrace client w/ threading w/o rate limiting
-        /// </summary>
-        [Test(Author = "Arthur Tu", Description = "Test rate limiting on single thread")]
-        public void SingleThreadWithoutRateLimiting()
+
+        private void OutOfRangeMethod()
         {
-            Assert.DoesNotThrow(() => { _backtraceClient.ChangeRateLimiting(0); });
-            Assert.DoesNotThrow(() => { _backtraceClient.Send($"{DateTime.Now}: Library Initialized for single thread integration test w/o rate limiting"); });
-            Assert.DoesNotThrow(() =>
-            {
-                try
-                {
-                    ExceptionMethod();
-                }
-                catch (DivideByZeroException ex)
-                {
-                    Assert.DoesNotThrow(() => { _backtraceClient.Send(ex); });
-                }
-            });
-            Assert.DoesNotThrow(() => { _backtraceClient.Send($"{DateTime.Now}: Single thread integration test w/o rate limiting completed successfully."); });
+            int[] x = new int[1];
+            x[1] = 1 - 1;
         }
 
-
-        /// <summary>
-        /// Test a initialization and submission sequence for backtrace client w/ threading w/o rate limiting
-        /// </summary>
-        [Test(Author = "Arthur Tu", Description = "Test rate limiting on multiple threads = rate limiting is off")]
-        public void ThreadedWithoutRateLimiting()
+        private void ThreadTest(int threadIndex, ref int totalSend)
         {
-            HashSet<Thread> threads = new HashSet<Thread>();
-            Assert.DoesNotThrow(() => { _backtraceClient.Send($"{DateTime.Now}: Library Initialized for threaded integration test w/o rate limiting"); });
-            // Create threads of divide by zero errors
-            for (int i = 0; i < 5; i++)
-                threads.Add(new Thread(new ThreadStart(() =>
-                {
-                    try
-                    {
-                        ExceptionMethod();
-                    }
-                    catch (DivideByZeroException ex)
-                    {
-                        Assert.DoesNotThrow(() => { _backtraceClient.Send(ex); });
-                    }
-                })));
-
-            // Create threads of index out of bounds errors
-            for (int i = 0; i < 5; i++)
-                threads.Add(new Thread(new ThreadStart(() =>
-                {
-                    int[] x = new int[1];
-                    try
-                    {
-                        x[1] = 1 - 1;
-                    }
-                    catch (IndexOutOfRangeException ex)
-                    {
-                        Assert.DoesNotThrow(() => { _backtraceClient.Send(ex); });
-                    }
-                })));
-
-            // Start all threads
-            foreach (Thread t in threads)
+            _backtraceClient.Send($"Custom client message");
+            try
             {
-                t.Start();
+                DivideByZeroMethod();
             }
-
-            // Block calling thread until all threads are done running
-            foreach (Thread t in threads)
+            catch (DivideByZeroException divideException)
             {
-                t.Join();
+                _backtraceClient.Send(divideException);
             }
-            Assert.DoesNotThrow(() => { _backtraceClient.Send($"{DateTime.Now}: Threaded integration test w/o rate limiting completed successfully."); });
+            try
+            {
+                OutOfRangeMethod();
+            }
+            catch (IndexOutOfRangeException outOfRangeException)
+            {
+                _backtraceClient.Send(outOfRangeException);
+            }
+            _backtraceClient.Send($"End test case for thread {threadIndex}");
+            totalSend += 4;
         }
 
         /// <summary>
         /// Test a initialization and submission sequence for backtrace client w/ threading w/o rate limiting
         /// </summary>
-        [Test(Author = "Athur Tu", Description = "Test a initialization and submission sequence for backtrace client w/ threading w/o rate limiting")]
-        public void ThreadedWithRateLimiting()
+        [TestCase(1)]
+        [TestCase(5)]
+        [TestCase(10)]
+        [Test(Author = "Arthur Tu and Konrad Dysput", Description = "Test rate limiting on single/multiple thread thread")]
+        public void SingleThreadWithoutRateLimiting(int numberOfThreads)
         {
-            HashSet<Thread> threads = new HashSet<Thread>();
-            uint rpm = 10;
-            int count_sends = 0;
-            int count_drops = 0;
+            // one thread = 4 request to API 
+            int expectedNumberOfReports = numberOfThreads * 4;
+            int totalSend = 0;
 
-            Assert.DoesNotThrow(() => { _backtraceClient.ChangeRateLimiting(rpm); });
-            Assert.DoesNotThrow(() => { _backtraceClient.Send($"{DateTime.Now}: Library Initialized for threaded integration test with rate limiting"); });
+            //set rate limiting to unlimite
+            _backtraceClient.ChangeRateLimiting(0);
+            reportLimitReached = false;
+
+            //prepare thread and catch 2 exception per thread and send two custom messages
+            List<Thread> threads = new List<Thread>();
+            for (int threadIndex = 0; threadIndex < numberOfThreads; threadIndex++)
+            {
+                threads.Add(new Thread(new ThreadStart(() =>
+                {
+                    ThreadTest(threadIndex, ref totalSend);
+                })));
+            }
+            threads.ForEach(n => n.Start());
+            threads.ForEach(n => n.Join());
+
+            Assert.AreEqual(expectedNumberOfReports, totalSend);
+            Assert.IsFalse(reportLimitReached);
+        }
+
+        /// <summary>
+        /// Test a initialization and submission sequence for backtrace client w/ threading w/o rate limiting
+        /// </summary>
+        [TestCase(1, 2)]
+        [TestCase(5, 2)]
+        [TestCase(10, 2)]
+        [TestCase(1, 5)]
+        [TestCase(5, 10)]
+        [TestCase(5, 20)]
+        [Test(Author = "Arthur Tu and Konrad Dysput", Description = "Test a initialization and submission sequence for backtrace client w/ threading w/o rate limiting")]
+        public void ThreadedWithRateLimiting(int numberOfThread, int rateLimiting)
+        {
+            //set rate limiting
+            reportLimitReached = false;
+            _backtraceClient.ChangeRateLimiting((uint)rateLimiting);
+
+
+            //set expected number of drop and request
+            int expectedNumberofRequest = 4 * numberOfThread;
+            int expectedNumberOfDropRequest = expectedNumberofRequest - (int)rateLimiting;
+            if (expectedNumberOfDropRequest < 0)
+            {
+                expectedNumberOfDropRequest = 0;
+            }
+
+            List<Thread> threads = new List<Thread>();
+            int totalSend = 0;
+            int totalDrop = 0;
+
             _backtraceClient.OnClientReportLimitReached += () =>
             {
-                count_drops++;
-            };
-            _backtraceClient.AfterSend += (BacktraceReport report) =>
-            {
-                count_sends++;
+                totalDrop++;
             };
 
-            // Create threads of divide by zero errors
-            for (int i = 0; i < 4; i++)
+            for (int threadIndex = 0; threadIndex < numberOfThread; threadIndex++)
+            {
                 threads.Add(new Thread(new ThreadStart(() =>
                 {
-                    try
-                    {
-                        ExceptionMethod();
-                    }
-                    catch (DivideByZeroException ex)
-                    {
-                        Assert.DoesNotThrow(() => { _backtraceClient.Send(ex); });
-                    }
+                    ThreadTest(threadIndex, ref totalSend);
                 })));
-
-
-
-            // Create threads of index out of bounds errors
-            for (int i = 0; i < 4; i++)
-                threads.Add(new Thread(new ThreadStart(() =>
-                {
-                    int[] x = new int[1];
-                    try
-                    {
-                        x[1] = 1 - 1;
-                    }
-                    catch (IndexOutOfRangeException ex)
-                    {
-                        Assert.DoesNotThrow(() => { _backtraceClient.Send(ex); });
-                    }
-                })));
-
-            // Start all threads
-            foreach (Thread t in threads)
-            {
-                t.Start();
             }
 
-            // Block calling thread until all threads are done running
-            foreach (Thread t in threads)
-            {
-                t.Join();
-            }
-            Assert.DoesNotThrow(() => { _backtraceClient.Send($"{DateTime.Now}: Threaded integration test - after this point no reports should go through."); });
-            threads = new HashSet<Thread>();
+            threads.ForEach(n => n.Start());
+            threads.ForEach(n => n.Join());
 
-            // Create threads of divide by zero errors
-            for (int i = 0; i < 6; i++)
-                threads.Add(new Thread(new ThreadStart(() =>
-                {
-                    try
-                    {
-                        ExceptionMethod();
-                    }
-                    catch (DivideByZeroException ex)
-                    {
-
-                        Assert.DoesNotThrow(() => { _backtraceClient.Send(ex); });
-                    }
-                })));
-            // Create threads of index out of bounds errors
-            for (int i = 0; i < 6; i++)
-                threads.Add(new Thread(new ThreadStart(() =>
-                {
-                    int[] x = new int[1];
-                    try
-                    {
-                        x[1] = 1 - 1;
-                    }
-                    catch (IndexOutOfRangeException ex)
-                    {
-                        Assert.DoesNotThrow(() => { _backtraceClient.Send(ex); });
-                    }
-                })));
-
-            // Start all threads
-            foreach (Thread t in threads)
-            {
-                t.Start();
-            }
-
-            // Block calling thread until all threads are done running
-            foreach (Thread t in threads)
-            {
-                t.Join();
-            }
-
-            // by now there should be 12 drops
-
-            System.Diagnostics.Trace.WriteLine("there are currently " + count_drops + " drops out of " + count_sends + " submissions.");
-            Assert.AreEqual(count_drops, 12);
-            System.Diagnostics.Trace.WriteLine("Threaded integration test - going to sleep for a minute. Reports should start coming in after this point.");
-            // sleep for a minute
-            Thread.Sleep(60000);
-            // restart threaded reporting
-            threads = new HashSet<Thread>();
-            // Create threads of divide by zero errors
-            for (int i = 0; i < 5; i++)
-                threads.Add(new Thread(new ThreadStart(() =>
-                {
-                    try
-                    {
-                        ExceptionMethod();
-                    }
-                    catch (DivideByZeroException ex)
-                    {
-
-                        Assert.DoesNotThrow(() => { _backtraceClient.Send(ex); });
-                    }
-                })));
-
-            // Create threads of index out of bounds errors
-            for (int i = 0; i < 5; i++)
-                threads.Add(new Thread(new ThreadStart(() =>
-                {
-                    int[] x = new int[1];
-                    try
-                    {
-                        x[1] = 1 - 1;
-                    }
-                    catch (IndexOutOfRangeException ex)
-                    {
-                        Assert.DoesNotThrow(() => { _backtraceClient.Send(ex); });
-                    }
-                })));
-
-            // Start all threads
-            foreach (Thread t in threads)
-            {
-                t.Start();
-            }
-
-            // Block calling thread until all threads are done running
-            foreach (Thread t in threads)
-            {
-                t.Join();
-            }
-            Assert.DoesNotThrow(() => { _backtraceClient.Send($"{DateTime.Now}: Threaded integration test with rate limiting completed successfully."); });
+            Assert.AreEqual(totalSend, expectedNumberofRequest);
+            Assert.AreEqual(totalDrop, expectedNumberOfDropRequest);
+            Assert.IsTrue(reportLimitReached || totalDrop == 0);
         }
     }
 }

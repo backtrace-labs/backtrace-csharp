@@ -4,6 +4,9 @@ using Backtrace.Model;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+#if !NET35
+using System.Threading.Tasks;
+#endif
 
 namespace Backtrace
 {
@@ -20,9 +23,10 @@ namespace Backtrace
         /// <summary>
         /// Set an event executed after sending data to Backtrace API
         /// </summary>
-        public Action<BacktraceReport> AfterSend;
+        public Action<BacktraceResult> AfterSend;
 
-#if NET35 || NET45
+        #region Constructor
+#if !NETSTANDARD2_0
         /// <summary>
         /// Initializing Backtrace client instance
         /// </summary>
@@ -30,14 +34,15 @@ namespace Backtrace
         /// <param name="attributes">Client's attributes</param>
         /// <param name="databaseDirectory">Database path used to store minidumps and temporary reports</param>
         /// <param name="reportPerMin">Numbers of records sending per one min</param>
+        /// <param name="tlsLegacySupport">Set SSL and TLS flags for https request to Backtrace API</param>
         public BacktraceClient(
-                string sectionName = "BacktraceCredentials",
-                Dictionary<string, object> attributes = null,
-                string databaseDirectory = "",
-                uint reportPerMin = 3
-            )
+            string sectionName = "BacktraceCredentials",
+            Dictionary<string, object> attributes = null,
+            string databaseDirectory = "",
+            uint reportPerMin = 3,
+            bool tlsLegacySupport = false)
             : base(BacktraceCredentials.ReadConfigurationSection(sectionName),
-                  attributes, databaseDirectory, reportPerMin)
+                attributes, databaseDirectory, reportPerMin, tlsLegacySupport)
         { }
 #endif
 
@@ -48,76 +53,153 @@ namespace Backtrace
         /// <param name="attributes">Client's attributes</param>
         /// <param name="databaseDirectory">Database path used to store minidumps and temporary reports</param>
         /// <param name="reportPerMin">Numbers of records sending per one minute</param>
+        /// <param name="tlsLegacySupport">Set SSL and TLS flags for https request to Backtrace API</param>
         public BacktraceClient(
             BacktraceCredentials backtraceCredentials,
             Dictionary<string, object> attributes = null,
             string databaseDirectory = "",
-            uint reportPerMin = 3)
-            : base(backtraceCredentials, attributes, databaseDirectory, reportPerMin)
+            uint reportPerMin = 3,
+            bool tlsLegacySupport = false)
+            : base(backtraceCredentials, attributes, databaseDirectory, reportPerMin, tlsLegacySupport)
         { }
+        #endregion
 
-        /// <summary>
-        /// Sending a backtrace report to Backtrace API
-        /// </summary>
-        /// <param name="backtraceReport">Current report</param>
-        public void Send(BacktraceReport backtraceReport)
-        {
-            OnReportStart?.Invoke(backtraceReport);
-            base.Send(backtraceReport);
-            AfterSend?.Invoke(backtraceReport);
-
-            //check if there is more errors to send
-            //handle inner exception
-            HandleInnerException(backtraceReport);
-        }
-
-        /// <summary>
-        /// Handle inner exception in current backtrace report
-        /// if inner exception exists, client should send report twice - one with current exception, one with inner exception
-        /// </summary>
-        /// <param name="report">current report</param>
-        private void HandleInnerException(BacktraceReport report)
-        {
-            // there is no additional exception inside current exception
-            // or exception does not exists
-            if (!report.ExceptionTypeReport || report.Exception.InnerException == null)
-            {
-                return;
-            }
-            //we have to create a copy of an inner exception report
-            //to have the same calling assembly property
-            var innerExceptionReport = report.CreateInnerReport();
-            Send(innerExceptionReport);
-        }
-
+        #region Send synchronous
         /// <summary>
         /// Sending an exception to Backtrace API
         /// </summary>
         /// <param name="exception">Current exception</param>
         /// <param name="attributes">Additional information about application state</param>
         /// <param name="attachmentPaths">Path to all report attachments</param>
-        public virtual void Send(
+        public virtual BacktraceResult Send(
             Exception exception,
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null)
         {
-            var report = new BacktraceReport(exception, attributes, attachmentPaths);
-            Send(report);
-            HandleInnerException(report);
+            return Send(new BacktraceReport(exception, attributes, attachmentPaths));
         }
+
         /// <summary>
         /// Sending a message to Backtrace API
         /// </summary>
         /// <param name="message">Custom client message</param>
         /// <param name="attributes">Additional information about application state</param>
         /// <param name="attachmentPaths">Path to all report attachments</param>
-        public virtual void Send(
+        public virtual BacktraceResult Send(
             string message,
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null)
         {
-            var report = new BacktraceReport(message, attributes, attachmentPaths);
-            Send(report);
+            return Send(new BacktraceReport(message, attributes, attachmentPaths));
+        }
+
+        /// <summary>
+        /// Sending a backtrace report to Backtrace API
+        /// </summary>
+        /// <param name="backtraceReport">Current report</param>
+        public BacktraceResult Send(BacktraceReport backtraceReport)
+        {
+            OnReportStart?.Invoke(backtraceReport);
+            var result = base.Send(backtraceReport);
+            AfterSend?.Invoke(result);
+
+            //check if there is more errors to send
+            //handle inner exception
+            result.InnerExceptionResult = HandleInnerException(backtraceReport);
+            return result;
+        }
+        #endregion
+
+#if !NET35
+        #region Send asynchronous
+        /// <summary>
+        /// Sending asynchronous Backtrace report to Backtrace API
+        /// </summary>
+        /// <param name="backtraceReport">Current report</param>
+        /// <returns>Server response</returns>
+        public async Task<BacktraceResult> SendAsync(BacktraceReport backtraceReport)
+        {
+            OnReportStart?.Invoke(backtraceReport);
+            var result = await base.SendAsync(backtraceReport);
+            AfterSend?.Invoke(result);
+
+            //check if there is more errors to send
+            //handle inner exception
+            result.InnerExceptionResult = await HandleInnerExceptionAsync(backtraceReport);
+            return result;
+        }
+
+        /// <summary>
+        /// Sending a message to Backtrace API
+        /// </summary>
+        /// <param name="message">Custom client message</param>
+        /// <param name="attributes">Additional information about application state</param>
+        /// <param name="attachmentPaths">Path to all report attachments</param>
+        public virtual async Task<BacktraceResult> SendAsync(
+            string message,
+            Dictionary<string, object> attributes = null,
+            List<string> attachmentPaths = null)
+        {
+            return await SendAsync(new BacktraceReport(message, attributes, attachmentPaths));
+        }
+
+        /// <summary>
+        /// Sending asynchronous exception to Backtrace API
+        /// </summary>
+        /// <param name="exception">Current exception</param>
+        /// <param name="attributes">Additional information about application state</param>
+        /// <param name="attachmentPaths">Path to all report attachments</param>
+        public virtual async Task<BacktraceResult> SendAsync(
+            Exception exception,
+            Dictionary<string, object> attributes = null,
+            List<string> attachmentPaths = null)
+        {
+            return await SendAsync(new BacktraceReport(exception, attributes, attachmentPaths));
+        }
+        #endregion
+
+        /// <summary>
+        /// Handle inner exception in current backtrace report
+        /// if inner exception exists, client should send report twice - one with current exception, one with inner exception
+        /// </summary>
+        /// <param name="report">current report</param>
+        private async Task<BacktraceResult> HandleInnerExceptionAsync(BacktraceReport report)
+        {
+            var innerExceptionReport = CreateInnerReport(report);
+            if (innerExceptionReport == null)
+            {
+                return null;
+            }
+            return await SendAsync(innerExceptionReport);
+        }
+#endif
+
+        /// <summary>
+        /// Handle inner exception in current backtrace report
+        /// if inner exception exists, client should send report twice - one with current exception, one with inner exception
+        /// </summary>
+        /// <param name="report">current report</param>
+        private BacktraceResult HandleInnerException(BacktraceReport report)
+        {
+            var innerExceptionReport = CreateInnerReport(report);
+            if (innerExceptionReport == null)
+            {
+                return null;
+            }
+            return Send(innerExceptionReport);
+        }
+
+        private BacktraceReport CreateInnerReport(BacktraceReport report)
+        {
+            // there is no additional exception inside current exception
+            // or exception does not exists
+            if (!report.ExceptionTypeReport || report.Exception.InnerException == null)
+            {
+                return null;
+            }
+            //we have to create a copy of an inner exception report
+            //to have the same calling assembly property
+            return report.CreateInnerReport();
         }
     }
 }

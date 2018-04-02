@@ -1,10 +1,12 @@
 ﻿using Backtrace.Model;
+using Backtrace.UniversalWindowsPlatform.Model;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
@@ -27,14 +29,15 @@ namespace Backtrace.UniversalWindowsPlatform
 
         private static Windows.Storage.StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
 
-        private static BacktraceCredentials credentials = new BacktraceCredentials(@"https://myserver.sp.backtrace.io:6097", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
+        private static BacktraceCredentials credentials =
+            new BacktraceCredentials(ApplicationCredentials.Host, ApplicationCredentials.Token);
         private static BacktraceClient backtraceClient;
 
         private static void StartJob()
         {
-            CalculateDifference(-12);
+            Task.Run(() => CalculateDifference(-12)).Wait();
         }
-        private static void CalculateDifference(int i = 0)
+        private static async Task CalculateDifference(int i = 0)
         {
             if (i == 2)
             {
@@ -42,14 +45,13 @@ namespace Backtrace.UniversalWindowsPlatform
             }
             try
             {
-                CalculateDifference(++i);
+                await CalculateDifference(++i);
 
             }
             catch (Exception e)
             {
-                Trace.WriteLine(e.Message);
-                Trace.WriteLine(e.ToString());
-                backtraceClient.Send(e);
+                backtraceClient.Send($"{DateTime.Now} : CalculateDifference error received");
+                await backtraceClient.SendAsync(e);                
             }
         }
 
@@ -61,19 +63,9 @@ namespace Backtrace.UniversalWindowsPlatform
         {
             backtraceClient = new BacktraceClient(
                credentials,
-               databaseDirectory: localFolder.Path
-           )
-            {
-                OnServerResponse = (BacktraceServerResponse response) =>
-                {
-                    Trace.WriteLine(response);
-                },
-
-                OnServerError = (Exception e) =>
-                {
-                    Trace.WriteLine(e.Message);
-                }
-            };
+               databaseDirectory: localFolder.Path,
+               tlsLegacySupport:true
+           );
             this.InitializeComponent();
             this.Suspending += OnSuspending;
         }

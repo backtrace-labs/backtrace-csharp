@@ -2,6 +2,7 @@
 using Backtrace.Model.JsonData;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 
@@ -65,19 +66,24 @@ namespace Backtrace.Base
         internal readonly string Message;
 
         /// <summary>
+        /// Get or set minidump attachment path
+        /// </summary>
+        internal string MinidumpFile { get; set; }
+
+        /// <summary>
         /// Get a report exception
         /// </summary>
-        internal Exception Exception;
+        public Exception Exception { get; set; }
 
         /// <summary>
         /// Get an assembly where report was created (or should be created)
         /// </summary>
-        internal Assembly CallingAssembly;
+        internal Assembly CallingAssembly { get; set; }
 
         /// <summary>
         /// Get all paths to attachments
         /// </summary>
-        internal List<string> _attachmentPaths;
+        internal List<string> AttachmentPaths { get; set; }
 
         /// <summary>
         /// Create new instance of Backtrace report to sending a report with custom client message
@@ -95,7 +101,7 @@ namespace Backtrace.Base
             CallingAssembly = callingAssembly ?? GetCallingAssemblies();
             Message = message;
             _attributes = attributes ?? new Dictionary<string, T>();
-            _attachmentPaths = attachmentPaths ?? new List<string>();
+            AttachmentPaths = attachmentPaths ?? new List<string>();
         }
 
         /// <summary>
@@ -109,8 +115,7 @@ namespace Backtrace.Base
             Dictionary<string, T> attributes = null,
             List<string> attachmentPaths = null)
             : this(message, null, attributes, attachmentPaths)
-        {
-        }
+        { }
 
         /// <summary>
         /// Create new instance of Backtrace report to sending a report with application exception
@@ -127,7 +132,7 @@ namespace Backtrace.Base
         {
             CallingAssembly = callingAssembly ?? GetCallingAssemblies();
             _attributes = attributes ?? new Dictionary<string, T>();
-            _attachmentPaths = attachmentPaths ?? new List<string>();
+            AttachmentPaths = attachmentPaths ?? new List<string>();
             //handle null value in exception parameter
             if (exception == null)
             {
@@ -149,7 +154,20 @@ namespace Backtrace.Base
             Dictionary<string, T> attributes = null,
             List<string> attachmentPaths = null)
             : this(exception, null, attributes, attachmentPaths)
+        { }
+
+        /// <summary>
+        /// Set a path to report minidump
+        /// </summary>
+        /// <param name="minidumpPath">Path to generated minidump file</param>
+        public void SetMinidumpPath(string minidumpPath)
         {
+            if (string.IsNullOrEmpty(minidumpPath))
+            {
+                return;
+            }
+            MinidumpFile = minidumpPath;
+            AttachmentPaths.Add(minidumpPath);
         }
 
         /// <summary>
@@ -189,7 +207,7 @@ namespace Backtrace.Base
         private Assembly GetCallingAssemblies()
         {
             var executedAssembly = Assembly.GetExecutingAssembly();
-            var stacktrace = new System.Diagnostics.StackTrace();
+            var stacktrace = new StackTrace();
             foreach (var stackframe in stacktrace.GetFrames())
             {
                 if (stackframe == null)

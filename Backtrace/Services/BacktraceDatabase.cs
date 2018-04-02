@@ -1,5 +1,6 @@
 ﻿using Backtrace.Base;
 using Backtrace.Common;
+using Backtrace.Interfaces;
 using Backtrace.Model;
 using Backtrace.Types;
 using Newtonsoft.Json;
@@ -8,13 +9,14 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Services
 {
     /// <summary>
     /// Backtrace Database 
     /// Before start: Be sure that used directory is empty!
     /// </summary>
-    internal class BacktraceDatabase<T>
+    internal class BacktraceDatabase<T> : IBacktraceDatabase<T>
     {
         /// <summary>
         /// Path to a database directory

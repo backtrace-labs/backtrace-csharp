@@ -1,14 +1,18 @@
 ﻿using System;
 using Backtrace.Model;
-using System.Collections.Generic;
 using Backtrace.Interfaces;
 using Newtonsoft.Json;
 using System.Net;
 using System.IO;
-using System.Security.Authentication;
 using Backtrace.Common;
+using System.Collections.Generic;
+#if !NET35
+using System.Threading.Tasks;
+using System.Net.Http.Headers;
+using System.Net.Http;
+#endif
 
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("DynamicProxyGenAssembly2")]
 namespace Backtrace.Services
 {
     /// <summary>
@@ -16,34 +20,31 @@ namespace Backtrace.Services
     /// </summary>
     internal class BacktraceApi<T> : IBacktraceApi<T>
     {
-        //ssl and tls12 flags used in ssl communiaction
-        public const SslProtocols _Tls12 = (SslProtocols)0x00000C00;
-        public const SecurityProtocolType Tls12 = (SecurityProtocolType)_Tls12;
-
         /// <summary>
         /// Asynchronous request flag. If value is equal to true, data will be send to server asynchronous
         /// </summary>
+        [Obsolete]
         public bool AsynchronousRequest { get; set; } = false;
 
         /// <summary>
         /// User custom request method
         /// </summary>
-        public Action<string, string, byte[]> RequestHandler { get; set; } = null;
+        public Func<string, string, BacktraceData<T>, BacktraceResult> RequestHandler { get; set; } = null;
+
+        /// <summary>
+        /// Event triggered when server is unvailable
+        /// </summary>
+        public Action<Exception> OnServerError { get; set; } = null;
+
+        /// <summary>
+        /// Event triggered when server respond to diagnostic data
+        /// </summary>
+        public Action<BacktraceResult> OnServerResponse { get; set; }
 
         /// <summary>
         /// Url to server
         /// </summary>
         private readonly string _serverurl;
-        
-        /// <summary>
-        /// Event triggered when server is unvailable
-        /// </summary>
-        public Action<Exception> OnServerError { get; set; }
-
-        /// <summary>
-        /// Event triggered when server respond to diagnostic data
-        /// </summary>
-        public Action<BacktraceServerResponse> OnServerResponse { get; set; }
 
         /// <summary>
         /// Create a new instance of Backtrace API
@@ -51,69 +52,128 @@ namespace Backtrace.Services
         /// <param name="credentials">API credentials</param>
         public BacktraceApi(BacktraceCredentials credentials)
         {
-             _serverurl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
-            bool isHttps = credentials.BacktraceHostUri.Scheme == "https";
-            //prepare web client to send a data to ssl API
-            if (isHttps)
-            {
-                SslProtocols _Tls12 = (SslProtocols)0x00000C00;
-                SecurityProtocolType Tls12 = (SecurityProtocolType)_Tls12;
-                ServicePointManager.SecurityProtocol = Tls12;
-            }
+            _serverurl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
         }
+        #region asyncRequest
+#if !NET35
 
         /// <summary>
-        /// Get serialization settings
+        /// The http client.
         /// </summary>
-        /// <returns></returns>
-        private JsonSerializerSettings GetSerializerSettings()
+        internal HttpClient HttpClient = new HttpClient();
+
+        public async Task<BacktraceResult> SendAsync(BacktraceData<T> data)
         {
-            return new JsonSerializerSettings
+            Guid requestId = Guid.NewGuid();
+            var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
+            if (RequestHandler != null)
             {
-                NullValueHandling = NullValueHandling.Ignore,
-                DefaultValueHandling = DefaultValueHandling.Ignore
-            };
+                RequestHandler?.Invoke(_serverurl, FormDataHelper.GetContentTypeWithBoundary(requestId), data);
+            }
+            return await SendAsync(requestId, json, data);
         }
 
+        private async Task<BacktraceResult> SendAsync(Guid requestId, string json, BacktraceData<T> data)
+        {
+            string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
+            string boundary = FormDataHelper.GetBoundary(requestId);
+            var report = data.Report as BacktraceReport;
+
+            using (var request = new HttpRequestMessage(HttpMethod.Post, _serverurl))
+            using (var content = new MultipartFormDataContent(boundary))
+            {
+                var jsonContent = new StringContent(json);
+                jsonContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
+
+                jsonContent.Headers.ContentDisposition =
+                    new ContentDispositionHeaderValue("form-data")
+                    {
+                        Name = "upload_file",
+                        FileName = "\"upload_file.json\""
+                    };
+
+                content.Add(jsonContent);
+                foreach (var file in data.Attachments)
+                {
+                    if (!File.Exists(file))
+                    {
+                        continue;
+                    }
+                    string fileName = $"attachment_{Path.GetFileName(file)}";
+                    var fileContent = new StreamContent(File.OpenRead(file));
+                    fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+                    {
+                        Name = $"\"{fileName}\"",
+                        FileName = $"\"{fileName}\""
+                    };
+                    fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
+                    content.Add(fileContent);
+                }
+
+                //// clear and add content type with boundary tag
+                content.Headers.Remove("Content-Type");
+                content.Headers.TryAddWithoutValidation("Content-Type", contentType);
+                request.Content = content;
+                try
+                {
+                    using (var response = await HttpClient.SendAsync(request))
+                    {
+                        var fullResponse = await response.Content.ReadAsStringAsync();
+                        if (response.StatusCode != HttpStatusCode.OK)
+                        {
+                            var err = new WebException(response.ReasonPhrase);
+                            OnServerError?.Invoke(err);
+                            return BacktraceResult.OnError(report, err);
+                        }
+                        var result = JsonConvert.DeserializeObject<BacktraceResult>(fullResponse);
+                        result.BacktraceReport = report;
+                        OnServerResponse?.Invoke(result);
+                        return result;
+                    }
+                }
+                catch (Exception exception)
+                {
+                    OnServerError?.Invoke(exception);
+                    return BacktraceResult.OnError(report, exception);
+                }
+            }
+        }
+#endif
+        #endregion
+
+
+        /// <summary>
+        /// Set tls and ssl legacy support for https requests to Backtrace API
+        /// </summary>
+        public void SetTlsSupport()
+        {
+            ServicePointManager.SecurityProtocol =
+                     SecurityProtocolType.Tls
+                    | (SecurityProtocolType)0x00000300
+                    | (SecurityProtocolType)0x00000C00;
+            ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true;
+        }
+
+        #region synchronousRequest
         /// <summary>
         /// Sending a diagnostic report data to server API. 
         /// </summary>
         /// <param name="data">Diagnostic data</param>
-        /// <returns>False if operation fail or true if API return OK</returns>
-        public void Send(BacktraceData<T> data)
-        {
-            string json = JsonConvert.SerializeObject(data, GetSerializerSettings());
-            List<string> attachments = data.Attachments;
-            Send(json, attachments);
-        }
-
-        /// <summary>
-        /// Sending a diagnostic report data to server API. 
-        /// </summary>
-        /// <param name="json">Diagnostics json</param>
-        /// <param name="attachmentPaths">Attachments path</param>
-        private void Send(string json, List<string> attachmentPaths)
+        /// <returns>Server response</returns>
+        public BacktraceResult Send(BacktraceData<T> data)
         {
             Guid requestId = Guid.NewGuid();
-            var formData = FormDataHelper.GetFormData(json, attachmentPaths, requestId);
+            string json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
+            var report = data.Report as BacktraceReport;
+
+            var formData = FormDataHelper.GetFormData(json, data.Attachments, requestId);
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
-            if (RequestHandler != null)
-            {
-                RequestHandler.Invoke(_serverurl, contentType, formData);
-                return;
-            }
             HttpWebRequest request = WebRequest.Create(_serverurl) as HttpWebRequest;
 
             //Set up the request properties.
             request.Method = "POST";
             request.ContentType = contentType;
             request.ContentLength = formData.Length;
-
-            if (AsynchronousRequest)
-            {
-                request.BeginGetRequestStream(new AsyncCallback((n) => RequestStreamCallback(n, formData)), request);
-                return;
-            }
             try
             {
                 using (Stream requestStream = request.GetRequestStream())
@@ -121,61 +181,67 @@ namespace Backtrace.Services
                     requestStream.Write(formData, 0, formData.Length);
                     requestStream.Close();
                 }
-                ReadServerResponse(request);
+                return ReadServerResponse(request, report);
             }
             catch (Exception exception)
             {
                 OnServerError?.Invoke(exception);
+                return BacktraceResult.OnError(report, exception);
             }
         }
-        
+
         /// <summary>
         /// Handle server respond for synchronous request
         /// </summary>
         /// <param name="request">Current HttpWebRequest</param>
-        private void ReadServerResponse(HttpWebRequest request)
+        private BacktraceResult ReadServerResponse(HttpWebRequest request, BacktraceReport report)
         {
             using (WebResponse webResponse = request.GetResponse() as HttpWebResponse)
             {
                 StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
                 string fullResponse = responseReader.ReadToEnd();
-                if (OnServerResponse != null)
+                var response = JsonConvert.DeserializeObject<BacktraceResult>(fullResponse);
+                response.BacktraceReport = report;
+                OnServerResponse?.Invoke(response);
+                return response;
+            }
+        }
+        #endregion
+        /// <summary>
+        /// Get serialization settings
+        /// </summary>
+        /// <returns></returns>
+        private JsonSerializerSettings JsonSerializerSettings { get; } = new JsonSerializerSettings
+        {
+            NullValueHandling = NullValueHandling.Ignore,
+            DefaultValueHandling = DefaultValueHandling.Ignore
+        };
+        #region dispose
+        private bool _disposed = false; // To detect redundant calls
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
                 {
-                    var response = JsonConvert.DeserializeObject<BacktraceServerResponse>(fullResponse);
-                    OnServerResponse.Invoke(response);
+#if !NET35
+                    HttpClient.Dispose();
+#endif
                 }
+                _disposed = true;
             }
         }
 
-        /// <summary>
-        /// Send a diagnostic bytes to server
-        /// </summary>
-        /// <param name="asyncResult">Asynchronous result</param>
-        /// <param name="form">diagnostic data bytes</param>
-        private void RequestStreamCallback(IAsyncResult asyncResult, byte[] form)
+        ~BacktraceApi()
         {
-            var webRequest = (HttpWebRequest)asyncResult.AsyncState;
-            Stream postStream = webRequest.EndGetRequestStream(asyncResult);
-            postStream.Write(form, 0, form.Length);
-            postStream.Close();
-            webRequest.BeginGetResponse(new AsyncCallback(GetResponseCallback), webRequest);
+            Dispose(false);
         }
-
-        /// <summary>
-        /// Handle server respond
-        /// </summary>
-        /// <param name="asyncResult">Asynchronous reuslt</param>
-        private void GetResponseCallback(IAsyncResult asyncResult)
-        {
-            try
-            {
-                HttpWebRequest webRequest = (HttpWebRequest)asyncResult.AsyncState;
-                ReadServerResponse(webRequest);
-            }
-            catch (Exception exception)
-            {
-                OnServerError?.Invoke(exception);
-            }
-        }
+        #endregion
     }
 }

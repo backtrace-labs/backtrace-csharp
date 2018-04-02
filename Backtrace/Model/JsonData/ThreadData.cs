@@ -101,6 +101,10 @@ namespace Backtrace.Model.JsonData
             var mainThreadId = Thread.CurrentThread.ManagedThreadId;
             using (DataTarget target = DataTarget.AttachToProcess(Process.GetCurrentProcess().Id, 5000, AttachFlag.Passive))
             {
+                if(target.ClrVersions == null || !target.ClrVersions.Any())
+                {
+                    return;
+                }
                 ClrRuntime runtime = target.ClrVersions.First().CreateRuntime();
                 foreach (ClrThread thread in runtime.Threads)
                 {
@@ -116,7 +120,7 @@ namespace Backtrace.Model.JsonData
                         threadName = thread.ManagedThreadId.ToString();
                     }
                     var frames = ExceptionStack.Convert(thread.StackTrace);
-                    ThreadInformations.Add(threadName, new ThreadInformation(threadName, false, frames));
+                    ThreadInformations[threadName] = new ThreadInformation(threadName, false, frames);
                 }
             }
         }

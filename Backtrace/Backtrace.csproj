@@ -12,19 +12,20 @@
     <Description>Backtrace's integration with C# applications allows customers to capture and report handled and unhandled C# exceptions to their Backtrace instance, instantly offering the ability to prioritize and debug software errors.</Description>
     <RepositoryUrl>https://github.com/backtrace-labs/backtrace-csharp</RepositoryUrl>
     <NeutralLanguage>en</NeutralLanguage>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>bin\Debug\netstandard2.0\Backtrace.xml</DocumentationFile>
+    <DocumentationFile></DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
-    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
-    <DocumentationFile>bin\Release\netstandard2.0\Backtrace.xml</DocumentationFile>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <DocumentationFile></DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
-    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
@@ -39,6 +40,7 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
     <Reference Include="System.Configuration" />
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net35'">

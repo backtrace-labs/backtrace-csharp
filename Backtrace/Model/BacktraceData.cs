@@ -23,7 +23,7 @@ namespace Backtrace.Model
         {
             get
             {
-                return _report.Uuid;
+                return Report.Uuid;
             }
         }
 
@@ -36,7 +36,7 @@ namespace Backtrace.Model
         {
             get
             {
-                return _report.Timestamp;
+                return Report.Timestamp;
             }
         }
 
@@ -103,7 +103,7 @@ namespace Backtrace.Model
         {
             get
             {
-                return new Annotations(_report.CallingAssembly, _backtraceAttributes.ComplexAttributes);
+                return new Annotations(Report.CallingAssembly, _backtraceAttributes.ComplexAttributes);
             }
         }
 
@@ -144,9 +144,9 @@ namespace Backtrace.Model
         {
             get
             {
-                if (_report.ExceptionTypeReport)
+                if (Report.ExceptionTypeReport)
                 {
-                    return new[] { _report.Classifier };
+                    return new[] { Report.Classifier };
                 }
                 return null;
             }
@@ -174,19 +174,19 @@ namespace Backtrace.Model
         {
             get
             {
-                return _report._attachmentPaths;
+                return Report.AttachmentPaths;
             }
         }
+
+        /// <summary>
+        /// Current BacktraceReport
+        /// </summary>
+        internal readonly BacktraceReportBase<T> Report;
 
         /// <summary>
         /// Get a Backtrace a built-in attributes from current application
         /// </summary>
         private readonly BacktraceAttributes<T> _backtraceAttributes;
-
-        /// <summary>
-        /// Current BacktraceReport
-        /// </summary>
-        private readonly BacktraceReportBase<T> _report;
 
         private readonly AssemblyName CurrentAssembly = Assembly.GetExecutingAssembly().GetName();
 
@@ -199,10 +199,10 @@ namespace Backtrace.Model
         /// <param name="scopedAttributes">BacktraceClient's attributes</param>
         public BacktraceData(BacktraceReportBase<T> report, Dictionary<string, T> scopedAttributes)
         {
-            _report = report;
-            _backtraceAttributes = new BacktraceAttributes<T>(_report, scopedAttributes);
+            Report = report;
+            _backtraceAttributes = new BacktraceAttributes<T>(Report, scopedAttributes);
             //reading exception stack
-            _exceptionStack = _report.GetExceptionStack();
+            _exceptionStack = Report.GetExceptionStack();
             ThreadData = new ThreadData(report.CallingAssembly, _exceptionStack);
         }
     }
