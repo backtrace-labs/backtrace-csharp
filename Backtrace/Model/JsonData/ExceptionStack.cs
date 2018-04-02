@@ -89,7 +89,7 @@ namespace Backtrace.Model.JsonData
         internal static IEnumerable<ExceptionStack> FromCurrentThread(string libraryName, IEnumerable<ExceptionStack> exceptionStack)
         {
             var currentAssembly = Assembly.GetExecutingAssembly();
-            var stackTrace = new StackTrace();
+            var stackTrace = new StackTrace(true);
 
             //get all stack created by current thread - excpect stacks created by diagnostic library
             var stackFrames = stackTrace.GetFrames()

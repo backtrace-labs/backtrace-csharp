@@ -9,6 +9,7 @@ using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using Backtrace.Common;
 using Backtrace.Extensions;
+using System.Reflection;
 
 [assembly: InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Model.JsonData
@@ -43,9 +44,46 @@ namespace Backtrace.Model.JsonData
             Attributes["application"] = report.CallingAssembly.GetName().Name;
             Attributes["lang.name"] = "C#";
 
+            SetDebuggerAttributes(report.CallingAssembly);
             SetMachineAttributes();
             SetProcessAttributes();
             SetExceptionAttributes(report);
+        }
+
+        /// <summary>
+        /// Set debugger information
+        /// </summary>
+        /// <param name="callingAssembly">Calling assembly</param>
+        private void SetDebuggerAttributes(Assembly callingAssembly)
+        {
+            object[] attribs = callingAssembly.GetCustomAttributes(typeof(DebuggableAttribute), false);
+            // If the 'DebuggableAttribute' is not found then it is definitely an OPTIMIZED build
+            if (attribs.Length > 0)
+            {
+                // Just because the 'DebuggableAttribute' is found doesn't necessarily mean
+                // it's a DEBUG build; we have to check the JIT Optimization flag
+                // i.e. it could have the "generate PDB" checked but have JIT Optimization enabled
+                DebuggableAttribute debuggableAttribute = attribs[0] as DebuggableAttribute;
+                if (debuggableAttribute != null)
+                {
+                    Attributes["DebuggableAttribute"] = true;
+                    Attributes["IsJITOptimized"] = !debuggableAttribute.IsJITOptimizerDisabled;
+                    Attributes["BuildType"] = debuggableAttribute.IsJITOptimizerDisabled ? "Debug" : "Release";
+
+                    // check for Debug Output "full" or "pdb-only"
+                    Attributes["DebugOutput "] = (debuggableAttribute.DebuggingFlags &
+                                    DebuggableAttribute.DebuggingModes.Default) !=
+                                    DebuggableAttribute.DebuggingModes.None
+                                    ? "Full" : "pdb-only";
+                }
+                Attributes["DebuggableAttribute"] = false;
+            }
+            else
+            {
+                Attributes["DebuggableAttribute"] = false;
+                Attributes["IsJITOptimized"] = true;
+                Attributes["BuildType"] = "Release";
+            }
         }
 
         /// <summary>
