@@ -239,8 +239,7 @@ namespace Backtrace.Base
         /// </summary>
         public virtual void HandleApplicationThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
         {
-            var assembly = System.Reflection.Assembly.GetCallingAssembly();
-            Send(new BacktraceReportBase<T>(e.Exception, assembly));
+            Send(new BacktraceReportBase<T>(e.Exception));
             OnUnhandledApplicationException?.Invoke(e.Exception);
         }
 
@@ -251,10 +250,9 @@ namespace Backtrace.Base
         /// we can handle request end
         /// </summary>
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
-            var assembly = System.Reflection.Assembly.GetCallingAssembly();
+        { 
             var exception = e.ExceptionObject as Exception; 
-            var result = Send(new BacktraceReportBase<T>(exception, assembly));
+            var result = Send(new BacktraceReportBase<T>(exception));
         }
 #endif
     }

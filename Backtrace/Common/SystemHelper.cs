@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace Backtrace.Common
@@ -114,6 +115,35 @@ namespace Backtrace.Common
 #else
             return Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE").ToLower();
 #endif
+        }
+
+        /// <summary>
+        /// Detect a system assemblies - assemblies that root namespace is "System" or "Microsoft
+        /// If assembly is null, method will return false
+        /// </summary>
+        /// <param name="assembly">Assembly to check</param>
+        /// <returns>True if assembly is from Microsoft of System</returns>
+        internal static bool SystemAssembly(Assembly assembly)
+        {
+            if (assembly == null)
+            {
+                return false;
+            }
+            var assemblyName = assembly.FullName;
+            return SystemAssembly(assemblyName);
+        }
+        /// <summary>
+        /// Detect a system assemblies - assemblies that root namespace is "System" or "Microsoft
+        /// </summary>
+        /// <returns>True if assembly is from Microsoft of System</returns>
+        internal static bool SystemAssembly(string assemblyName)
+        {
+            if (string.IsNullOrEmpty(assemblyName))
+            {
+                return false;
+            }
+            return (assemblyName.StartsWith("Microsoft.")
+                || assemblyName.StartsWith("System."));
         }
     }
 }

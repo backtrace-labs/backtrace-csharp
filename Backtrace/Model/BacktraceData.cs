@@ -157,7 +157,7 @@ namespace Backtrace.Model
         {
             get
             {
-                var sourceCode = new SourceCodeData(_exceptionStack);
+                var sourceCode = new SourceCodeData(Report.ExceptionStack);
                 if (sourceCode.data.Any())
                 {
                     return sourceCode.data;
@@ -190,8 +190,6 @@ namespace Backtrace.Model
 
         private readonly AssemblyName CurrentAssembly = Assembly.GetExecutingAssembly().GetName();
 
-        private readonly IEnumerable<ExceptionStack> _exceptionStack;
-
         /// <summary>
         /// Create instance of report data
         /// </summary>
@@ -201,9 +199,7 @@ namespace Backtrace.Model
         {
             Report = report;
             _backtraceAttributes = new BacktraceAttributes<T>(Report, scopedAttributes);
-            //reading exception stack
-            _exceptionStack = Report.GetExceptionStack();
-            ThreadData = new ThreadData(report.CallingAssembly, _exceptionStack);
+            ThreadData = new ThreadData(report.CallingAssembly, Report.ExceptionStack);
         }
     }
 }

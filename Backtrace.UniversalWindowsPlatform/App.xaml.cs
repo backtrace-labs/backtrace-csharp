@@ -50,7 +50,9 @@ namespace Backtrace.UniversalWindowsPlatform
             }
             catch (Exception e)
             {
-                backtraceClient.Send($"{DateTime.Now} : CalculateDifference error received");
+                Trace.WriteLine(new StackTrace(e).ToString());
+                Trace.WriteLine(new StackTrace(e).GetFrame(0).GetFileLineNumber());
+                //backtraceClient.Send($"{DateTime.Now} : CalculateDifference error received");
                 await backtraceClient.SendAsync(e);                
             }
         }
@@ -61,6 +63,16 @@ namespace Backtrace.UniversalWindowsPlatform
         /// </summary>
         public App()
         {
+            System.IO.DirectoryInfo di = new DirectoryInfo(localFolder.Path);
+
+            foreach (FileInfo file in di.GetFiles())
+            {
+                file.Delete();
+            }
+            foreach (DirectoryInfo dir in di.GetDirectories())
+            {
+                dir.Delete(true);
+            }
             backtraceClient = new BacktraceClient(
                credentials,
                databaseDirectory: localFolder.Path,

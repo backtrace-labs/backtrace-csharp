@@ -26,10 +26,8 @@ namespace Backtrace.Model
             string message,
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null)
-            : base(message, null, attributes, attachmentPaths)
-        {
-
-        }
+            : base(message, attributes, attachmentPaths)
+        { }
         /// <summary>
         /// Sending a report with custom exception
         /// </summary>
@@ -40,10 +38,8 @@ namespace Backtrace.Model
             Exception exception,
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null)
-            : base(exception, null, attributes, attachmentPaths)
-        {
-
-        }
+            : base(exception, attributes, attachmentPaths)
+        { }
 
         /// <summary>
         /// create a copy of BacktraceReport for inner exception object inside exception
