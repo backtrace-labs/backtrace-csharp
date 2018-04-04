@@ -13,10 +13,12 @@ namespace Backtrace.Mobile
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
+            // Initialize new BacktraceClient 
             BacktraceClient client = new BacktraceClient(
                 new BacktraceCredentials(ApplicationCredentials.Host, ApplicationCredentials.Token)
             );
-            client.SendAsync("Hello from Xamarin").Wait();
+            // Send async report to a server with custom client message
+            var result = client.SendAsync("Hello from Xamarin").Result;
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.Main);
         }

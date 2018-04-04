@@ -202,7 +202,7 @@ namespace Backtrace.Core
                    return data;
                };
 
-            //backtraceClient.Send($"{DateTime.Now}: Library Initialized");
+            backtraceClient.Send($"{DateTime.Now}: Library Initialized");
         }
         static void Main(string[] args)
         {
