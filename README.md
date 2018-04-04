@@ -41,7 +41,7 @@ catch(Exception exception){
     5. [BacktraceDatabase](#architecture-BacktraceDatabase)
     6. [ReportWatcher](#architecture-ReportWatcher)
 6. [Good to know](#good-to-know)
-
+6. [Release Notes](#release-notes)
 
 # Supported .NET Frameworks <a name="supported-frameworks"></a>
 * .NET Framework 3.5 +
@@ -327,6 +327,6 @@ You can use this Backtrace library with Xamarin if you change your `HttpClient` 
 [androidSupport]: https://github.com/backtrace-labs/backtrace-csharp/raw/master/Backtrace/Documents/Images/AndroidSupport.PNG "Xamarin Android Support"
 
 
-# Release <a name="Notes"></a>
+# Release Notes <a name="release-notes"></a>
 
 See release notes [here](./CHANGELOG.md).
