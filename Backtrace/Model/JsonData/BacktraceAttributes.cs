@@ -44,7 +44,7 @@ namespace Backtrace.Model.JsonData
             Attributes["application"] = report.CallingAssembly.GetName().Name;
             Attributes["lang.name"] = "C#";
 
-            SetDebuggerAttributes(report.CallingAssembly);
+            //SetDebuggerAttributes(report.CallingAssembly);
             SetMachineAttributes();
             SetProcessAttributes();
             SetExceptionAttributes(report);
