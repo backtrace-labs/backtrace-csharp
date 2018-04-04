@@ -1,7 +1,7 @@
 ﻿# Backtrace C# Release Notes
 
 ## Version 1.1.1 - 06.04.2018
-- Fix: Debug attributes now include namespaces
+- Error reports now include debug attributes
 - Fix: Reporting unhandled application exceptions now uses SendAsync and proper TLS 1.2 support
 - Fix: BacktraceClient.OnClientReportLimitReached event handlers will now take BacktraceReport as a parameter
 - Refactoring of JSON Data code.
