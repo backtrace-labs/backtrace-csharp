@@ -72,7 +72,7 @@ namespace Backtrace.Tests.Events
                 }
             };
 
-            _backtraceClient.SetRateLimiting((uint)rateLimit);
+            _backtraceClient.SetClientReportLimit((uint)rateLimit);
             for (int i = 0; i < numberOfCycles; i++)
             {
                 //test sync submission
