@@ -326,3 +326,7 @@ You can use this Backtrace library with Xamarin if you change your `HttpClient` 
 
 [androidSupport]: https://github.com/backtrace-labs/backtrace-csharp/raw/master/Backtrace/Documents/Images/AndroidSupport.PNG "Xamarin Android Support"
 
+
+# Release <a name="Notes"></a>
+
+See release notes [here](./CHANGELOG.md).
