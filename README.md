@@ -43,7 +43,6 @@ catch(Exception exception){
 6. [Good to know](#good-to-know)
 7. [Change log](#changelog)
 
-
 # Supported .NET Frameworks <a name="supported-frameworks"></a>
 * .NET Framework 3.5 +
 * .NET Framework 4.5 + 
