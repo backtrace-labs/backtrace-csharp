@@ -120,7 +120,7 @@ namespace Backtrace.Services
         /// <summary>
         /// Set tls and ssl legacy support for https requests to Backtrace API
         /// </summary>
-        public void SetTlsSupport()
+        public void SetTlsLegacy()
         {
             ServicePointManager.SecurityProtocol =
                      SecurityProtocolType.Tls

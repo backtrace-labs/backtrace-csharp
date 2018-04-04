@@ -152,7 +152,7 @@ namespace Backtrace.Base
             _reportWatcher = new ReportWatcher<T>(reportPerMin);
             if (tlsLegacySupport)
             {
-                _backtraceApi.SetTlsSupport();
+                _backtraceApi.SetTlsLegacy();
             }
         }
 
@@ -239,7 +239,7 @@ namespace Backtrace.Base
         /// </summary>
         public virtual void HandleApplicationThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
         {
-            Send(new BacktraceReportBase<T>(e.Exception));
+            SendAsync(new BacktraceReportBase<T>(e.Exception)).Wait();
             OnUnhandledApplicationException?.Invoke(e.Exception);
         }
 

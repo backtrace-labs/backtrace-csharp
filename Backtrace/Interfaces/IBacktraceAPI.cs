@@ -26,7 +26,7 @@ namespace Backtrace.Interfaces
         /// <summary>
         /// Set tls and ssl legacy support for https requests to Backtrace API
         /// </summary>
-        void SetTlsSupport();
+        void SetTlsLegacy();
 
         /// <summary>
         /// Set an event executed when received bad request, unauthorize request or other information from server

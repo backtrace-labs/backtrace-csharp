@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Linq;
 using System.Reflection;
+using Backtrace.Extensions;
 
 namespace Backtrace.Model.JsonData
 {
@@ -49,7 +50,7 @@ namespace Backtrace.Model.JsonData
         {
             var current = Thread.CurrentThread;
             //get current thread id
-            string generatedMainThreadId = ThreadInformation.GenerateValidThreadName(current);
+            string generatedMainThreadId = current.GenerateValidThreadName();
 
             ThreadInformations[generatedMainThreadId] = new ThreadInformation(current, exceptionStack);
             //set currentThreadId

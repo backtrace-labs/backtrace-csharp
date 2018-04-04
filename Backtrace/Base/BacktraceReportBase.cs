@@ -164,9 +164,6 @@ namespace Backtrace.Base
                 Assembly assembly = stackFrame?.GetMethod()?.DeclaringType?.Assembly;
                 if (assembly == null)
                 {
-#if DEBUG
-                    Trace.WriteLine(stackFrame);
-#endif
                     continue;
                 }
                 var assemblyName = assembly.FullName;
@@ -215,78 +212,6 @@ namespace Backtrace.Base
             {
                 SetStacktraceInformation(exceptionStackFrames, false);
             }
-
-
-
-
-            //var executedAssemblyName = Assembly.GetExecutingAssembly().FullName;
-            //bool callingAssemblyFound = false;
-
-            //foreach (var stackFrame in stackFrames)
-            //{
-            //    if (stackFrame == null)
-            //    {
-            //        continue;
-            //    }
-
-            //    Assembly assembly = stackFrame.GetMethod()?.DeclaringType?.Assembly;
-            //    if (assembly == null)
-            //    {
-            //        continue;
-            //    }
-            //    var assemblyName = assembly?.FullName;
-            //    if (executedAssemblyName.Equals(assemblyName))
-            //    {
-            //        // remove all system and microsoft stack frames 
-            //        ExceptionStack.Clear();
-            //        continue;
-            //    }
-            //    ExceptionStack.Add(Model.JsonData.ExceptionStack.Convert(stackFrame, assembly.GetName().Name, true));
-
-            //    if (!callingAssemblyFound && !(SystemHelper.SystemAssembly(assembly)))
-            //    {
-            //        callingAssemblyFound = true;
-            //        CallingAssembly = assembly;
-            //    }
-            //}
-
-            //List<StackFrame> exceptionStackFrames = null;
-            //if (Exception != null)
-            //{
-            //    var exceptionStackTrace = new StackTrace(Exception, true);
-            //    exceptionStackFrames = exceptionStackTrace.GetFrames().ToList();
-            //    if (exceptionStackFrames[0] == null
-            //        || (ExceptionStack[0].ILOffset == exceptionStackFrames[0].GetILOffset()
-            //        && ExceptionStack[0].FunctionName == exceptionStackFrames[0].GetMethod()?.Name))
-            //    {
-            //        return;
-            //    }
-            //}
-            //foreach (var stackFrame in exceptionStackFrames)
-            //{
-            //    if (stackFrame == null)
-            //    {
-            //        continue;
-            //    }
-
-            //    Assembly assembly = stackFrame.GetMethod()?.DeclaringType?.Assembly;
-            //    if (assembly == null)
-            //    {
-            //        continue;
-            //    }
-            //    var assemblyName = assembly?.FullName;
-            //    if (executedAssemblyName.Equals(assemblyName))
-            //    {
-            //        continue;
-            //    }
-            //    ExceptionStack.Insert(0, Model.JsonData.ExceptionStack.Convert(stackFrame, assembly.GetName().Name, true));
-
-            //    if (!callingAssemblyFound && !(SystemHelper.SystemAssembly(assembly)))
-            //    {
-            //        callingAssemblyFound = true;
-            //        CallingAssembly = assembly;
-            //    }
-            //}
         }
 
     }
