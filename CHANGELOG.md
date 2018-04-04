@@ -2,9 +2,12 @@
 
 ## Version 1.1.1 - 06.04.2018
 - Error reports now include debug attributes
-- Fix: Reporting unhandled application exceptions now uses SendAsync and proper TLS 1.2 support
-- Fix: BacktraceClient.OnClientReportLimitReached event handlers will now take BacktraceReport as a parameter
+- BacktraceClient.OnClientReportLimitReached event handlers will now take BacktraceReport as a parameter
 - Refactoring of JSON Data code.
+- .NET 4.5 example with async task usage
+- Better stack trace analysis
+- Fix: Reporting unhandled application exceptions now uses SendAsync and proper TLS 1.2 support
+
 
 ## Version 1.1.0 - 30.03.2018
 - BacktraceClient now supports an asynchronously `SendAsync` method that works with `async task`
