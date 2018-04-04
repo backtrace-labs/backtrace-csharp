@@ -35,7 +35,7 @@ namespace Backtrace.Services
             _watcherEnable = reportPerMin != 0;
         }
 
-        internal void ChangeRateLimiting(uint reportPerMin)
+        internal void SetClientReportLimit(uint reportPerMin)
         {
             int reportNumber = checked((int)reportPerMin);
             _reportPerSec = reportNumber;
