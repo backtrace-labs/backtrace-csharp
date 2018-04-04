@@ -74,7 +74,7 @@ namespace Backtrace.Model
             {
                 BacktraceReport = report,
                 Status = BacktraceResultStatus.LimitReached,
-                Message = "Rate limiting reached"
+                Message = "Client report limit reached"
             };
         }
 
