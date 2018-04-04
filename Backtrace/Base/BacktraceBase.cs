@@ -160,10 +160,21 @@ namespace Backtrace.Base
         /// Change maximum number of reportrs sending per one minute
         /// </summary>
         /// <param name="reportPerMin">Number of reports sending per one minute. If value is equal to zero, there is no request sending to API. Value have to be greater than or equal to 0</param>
+        [Obsolete]
         public void ChangeRateLimiting(uint reportPerMin)
         {
             _reportWatcher.ChangeRateLimiting(reportPerMin);
         }
+
+        /// <summary>
+        /// Change maximum number of reportrs sending per one minute
+        /// </summary>
+        /// <param name="reportPerMin">Number of reports sending per one minute. If value is equal to zero, there is no request sending to API. Value have to be greater than or equal to 0</param>
+        public void SetRateLimiting(uint reportPerMin)
+        {
+            _reportWatcher.ChangeRateLimiting(reportPerMin);
+        }
+
 
         /// <summary>
         /// Send a report to Backtrace API
