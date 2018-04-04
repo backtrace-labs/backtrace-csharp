@@ -61,7 +61,7 @@ namespace Backtrace.Tests.IntegrationTests
 
 
             //to check if client report limit reached use OnClientReportLimitReached 
-            _backtraceClient.OnClientReportLimitReached += () =>
+            _backtraceClient.OnClientReportLimitReached += (BacktraceReport report) =>
             {
                 reportLimitReached = true;
             };
@@ -165,7 +165,7 @@ namespace Backtrace.Tests.IntegrationTests
             int totalSend = 0;
             int totalDrop = 0;
 
-            _backtraceClient.OnClientReportLimitReached += () =>
+            _backtraceClient.OnClientReportLimitReached += (BacktraceReport report) =>
             {
                 totalDrop++;
             };

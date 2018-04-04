@@ -59,7 +59,7 @@ namespace Backtrace.Tests.Events
             int totalNumberOfReports = 0;
             bool eventTrigger = false;
 
-            _backtraceClient.OnClientReportLimitReached = () =>
+            _backtraceClient.OnClientReportLimitReached = (BacktraceReport report) =>
             {
                 eventTrigger = true;
             };

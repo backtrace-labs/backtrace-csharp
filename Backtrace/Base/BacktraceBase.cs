@@ -86,7 +86,7 @@ namespace Backtrace.Base
         /// <summary>
         /// Set event executed when client site report limit reached
         /// </summary>
-        public Action OnClientReportLimitReached = null;
+        public Action<BacktraceReport> OnClientReportLimitReached = null;
 
         /// <summary>
         /// Set event executed before sending data to Backtrace API
@@ -175,8 +175,9 @@ namespace Backtrace.Base
             bool watcherValidation = _reportWatcher.WatchReport(report);
             if (!watcherValidation)
             {
-                OnClientReportLimitReached?.Invoke();
-                return BacktraceResult.OnLimitReached(report as BacktraceReport);
+                var resultReport = report as BacktraceReport;
+                OnClientReportLimitReached?.Invoke(resultReport);
+                return BacktraceResult.OnLimitReached(resultReport);
             }
             //generate minidump and add minidump to report 
             string minidumpPath = _database.GenerateMiniDump(report, MiniDumpType);
@@ -207,8 +208,9 @@ namespace Backtrace.Base
             bool watcherValidation = _reportWatcher.WatchReport(report);
             if (!watcherValidation)
             {
-                OnClientReportLimitReached?.Invoke();
-                return BacktraceResult.OnLimitReached(report as BacktraceReport);
+                var resultReport = report as BacktraceReport;
+                OnClientReportLimitReached?.Invoke(resultReport);
+                return BacktraceResult.OnLimitReached(resultReport);
             }
             //generate minidump and add minidump to report 
             string minidumpPath = _database.GenerateMiniDump(report, MiniDumpType);
