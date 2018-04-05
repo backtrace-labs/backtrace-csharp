@@ -1,6 +1,6 @@
 ﻿# Backtrace C# Release Notes
 
-## Version 1.1.1 - 06.04.2018
+## Version 1.1.1 - 09.04.2018
 - Error reports now include debug attributes
 - `BacktraceClient.OnClientReportLimitReached` event handlers will now take `BacktraceReport` as a parameter
 - Refactoring of JSON Data code.

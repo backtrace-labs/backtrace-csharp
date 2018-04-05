@@ -160,7 +160,7 @@ namespace Backtrace.Base
         /// Change maximum number of reportrs sending per one minute
         /// </summary>
         /// <param name="reportPerMin">Number of reports sending per one minute. If value is equal to zero, there is no request sending to API. Value have to be greater than or equal to 0</param>
-        [Obsolete]
+        [Obsolete("This method has been deprecated, please use SetClientReportLimit instead.")]
         public void ChangeRateLimiting(uint reportPerMin)
         {
             _reportWatcher.SetClientReportLimit(reportPerMin);
