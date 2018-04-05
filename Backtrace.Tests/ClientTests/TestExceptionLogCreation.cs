@@ -13,8 +13,8 @@ namespace Backtrace.Tests.ClientTests
     {
         private static IEnumerable<Exception> _exceptions = new List<Exception>()
             {
-                //null,
-                //new Exception("exception"),
+                null,
+                new Exception("exception"),
                 new InvalidOperationException("invalidOperation", new ArgumentException("argumentException"))
             };
 
