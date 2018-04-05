@@ -206,7 +206,7 @@ namespace Backtrace.Base
             //stacktrace from current thread and from current excetpion are diffrent
             var exceptionStackTrace = new StackTrace(Exception, true);
             var exceptionStackFrames = exceptionStackTrace.GetFrames();
-            if (exceptionStackFrames[0] != null
+            if (exceptionStackFrames != null && exceptionStackFrames[0] != null
                 && ExceptionStack[0].ILOffset != exceptionStackFrames[0].GetILOffset()
                 && ExceptionStack[0].FunctionName != exceptionStackFrames[0].GetMethod()?.Name)
             {
