@@ -200,6 +200,10 @@ namespace Backtrace.Model.JsonData
                     Attributes["vm.vma.peak"] = peakVirtualMemorySize;
                 }
             }
+            catch(PlatformNotSupportedException)
+            {
+                Trace.TraceWarning($"Cannot retrieve information about process memory - platform not supported");
+            }
             catch (Exception exception)
             {
                 Trace.TraceWarning($"Cannot retrieve information about process memory: ${exception.Message}");
