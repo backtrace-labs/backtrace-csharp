@@ -4,8 +4,13 @@ using Backtrace.Model.JsonData;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
+#if !NET35
+using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
+#endif
 using System.Text;
 
 namespace Backtrace.Base
@@ -79,7 +84,7 @@ namespace Backtrace.Base
         /// <summary>
         /// Current report exception stack
         /// </summary>
-        public List<ExceptionStack> ExceptionStack { get; set; } = new List<ExceptionStack>();
+        public List<DiagnosticStack> DiagnosticStack { get; set; } = new List<DiagnosticStack>();
 
         /// <summary>
         /// Create new instance of Backtrace report to sending a report with custom client message
@@ -148,45 +153,8 @@ namespace Backtrace.Base
             return reportAttributes.Merge(attributes);
         }
 
-        private void SetStacktraceInformation(StackFrame[] stackFrames, bool includeCallingAssembly, int startingIndex = 0)
-        {
-            var executedAssemblyName = Assembly.GetExecutingAssembly().FullName;
-            //if includeCallingAssembly is true, we dont need to found calling assembly in current stacktrace
-            bool callingAssemblyFound = !includeCallingAssembly;
-
-            foreach (var stackFrame in stackFrames)
-            {
-                if (stackFrame == null)
-                {
-                    //received invalid or unvailable stackframe
-                    continue;
-                }
-                Assembly assembly = stackFrame?.GetMethod()?.DeclaringType?.Assembly;
-                if (assembly == null)
-                {
-                    continue;
-                }
-                var assemblyName = assembly.FullName;
-                if (executedAssemblyName.Equals(assemblyName))
-                {
-                    // remove all system and microsoft stack frames 
-                    //if we add any stackframe to list this is mistake because we receive 
-                    //system or microsoft dll (for example async invoke)
-                    ExceptionStack.Clear();
-                    startingIndex = 0;
-                    continue;
-                }
-                ExceptionStack.Insert(startingIndex, Model.JsonData.ExceptionStack.Convert(stackFrame, assembly.GetName().Name, true));
-                startingIndex++;
-                if (!callingAssemblyFound && !(SystemHelper.SystemAssembly(assembly)))
-                {
-                    callingAssemblyFound = true;
-                    CallingAssembly = assembly;
-                }
-            }
-        }
         /// <summary>
-        /// Set Calling Assembly and Exception Stack property. 
+        /// Set Calling Assembly and current thread stack trace property. 
         /// CallingAssembly and StackTrace are necessary to prepare diagnostic JSON in BacktraceData class
         /// </summary>
         private void SetCallingAppInformation()
@@ -202,17 +170,70 @@ namespace Backtrace.Base
             {
                 return;
             }
-            //Add to current stack trace, stackframes from current exception
-            //stacktrace from current thread and from current excetpion are diffrent
-            var exceptionStackTrace = new StackTrace(Exception, true);
-            var exceptionStackFrames = exceptionStackTrace.GetFrames();
-            if (exceptionStackFrames != null && exceptionStackFrames[0] != null
-                && ExceptionStack[0].ILOffset != exceptionStackFrames[0].GetILOffset()
-                && ExceptionStack[0].FunctionName != exceptionStackFrames[0].GetMethod()?.Name)
-            {
-                SetStacktraceInformation(exceptionStackFrames, false);
-            }
+            // add stack trace from exception
+            var head = DiagnosticStack.Any() ? DiagnosticStack[0] : null;
+            var generatedStack = Exception.GetExceptionStackFrames(head);
+            SetStacktraceInformation(generatedStack, false);
         }
 
+        private void SetStacktraceInformation(StackFrame[] stackFrames, bool includeCallingAssembly, int startingIndex = 0)
+        {
+            // check if stack frames exists
+            if (stackFrames == null)
+            {
+                return;
+            }
+            var executedAssemblyName = Assembly.GetExecutingAssembly().FullName;
+            //if callingAssemblyFound is true, we dont need to found calling assembly in current stacktrace
+            bool callingAssemblyFound = !includeCallingAssembly;
+
+            foreach (var stackFrame in stackFrames)
+            {
+                var method = stackFrame.GetMethod();
+                var declaringType = method?.DeclaringType;
+                if (declaringType == null)
+                {
+                    //received invalid or unvailable stackframe
+                    continue;
+                }
+                Assembly assembly = declaringType.Assembly;
+                if (assembly == null)
+                {
+                    continue;
+                }
+                var assemblyName = assembly.FullName;
+                if (executedAssemblyName.Equals(assemblyName) && CallingAssembly == null)
+                {
+                    // remove all system and microsoft stack frames 
+                    //if we add any stackframe to list this is mistake because we receive 
+                    //system or microsoft dll (for example async invoke)
+                    DiagnosticStack.Clear();
+                    startingIndex = 0;
+                    continue;
+                }
+
+                if (!callingAssemblyFound && !(SystemHelper.SystemAssembly(assembly)))
+                {
+                    callingAssemblyFound = true;
+                    CallingAssembly = assembly;
+                }
+#if !NET35
+                //test if current stack frame is generated by async state machine
+                var declaringTypeInfo = declaringType.GetTypeInfo();
+                var stateMachineFrame = SystemHelper.StateMachineFrame(declaringTypeInfo);
+                if (stateMachineFrame)
+                {
+                    continue;
+                }
+#endif
+                if (!callingAssemblyFound)
+                {
+                    continue;
+                }
+                var diagnosticStack = Model.JsonData.DiagnosticStack.Convert(stackFrame, assembly.GetName().Name, true);
+                DiagnosticStack.Insert(startingIndex, diagnosticStack);
+                startingIndex++;
+            }
+        }
     }
 }
