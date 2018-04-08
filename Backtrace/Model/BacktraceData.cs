@@ -157,7 +157,7 @@ namespace Backtrace.Model
         {
             get
             {
-                var sourceCode = new SourceCodeData(Report.ExceptionStack);
+                var sourceCode = new SourceCodeData(Report.DiagnosticStack);
                 if (sourceCode.data.Any())
                 {
                     return sourceCode.data;
@@ -199,7 +199,7 @@ namespace Backtrace.Model
         {
             Report = report;
             _backtraceAttributes = new BacktraceAttributes<T>(Report, scopedAttributes);
-            ThreadData = new ThreadData(report.CallingAssembly, Report.ExceptionStack);
+            ThreadData = new ThreadData(report.CallingAssembly, Report.DiagnosticStack);
         }
     }
 }

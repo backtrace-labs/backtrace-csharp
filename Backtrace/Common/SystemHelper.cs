@@ -140,7 +140,7 @@ namespace Backtrace.Common
             {
                 return false;
             }
-            var assemblyName = assembly.FullName;
+            var assemblyName = assembly.GetName().Name;
             return SystemAssembly(assemblyName);
         }
         /// <summary>
@@ -154,7 +154,16 @@ namespace Backtrace.Common
                 return false;
             }
             return (assemblyName.StartsWith("Microsoft.")
+                || assemblyName.StartsWith("mscorlib")
+                || assemblyName.Equals("System")
                 || assemblyName.StartsWith("System."));
         }
+#if !NET35
+        internal static bool StateMachineFrame(TypeInfo declaringTypeInfo)
+        {
+            return typeof(System.Runtime.CompilerServices.IAsyncStateMachine)
+                .GetTypeInfo().IsAssignableFrom(declaringTypeInfo);
+        }
+#endif
     }
 }
