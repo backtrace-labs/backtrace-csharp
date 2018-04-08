@@ -77,7 +77,7 @@ namespace Backtrace.Base
                 _backtraceApi.OnServerResponse = value;
             }
         }
-        
+
         /// <summary>
         /// Get or set minidump type
         /// </summary>
@@ -130,30 +130,25 @@ namespace Backtrace.Base
         /// </summary>
         internal ReportWatcher<T> _reportWatcher;
 
-
         /// <summary>
         /// Initialize new client instance with BacktraceCredentials
         /// </summary>
         /// <param name="backtraceCredentials">Backtrace credentials to access Backtrace API</param>
         /// <param name="attributes">Additional information about current application</param>
-        /// <param name="databaseDirectory">Database path</param>
+        /// <param name="databaseSettings">Backtrace database settings</param>
         /// <param name="reportPerMin">Number of reports sending per one minute. If value is equal to zero, there is no request sending to API. Value have to be greater than or equal to 0</param>
         /// <param name="tlsLegacySupport">Set SSL and TLS flags for https request to Backtrace API</param>
         public BacktraceBase(
             BacktraceCredentials backtraceCredentials,
             Dictionary<string, T> attributes = null,
-            string databaseDirectory = "",
+            BacktraceDatabaseSettings databaseSettings = null,
             uint reportPerMin = 3,
             bool tlsLegacySupport = false)
         {
             _attributes = attributes ?? new Dictionary<string, T>();
-            _database = new BacktraceDatabase<T>(databaseDirectory);
-            _backtraceApi = new BacktraceApi<T>(backtraceCredentials);
+            _database = new BacktraceDatabase<T>(databaseSettings);
+            _backtraceApi = new BacktraceApi<T>(backtraceCredentials, tlsLegacySupport);
             _reportWatcher = new ReportWatcher<T>(reportPerMin);
-            if (tlsLegacySupport)
-            {
-                _backtraceApi.SetTlsLegacy();
-            }
         }
 
         /// <summary>
@@ -263,7 +258,7 @@ namespace Backtrace.Base
         /// we can handle request end
         /// </summary>
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-        { 
+        {
             var exception = e.ExceptionObject as Exception;
             var result = SendAsync(new BacktraceReportBase<T>(exception)).Result;
             OnUnhandledApplicationException?.Invoke(exception);

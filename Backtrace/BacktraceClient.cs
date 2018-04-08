@@ -32,35 +32,35 @@ namespace Backtrace
         /// </summary>
         /// <param name="sectionName">Backtrace configuration section in App.config or Web.config file. Default section is BacktraceCredentials</param>
         /// <param name="attributes">Client's attributes</param>
-        /// <param name="databaseDirectory">Database path used to store minidumps and temporary reports</param>
+        /// <param name="databaseSettings">Backtrace database settings</param>
         /// <param name="reportPerMin">Numbers of records sending per one min</param>
         /// <param name="tlsLegacySupport">Set SSL and TLS flags for https request to Backtrace API</param>
         public BacktraceClient(
             string sectionName = "BacktraceCredentials",
             Dictionary<string, object> attributes = null,
-            string databaseDirectory = "",
+            BacktraceDatabaseSettings databaseSettings = null,
             uint reportPerMin = 3,
             bool tlsLegacySupport = false)
             : base(BacktraceCredentials.ReadConfigurationSection(sectionName),
-                attributes, databaseDirectory, reportPerMin, tlsLegacySupport)
+                attributes, databaseSettings, reportPerMin, tlsLegacySupport)
         { }
 #endif
-
         /// <summary>
         /// Initializing Backtrace client instance with BacktraceCredentials
         /// </summary>
         /// <param name="backtraceCredentials">Backtrace credentials</param>
         /// <param name="attributes">Client's attributes</param>
-        /// <param name="databaseDirectory">Database path used to store minidumps and temporary reports</param>
+        /// <param name="databaseSettings">Backtrace database settings</param>
         /// <param name="reportPerMin">Numbers of records sending per one minute</param>
         /// <param name="tlsLegacySupport">Set SSL and TLS flags for https request to Backtrace API</param>
         public BacktraceClient(
             BacktraceCredentials backtraceCredentials,
             Dictionary<string, object> attributes = null,
-            string databaseDirectory = "",
+            BacktraceDatabaseSettings databaseSettings= null,
             uint reportPerMin = 3,
             bool tlsLegacySupport = false)
-            : base(backtraceCredentials, attributes, databaseDirectory, reportPerMin, tlsLegacySupport)
+            : base(backtraceCredentials, attributes,
+                  databaseSettings, reportPerMin, tlsLegacySupport)
         { }
         #endregion
 

@@ -50,9 +50,10 @@ namespace Backtrace.Services
         /// Create a new instance of Backtrace API
         /// </summary>
         /// <param name="credentials">API credentials</param>
-        public BacktraceApi(BacktraceCredentials credentials)
+        public BacktraceApi(BacktraceCredentials credentials, bool tlsLegacySupport)
         {
             _serverurl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
+            SetTlsLegacy(tlsLegacySupport);
         }
         #region asyncRequest
 #if !NET35
@@ -120,8 +121,12 @@ namespace Backtrace.Services
         /// <summary>
         /// Set tls and ssl legacy support for https requests to Backtrace API
         /// </summary>
-        public void SetTlsLegacy()
+        internal void SetTlsLegacy(bool legacySupport)
         {
+            if (!legacySupport)
+            {
+                return;
+            }
             ServicePointManager.SecurityProtocol =
                      SecurityProtocolType.Tls
                     | (SecurityProtocolType)0x00000300
@@ -212,7 +217,7 @@ namespace Backtrace.Services
                 _disposed = true;
             }
         }
-
+        
         ~BacktraceApi()
         {
             Dispose(false);
