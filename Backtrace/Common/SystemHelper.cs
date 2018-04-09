@@ -34,16 +34,10 @@ namespace Backtrace.Common
             {
                 return LoadLibrary(libraryName) != IntPtr.Zero;
             }
-            catch (TypeLoadException)
+            catch
             {
-                Trace.WriteLine("Cannot use library to generate minidump file");
+                return false;
             }
-            catch(Exception )
-            {
-                //Operation not supported - library not exists or something really bad happend
-                Trace.WriteLine("Cannot load libraries required to generate minidump files");
-            }
-            return false;
         }
 
         /// <summary>
@@ -59,11 +53,6 @@ namespace Backtrace.Common
             return !libraries.Any(n => !IsLibraryAvailable(n));
         }
 
-        /// <summary>
-        /// Get current system name
-        /// </summary>
-        /// <param name="architecture">System architecture</param>
-        /// <returns>System name</returns>
         internal static string Name(string architecture)
         {
             var platform = Environment.OSVersion.Platform;
