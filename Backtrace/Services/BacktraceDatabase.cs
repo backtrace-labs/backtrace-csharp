@@ -7,7 +7,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
@@ -29,12 +28,23 @@ namespace Backtrace.Services
         public BacktraceDatabaseSettings DatabaseSettings { get; private set; }
 
         /// <summary>
+        /// Database path
+        /// </summary>
+        private string DatabasePath
+        {
+            get
+            {
+                return DatabaseSettings.DatabasePath;
+            }
+        }
+
+        /// <summary>
         /// Create Backtrace database instance
         /// </summary>
         /// <param name="databaseSettings">Backtrace database settings</param>
         public BacktraceDatabase(BacktraceDatabaseSettings databaseSettings)
         {
-            if(databaseSettings == null || string.IsNullOrEmpty(databaseSettings.DatabasePath))
+            if (databaseSettings == null || string.IsNullOrEmpty(databaseSettings.DatabasePath))
             {
                 _enable = false;
                 return;
@@ -48,13 +58,12 @@ namespace Backtrace.Services
         /// </summary>
         private void ValidateDatabaseDirectory()
         {
-            string databasePath = DatabaseSettings.DatabasePath;
             //there is no database directory
-            if (string.IsNullOrEmpty(databasePath))
+            if (string.IsNullOrEmpty(DatabasePath))
             {
                 return;
             }
-           
+
             ClearDatabase();
         }
 
@@ -63,7 +72,7 @@ namespace Backtrace.Services
         /// </summary>
         private void ClearDatabase()
         {
-            var directoryInfo = new DirectoryInfo(_directoryPath);
+            var directoryInfo = new DirectoryInfo(DatabasePath);
 
             IEnumerable<FileInfo> files;
             IEnumerable<DirectoryInfo> directories;
@@ -144,7 +153,7 @@ namespace Backtrace.Services
             string json = JsonConvert.SerializeObject(backtraceReport);
             byte[] file = Encoding.UTF8.GetBytes(json);
             string filename = $"Backtrace_{backtraceReport.Timestamp}";
-            string filePath = Path.Combine(DatabaseSettings.DatabasePath, filename);
+            string filePath = Path.Combine(DatabasePath, filename);
             try
             {
                 using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))

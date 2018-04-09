@@ -66,7 +66,6 @@ namespace Backtrace.UniversalWindowsPlatform
 
             backtraceClient = new BacktraceClient(
                credentials,
-               databaseDirectory: localFolder.Path,
                tlsLegacySupport:true
            );
             this.InitializeComponent();
