@@ -1,5 +1,8 @@
 ﻿# Backtrace C# Release Notes
 
+## Version 1.1.2 - 09.04.2018
+- Fix: Clean Backtrace client’s data storage on startup
+
 ## Version 1.1.1 - 09.04.2018
 - Error reports now include debug attributes
 - `BacktraceClient.OnClientReportLimitReached` event handlers will now take `BacktraceReport` as a parameter
