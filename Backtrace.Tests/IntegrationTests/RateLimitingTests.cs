@@ -61,7 +61,7 @@ namespace Backtrace.Tests.IntegrationTests
 
 
             //to check if client report limit reached use OnClientReportLimitReached 
-            _backtraceClient.OnClientReportLimitReached += () =>
+            _backtraceClient.OnClientReportLimitReached += (BacktraceReport report) =>
             {
                 reportLimitReached = true;
             };
@@ -117,7 +117,7 @@ namespace Backtrace.Tests.IntegrationTests
             int totalSend = 0;
 
             //set rate limiting to unlimite
-            _backtraceClient.ChangeRateLimiting(0);
+            _backtraceClient.SetClientReportLimit(0);
             reportLimitReached = false;
 
             //prepare thread and catch 2 exception per thread and send two custom messages
@@ -150,7 +150,7 @@ namespace Backtrace.Tests.IntegrationTests
         {
             //set rate limiting
             reportLimitReached = false;
-            _backtraceClient.ChangeRateLimiting((uint)rateLimiting);
+            _backtraceClient.SetClientReportLimit((uint)rateLimiting);
 
 
             //set expected number of drop and request
@@ -165,7 +165,7 @@ namespace Backtrace.Tests.IntegrationTests
             int totalSend = 0;
             int totalDrop = 0;
 
-            _backtraceClient.OnClientReportLimitReached += () =>
+            _backtraceClient.OnClientReportLimitReached += (BacktraceReport report) =>
             {
                 totalDrop++;
             };

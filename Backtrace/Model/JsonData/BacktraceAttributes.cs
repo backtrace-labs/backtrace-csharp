@@ -44,7 +44,7 @@ namespace Backtrace.Model.JsonData
             Attributes["application"] = report.CallingAssembly.GetName().Name;
             Attributes["lang.name"] = "C#";
 
-            //SetDebuggerAttributes(report.CallingAssembly);
+            SetDebuggerAttributes(report.CallingAssembly);
             SetMachineAttributes();
             SetProcessAttributes();
             SetExceptionAttributes(report);
@@ -58,32 +58,28 @@ namespace Backtrace.Model.JsonData
         {
             object[] attribs = callingAssembly.GetCustomAttributes(typeof(DebuggableAttribute), false);
             // If the 'DebuggableAttribute' is not found then it is definitely an OPTIMIZED build
-            if (attribs.Length > 0)
+            if (attribs.Length == 0)
             {
-                // Just because the 'DebuggableAttribute' is found doesn't necessarily mean
-                // it's a DEBUG build; we have to check the JIT Optimization flag
-                // i.e. it could have the "generate PDB" checked but have JIT Optimization enabled
-                DebuggableAttribute debuggableAttribute = attribs[0] as DebuggableAttribute;
-                if (debuggableAttribute != null)
-                {
-                    Attributes["DebuggableAttribute"] = true;
-                    Attributes["IsJITOptimized"] = !debuggableAttribute.IsJITOptimizerDisabled;
-                    Attributes["BuildType"] = debuggableAttribute.IsJITOptimizerDisabled ? "Debug" : "Release";
+                Attributes["build.debug"] = false;
+                Attributes["build.jit"] = true;
+                Attributes["build.type"] = "Release";
+            }
+            // Just because the 'DebuggableAttribute' is found doesn't necessarily mean
+            // it's a DEBUG build; we have to check the JIT Optimization flag
+            // i.e. it could have the "generate PDB" checked but have JIT Optimization enabled
+            if (attribs[0] is DebuggableAttribute debuggableAttribute)
+            {
+                Attributes["build.debug"] = true;
+                Attributes["build.jit"] = !debuggableAttribute.IsJITOptimizerDisabled;
+                Attributes["build.type"] = debuggableAttribute.IsJITOptimizerDisabled ? "Debug" : "Release";
 
-                    // check for Debug Output "full" or "pdb-only"
-                    Attributes["DebugOutput "] = (debuggableAttribute.DebuggingFlags &
-                                    DebuggableAttribute.DebuggingModes.Default) !=
-                                    DebuggableAttribute.DebuggingModes.None
-                                    ? "Full" : "pdb-only";
-                }
-                Attributes["DebuggableAttribute"] = false;
+                // check for Debug Output "full" or "pdb-only"
+                Attributes["build.output"] = (debuggableAttribute.DebuggingFlags &
+                                DebuggableAttribute.DebuggingModes.Default) !=
+                                DebuggableAttribute.DebuggingModes.None
+                                ? "Full" : "pdb-only";
             }
-            else
-            {
-                Attributes["DebuggableAttribute"] = false;
-                Attributes["IsJITOptimized"] = true;
-                Attributes["BuildType"] = "Release";
-            }
+            Attributes["build.debug"] = false;
         }
 
         /// <summary>

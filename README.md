@@ -41,7 +41,7 @@ catch(Exception exception){
     5. [BacktraceDatabase](#architecture-BacktraceDatabase)
     6. [ReportWatcher](#architecture-ReportWatcher)
 6. [Good to know](#good-to-know)
-
+7. [Release Notes](#changelog)
 
 # Supported .NET Frameworks <a name="supported-frameworks"></a>
 * .NET Framework 3.5 +
@@ -85,7 +85,7 @@ dotnet add package Backtrace
 
 ## Visual Studio <a name="sample-app-vs"></a>
 
-Visual Studio allows you to build a project and run all available samples (prepared for .NET Core, .NET Framework 4.5, .NET Framework 3.5). 
+Visual Studio allows you to build a project and run all available samples (includes support for .NET Core, .NET Framework 4.5, .NET Framework 3.5). 
 - Double click `.sln` file or `open` project directory in Visual Studio.
 - In `Solution Explorer` navigate to directory `Sample` and set preffered project (.NET Core/Framework) as startup project.
 
@@ -304,7 +304,7 @@ You can extend `BacktraceReportBase` and `BacktraceBase` to create your own Back
 - `OnServerError` - attach an event handler to be invoked when the server returns with a `400 bad request`, `401 unauthorized` or other HTTP error codes.
 - `OnServerResponse` - attach an event handler to be invoked when the server returns with a valid response.
 
-`BacktraceApi` can send synchronous and asynchronous reports to the Backtrace endpoint. To prepare asynchronous report (default is synchronous) you have to set `AsynchronousRequest` property to `true`.
+`BacktraceApi` can send synchronous and asynchronous reports to the Backtrace endpoint. To enable asynchronous report (default is synchronous) you have to set `AsynchronousRequest` property to `true`.
 
 ## BacktraceResult  <a name="architecture-BacktraceResult"></a>
 **`BacktraceResult`** is a class that holds response and result from a `Send` or `SendAsync` call. The class contains a `Status` property that indicates whether the call was completed (`OK`), the call returned with an error (`ServerError`), or the call was aborted because client reporting limit was reached (`LimitReached`). Additionally, the class has a `Message` property that contains details about the status. Note that the `Send` call may produce an error report on an inner exception, in this case you can find an additional `BacktraceResult` object in the `InnerExceptionResult` property.
@@ -327,14 +327,6 @@ You can use this Backtrace library with Xamarin if you change your `HttpClient` 
 [androidSupport]: https://github.com/backtrace-labs/backtrace-csharp/raw/master/Backtrace/Documents/Images/AndroidSupport.PNG "Xamarin Android Support"
 
 
-# Release Notes
+# Release Notes <a name="changelog"></a>
 
-## Version 1.1.0 - 30.03.2018
-- BacktraceClient now supports an asynchronously `SendAsync` method that works with `async task`
-- For .NET Framework 4.5 and .NET Standard 2.0, `BacktraceClient` now streams file attachment content directly from disk via `SendAsync` method.
-- `AfterSend` event parameter changed. Now `AfterSend` event require `BacktraceResult` parameter, not `BacktraceReport`,
-- `Send` and `SendAsync` method now returns `BacktraceResult` with information about report state,
-- `OnServerResponse` now require `BacktraceResult` as a parameter. 
-
-## Version 1.0.0 - 19.03.2018
-- First release.
+See release notes [here](./CHANGELOG.md).

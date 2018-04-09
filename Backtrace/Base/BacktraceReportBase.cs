@@ -1,8 +1,10 @@
-﻿using Backtrace.Extensions;
+﻿using Backtrace.Common;
+using Backtrace.Extensions;
 using Backtrace.Model.JsonData;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -30,11 +32,6 @@ namespace Backtrace.Base
         public bool ExceptionTypeReport = false;
 
         /// <summary>
-        /// Additional information about application state
-        /// </summary>
-        private Dictionary<string, T> _attributes;
-
-        /// <summary>
         /// Get a report classification 
         /// </summary>
         public string Classifier
@@ -52,23 +49,12 @@ namespace Backtrace.Base
         /// <summary>
         /// Get an report attributes
         /// </summary>
-        public Dictionary<string, T> Attributes
-        {
-            get
-            {
-                return _attributes;
-            }
-        }
+        public Dictionary<string, T> Attributes { get; private set; }
 
         /// <summary>
         /// Get a custom client message
         /// </summary>
-        internal readonly string Message;
-
-        /// <summary>
-        /// Get or set minidump attachment path
-        /// </summary>
-        internal string MinidumpFile { get; set; }
+        public readonly string Message;
 
         /// <summary>
         /// Get a report exception
@@ -76,46 +62,41 @@ namespace Backtrace.Base
         public Exception Exception { get; set; }
 
         /// <summary>
+        /// Get all paths to attachments
+        /// </summary>
+        public List<string> AttachmentPaths { get; set; }
+
+        /// <summary>
+        /// Get or set minidump attachment path
+        /// </summary>
+        internal string MinidumpFile { get; set; }
+
+        /// <summary>
         /// Get an assembly where report was created (or should be created)
         /// </summary>
         internal Assembly CallingAssembly { get; set; }
 
         /// <summary>
-        /// Get all paths to attachments
+        /// Current report exception stack
         /// </summary>
-        internal List<string> AttachmentPaths { get; set; }
+        public List<ExceptionStack> ExceptionStack { get; set; } = new List<ExceptionStack>();
 
         /// <summary>
         /// Create new instance of Backtrace report to sending a report with custom client message
         /// </summary>
         /// <param name="message">Custom client message</param>
-        /// <param name="callingAssembly">Calling assembly instance</param>
         /// <param name="attributes">Additional information about application state</param>
         /// <param name="attachmentPaths">Path to all report attachments</param>
         public BacktraceReportBase(
             string message,
-            Assembly callingAssembly,
             Dictionary<string, T> attributes = null,
             List<string> attachmentPaths = null)
         {
-            CallingAssembly = callingAssembly ?? GetCallingAssemblies();
             Message = message;
-            _attributes = attributes ?? new Dictionary<string, T>();
+            Attributes = attributes ?? new Dictionary<string, T>();
             AttachmentPaths = attachmentPaths ?? new List<string>();
+            SetCallingAppInformation();
         }
-
-        /// <summary>
-        /// Create new instance of Backtrace report to sending a report with custom client message
-        /// </summary>
-        /// <param name="message">Custom client message</param>
-        /// <param name="attributes">Additional information about application state</param>
-        /// <param name="attachmentPaths">Path to all report attachments</param>
-        public BacktraceReportBase(
-            string message,
-            Dictionary<string, T> attributes = null,
-            List<string> attachmentPaths = null)
-            : this(message, null, attributes, attachmentPaths)
-        { }
 
         /// <summary>
         /// Create new instance of Backtrace report to sending a report with application exception
@@ -126,41 +107,21 @@ namespace Backtrace.Base
         /// <param name="attachmentPaths">Path to all report attachments</param>
         public BacktraceReportBase(
             Exception exception,
-            Assembly callingAssembly,
             Dictionary<string, T> attributes = null,
             List<string> attachmentPaths = null)
         {
-            CallingAssembly = callingAssembly ?? GetCallingAssemblies();
-            _attributes = attributes ?? new Dictionary<string, T>();
+            Attributes = attributes ?? new Dictionary<string, T>();
             AttachmentPaths = attachmentPaths ?? new List<string>();
-            //handle null value in exception parameter
-            if (exception == null)
-            {
-                return;
-            }
             Exception = exception;
-            var type = Exception?.GetType();
-            ExceptionTypeReport = true;
+            ExceptionTypeReport = Exception != null;
+            SetCallingAppInformation();
         }
-
-        /// <summary>
-        /// Create new instance of Backtrace report to sending a report with application exception
-        /// </summary>
-        /// <param name="exception">Current exception</param>
-        /// <param name="attributes">Additional information about application state</param>
-        /// <param name="attachmentPaths">Path to all report attachments</param>
-        public BacktraceReportBase(
-            Exception exception,
-            Dictionary<string, T> attributes = null,
-            List<string> attachmentPaths = null)
-            : this(exception, null, attributes, attachmentPaths)
-        { }
 
         /// <summary>
         /// Set a path to report minidump
         /// </summary>
         /// <param name="minidumpPath">Path to generated minidump file</param>
-        public void SetMinidumpPath(string minidumpPath)
+        internal void SetMinidumpPath(string minidumpPath)
         {
             if (string.IsNullOrEmpty(minidumpPath))
             {
@@ -168,19 +129,6 @@ namespace Backtrace.Base
             }
             MinidumpFile = minidumpPath;
             AttachmentPaths.Add(minidumpPath);
-        }
-
-        /// <summary>
-        /// Convert exception to Exception Stack
-        /// </summary>
-        /// <returns>ExceptionStack based on exception</returns>
-        internal IEnumerable<ExceptionStack> GetExceptionStack()
-        {
-            if (!ExceptionTypeReport)
-            {
-                return null;
-            }
-            return ExceptionStack.Convert(Exception);
         }
 
         /// <summary>
@@ -200,34 +148,71 @@ namespace Backtrace.Base
             return reportAttributes.Merge(attributes);
         }
 
-        /// <summary>
-        /// Get calling assembly from current stack trace
-        /// </summary>
-        /// <returns>calling assembly</returns>
-        private Assembly GetCallingAssemblies()
+        private void SetStacktraceInformation(StackFrame[] stackFrames, bool includeCallingAssembly, int startingIndex = 0)
         {
-            var executedAssembly = Assembly.GetExecutingAssembly();
-            var stacktrace = new StackTrace();
-            foreach (var stackframe in stacktrace.GetFrames())
+            var executedAssemblyName = Assembly.GetExecutingAssembly().FullName;
+            //if includeCallingAssembly is true, we dont need to found calling assembly in current stacktrace
+            bool callingAssemblyFound = !includeCallingAssembly;
+
+            foreach (var stackFrame in stackFrames)
             {
-                if (stackframe == null)
+                if (stackFrame == null)
                 {
+                    //received invalid or unvailable stackframe
                     continue;
                 }
-                var assembly = stackframe.GetMethod()?.DeclaringType?.Assembly;
+                Assembly assembly = stackFrame?.GetMethod()?.DeclaringType?.Assembly;
                 if (assembly == null)
                 {
                     continue;
                 }
-
-                if (!(assembly.FullName.StartsWith("Microsoft.")
-                    || assembly.FullName.StartsWith("System.")
-                    || assembly.FullName == executedAssembly.FullName))
+                var assemblyName = assembly.FullName;
+                if (executedAssemblyName.Equals(assemblyName))
                 {
-                    return assembly;
+                    // remove all system and microsoft stack frames 
+                    //if we add any stackframe to list this is mistake because we receive 
+                    //system or microsoft dll (for example async invoke)
+                    ExceptionStack.Clear();
+                    startingIndex = 0;
+                    continue;
+                }
+                ExceptionStack.Insert(startingIndex, Model.JsonData.ExceptionStack.Convert(stackFrame, assembly.GetName().Name, true));
+                startingIndex++;
+                if (!callingAssemblyFound && !(SystemHelper.SystemAssembly(assembly)))
+                {
+                    callingAssemblyFound = true;
+                    CallingAssembly = assembly;
                 }
             }
-            return executedAssembly;
         }
+        /// <summary>
+        /// Set Calling Assembly and Exception Stack property. 
+        /// CallingAssembly and StackTrace are necessary to prepare diagnostic JSON in BacktraceData class
+        /// </summary>
+        private void SetCallingAppInformation()
+        {
+            // generate stacktrace with file info
+            // if assembly have pbd files, diagnostic JSON will contain information about 
+            // line number and column number
+            var stackTrace = new StackTrace(true);
+            var stackFrames = stackTrace.GetFrames();
+            SetStacktraceInformation(stackFrames, true);
+
+            if (Exception == null)
+            {
+                return;
+            }
+            //Add to current stack trace, stackframes from current exception
+            //stacktrace from current thread and from current excetpion are diffrent
+            var exceptionStackTrace = new StackTrace(Exception, true);
+            var exceptionStackFrames = exceptionStackTrace.GetFrames();
+            if (exceptionStackFrames != null && exceptionStackFrames[0] != null
+                && ExceptionStack[0].ILOffset != exceptionStackFrames[0].GetILOffset()
+                && ExceptionStack[0].FunctionName != exceptionStackFrames[0].GetMethod()?.Name)
+            {
+                SetStacktraceInformation(exceptionStackFrames, false);
+            }
+        }
+
     }
 }

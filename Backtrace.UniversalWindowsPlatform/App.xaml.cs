@@ -61,6 +61,9 @@ namespace Backtrace.UniversalWindowsPlatform
         /// </summary>
         public App()
         {
+            Trace.WriteLine("Backtrace Universal Windows Platform Example");
+            Trace.WriteLine($"Used database path: {localFolder.Path}");
+
             backtraceClient = new BacktraceClient(
                credentials,
                databaseDirectory: localFolder.Path,

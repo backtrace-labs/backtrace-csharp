@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Backtrace.Extensions;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -41,8 +42,6 @@ namespace Backtrace.Model.JsonData
             }
             Name = threadName;
             Fault = fault;
-            //Name = string.IsNullOrEmpty(mainThread.Name) ? mainThread.ManagedThreadId.ToString() : mainThread.Name;
-            //Fault = (mainThread.ThreadState & ThreadState.Running) == ThreadState.Running;
         }
 
         /// <summary>
@@ -53,27 +52,8 @@ namespace Backtrace.Model.JsonData
         /// <param name="currentThread">Is current thread flag</param>
         public ThreadInformation(Thread thread, IEnumerable<ExceptionStack> stack, bool currentThread = false)
             : this(
-                 threadName: GenerateValidThreadName(thread),
+                 threadName: thread.GenerateValidThreadName(),
                  fault: currentThread, //faulting thread = current thread
                  stack: stack)
-        {
-        }
-        /// <summary>
-        /// Generate a valid thread name for passed thread
-        /// </summary>
-        /// <returns>Thread name</returns>
-        public static string GenerateValidThreadName(Thread thread)
-        {
-            //generate temporary thread name
-            //thread name cannot be "null" or null or empty string
-            //in worst scenario thread name should be managedThreadId 
-            var threadName = thread.Name;
-            threadName = string.IsNullOrEmpty(threadName)
-                        ? thread.ManagedThreadId.ToString()
-                        : threadName;
-
-            return threadName;
-        }
-
-    }
+        { }    }
 }

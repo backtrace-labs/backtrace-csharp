@@ -6,9 +6,9 @@ using System.Net;
 using System.IO;
 using Backtrace.Common;
 using System.Collections.Generic;
+using Backtrace.Extensions;
 #if !NET35
 using System.Threading.Tasks;
-using System.Net.Http.Headers;
 using System.Net.Http;
 #endif
 
@@ -82,33 +82,8 @@ namespace Backtrace.Services
             using (var request = new HttpRequestMessage(HttpMethod.Post, _serverurl))
             using (var content = new MultipartFormDataContent(boundary))
             {
-                var jsonContent = new StringContent(json);
-                jsonContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
-
-                jsonContent.Headers.ContentDisposition =
-                    new ContentDispositionHeaderValue("form-data")
-                    {
-                        Name = "upload_file",
-                        FileName = "\"upload_file.json\""
-                    };
-
-                content.Add(jsonContent);
-                foreach (var file in data.Attachments)
-                {
-                    if (!File.Exists(file))
-                    {
-                        continue;
-                    }
-                    string fileName = $"attachment_{Path.GetFileName(file)}";
-                    var fileContent = new StreamContent(File.OpenRead(file));
-                    fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
-                    {
-                        Name = $"\"{fileName}\"",
-                        FileName = $"\"{fileName}\""
-                    };
-                    fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
-                    content.Add(fileContent);
-                }
+                content.AddJson("upload_file.json", json);
+                content.AddFiles(data.Attachments);
 
                 //// clear and add content type with boundary tag
                 content.Headers.Remove("Content-Type");
@@ -145,7 +120,7 @@ namespace Backtrace.Services
         /// <summary>
         /// Set tls and ssl legacy support for https requests to Backtrace API
         /// </summary>
-        public void SetTlsSupport()
+        public void SetTlsLegacy()
         {
             ServicePointManager.SecurityProtocol =
                      SecurityProtocolType.Tls

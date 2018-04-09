@@ -59,7 +59,7 @@ namespace Backtrace.Tests.Events
             int totalNumberOfReports = 0;
             bool eventTrigger = false;
 
-            _backtraceClient.OnClientReportLimitReached = () =>
+            _backtraceClient.OnClientReportLimitReached = (BacktraceReport report) =>
             {
                 eventTrigger = true;
             };
@@ -72,7 +72,7 @@ namespace Backtrace.Tests.Events
                 }
             };
 
-            _backtraceClient.ChangeRateLimiting((uint)rateLimit);
+            _backtraceClient.SetClientReportLimit((uint)rateLimit);
             for (int i = 0; i < numberOfCycles; i++)
             {
                 //test sync submission

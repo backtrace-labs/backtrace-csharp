@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Linq;
 using System.Reflection;
+using Backtrace.Extensions;
 
 namespace Backtrace.Model.JsonData
 {
@@ -38,23 +39,20 @@ namespace Backtrace.Model.JsonData
             ProcessThreads();
 #endif
             //get stack trace and infomrations about current thread
-            GenerateCurrentThreadInformation(callingAssembly, exceptionStack);
+            GenerateCurrentThreadInformation(exceptionStack);
         }
 
         /// <summary>
         /// Generate information for current thread
         /// </summary>
-        private void GenerateCurrentThreadInformation(Assembly callingAssembly, IEnumerable<ExceptionStack> exceptionStack)
+        /// <param name="exceptionStack">Current BacktraceReport exception stack</param>
+        private void GenerateCurrentThreadInformation(IEnumerable<ExceptionStack> exceptionStack)
         {
             var current = Thread.CurrentThread;
-            //get a current thread stack trace
-            //in thread stack trace we concatenate current thread stack trace and stack trace available in exception object
-            var currentThreadStackTrace = ExceptionStack.FromCurrentThread(callingAssembly.GetName().Name, exceptionStack);
-
             //get current thread id
-            string generatedMainThreadId = ThreadInformation.GenerateValidThreadName(current);
+            string generatedMainThreadId = current.GenerateValidThreadName();
 
-            ThreadInformations[generatedMainThreadId] = new ThreadInformation(current, currentThreadStackTrace);
+            ThreadInformations[generatedMainThreadId] = new ThreadInformation(current, exceptionStack);
             //set currentThreadId
             MainThread = generatedMainThreadId;
         }

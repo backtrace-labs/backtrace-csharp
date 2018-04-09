@@ -86,7 +86,7 @@ namespace Backtrace.Base
         /// <summary>
         /// Set event executed when client site report limit reached
         /// </summary>
-        public Action OnClientReportLimitReached = null;
+        public Action<BacktraceReport> OnClientReportLimitReached = null;
 
         /// <summary>
         /// Set event executed before sending data to Backtrace API
@@ -152,7 +152,7 @@ namespace Backtrace.Base
             _reportWatcher = new ReportWatcher<T>(reportPerMin);
             if (tlsLegacySupport)
             {
-                _backtraceApi.SetTlsSupport();
+                _backtraceApi.SetTlsLegacy();
             }
         }
 
@@ -160,10 +160,21 @@ namespace Backtrace.Base
         /// Change maximum number of reportrs sending per one minute
         /// </summary>
         /// <param name="reportPerMin">Number of reports sending per one minute. If value is equal to zero, there is no request sending to API. Value have to be greater than or equal to 0</param>
+        [Obsolete("This method has been deprecated, please use SetClientReportLimit instead.")]
         public void ChangeRateLimiting(uint reportPerMin)
         {
-            _reportWatcher.ChangeRateLimiting(reportPerMin);
+            _reportWatcher.SetClientReportLimit(reportPerMin);
         }
+
+        /// <summary>
+        /// Change maximum number of reportrs sending per one minute
+        /// </summary>
+        /// <param name="reportPerMin">Number of reports sending per one minute. If value is equal to zero, there is no request sending to API. Value have to be greater than or equal to 0</param>
+        public void SetClientReportLimit(uint reportPerMin)
+        {
+            _reportWatcher.SetClientReportLimit(reportPerMin);
+        }
+
 
         /// <summary>
         /// Send a report to Backtrace API
@@ -175,8 +186,9 @@ namespace Backtrace.Base
             bool watcherValidation = _reportWatcher.WatchReport(report);
             if (!watcherValidation)
             {
-                OnClientReportLimitReached?.Invoke();
-                return BacktraceResult.OnLimitReached(report as BacktraceReport);
+                var resultReport = report as BacktraceReport;
+                OnClientReportLimitReached?.Invoke(resultReport);
+                return BacktraceResult.OnLimitReached(resultReport);
             }
             //generate minidump and add minidump to report 
             string minidumpPath = _database.GenerateMiniDump(report, MiniDumpType);
@@ -207,8 +219,9 @@ namespace Backtrace.Base
             bool watcherValidation = _reportWatcher.WatchReport(report);
             if (!watcherValidation)
             {
-                OnClientReportLimitReached?.Invoke();
-                return BacktraceResult.OnLimitReached(report as BacktraceReport);
+                var resultReport = report as BacktraceReport;
+                OnClientReportLimitReached?.Invoke(resultReport);
+                return BacktraceResult.OnLimitReached(resultReport);
             }
             //generate minidump and add minidump to report 
             string minidumpPath = _database.GenerateMiniDump(report, MiniDumpType);
@@ -239,8 +252,7 @@ namespace Backtrace.Base
         /// </summary>
         public virtual void HandleApplicationThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
         {
-            var assembly = System.Reflection.Assembly.GetCallingAssembly();
-            Send(new BacktraceReportBase<T>(e.Exception, assembly));
+            SendAsync(new BacktraceReportBase<T>(e.Exception)).Wait();
             OnUnhandledApplicationException?.Invoke(e.Exception);
         }
 
@@ -251,10 +263,10 @@ namespace Backtrace.Base
         /// we can handle request end
         /// </summary>
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
-            var assembly = System.Reflection.Assembly.GetCallingAssembly();
-            var exception = e.ExceptionObject as Exception; 
-            var result = Send(new BacktraceReportBase<T>(exception, assembly));
+        { 
+            var exception = e.ExceptionObject as Exception;
+            var result = SendAsync(new BacktraceReportBase<T>(exception)).Result;
+            OnUnhandledApplicationException?.Invoke(exception);
         }
 #endif
     }

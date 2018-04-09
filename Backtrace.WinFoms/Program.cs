@@ -16,17 +16,21 @@ namespace Backtrace.WinFoms
         [STAThread]
         static void Main()
         {
+            //initialize new BacktraceClient 
             BacktraceClient backtraceClient = new BacktraceClient(
                     new BacktraceCredentials(ApplicationCredentials.Host, ApplicationCredentials.Token),
                     reportPerMin: 0, //unlimited number of reports per secound
                     tlsLegacySupport: true
             );
-            backtraceClient.OnServerError += (Exception e) =>
-            {
-                Trace.WriteLine(e.Message);
-            };
+            //Setting application exceptions
             backtraceClient.HandleApplicationException();
-            backtraceClient.SendAsync("WPF Application crash report started").Wait();
+            //sending custom client message to Backtrace server
+            var result = backtraceClient.SendAsync("WPF Application crash report started").Result;
+            if(result.Status == Types.BacktraceResultStatus.Ok)
+            {
+                Trace.WriteLine($"Report is availble on Backtrace API. Backtrace Object Id: {result.Object}");
+            }
+            
             Application.EnableVisualStyles();
             Application.ThreadException += backtraceClient.HandleApplicationThreadException;
             Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
