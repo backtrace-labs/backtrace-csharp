@@ -5,6 +5,7 @@ using Backtrace.Model;
 using Backtrace.Types;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -53,18 +54,34 @@ namespace Backtrace.Services
             {
                 return;
             }
-            //check if directory exists 
-            if (!Directory.Exists(databasePath))
+           
+            ClearDatabase();
+        }
+
+        /// <summary>
+        /// Delete all existing files and directories in current database directory
+        /// </summary>
+        private void ClearDatabase()
+        {
+            var directoryInfo = new DirectoryInfo(_directoryPath);
+
+            IEnumerable<FileInfo> files;
+            IEnumerable<DirectoryInfo> directories;
+#if !NET35
+            files = directoryInfo.EnumerateFiles();
+            directories = directoryInfo.EnumerateDirectories();
+#else
+            files = directoryInfo.GetFiles();
+            directories = directoryInfo.GetDirectories();
+#endif
+            foreach (FileInfo file in files)
             {
-                throw new ArgumentException(nameof(DatabaseSettings.DatabasePath));
+                file.Delete();
             }
-//#if RELEASE
-//            //check if directory is empty
-//            if (Directory.GetFiles(_directoryPath).Any())
-//            {
-//                throw new InvalidOperationException("Database directory should be empty before Backtrace library start");
-//            }
-//#endif
+            foreach (DirectoryInfo dir in directories)
+            {
+                dir.Delete(true);
+            }
         }
 
         /// <summary>

@@ -56,7 +56,7 @@ namespace Backtrace.Model.JsonData
             /// </summary>
             /// <param name="exceptionStack">Exception Stack</param>
             /// <returns>New instance of SoruceCode</returns>
-            public static SourceCode FromExceptionStack(DiagnosticStack exceptionStack)
+            public static SourceCode FromExceptionStack(ExceptionStack exceptionStack)
             {
                 return new SourceCode()
                 {
@@ -71,12 +71,12 @@ namespace Backtrace.Model.JsonData
         /// Source code information about current executed program
         /// </summary>
         public Dictionary<string, SourceCode> data = new Dictionary<string, SourceCode>();
-        internal SourceCodeData(IEnumerable<DiagnosticStack> exceptionStack)
+        internal SourceCodeData(IEnumerable<ExceptionStack> exceptionStack)
         {
             SetStack(exceptionStack);
         }
 
-        private void SetStack(IEnumerable<DiagnosticStack> exceptionStack)
+        private void SetStack(IEnumerable<ExceptionStack> exceptionStack)
         {
             if (exceptionStack == null || exceptionStack.Count() == 0)
             {

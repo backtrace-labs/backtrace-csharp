@@ -1,8 +1,6 @@
 ﻿using Backtrace.Model;
-using Backtrace.Model.JsonData;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -22,35 +20,57 @@ namespace Backtrace.Extensions
         {
             return new BacktraceReport(source);
         }
+#if !NET35
+
+        ///  Provides full stack trace for the exception that occurred.
+        /// </summary>
+        /// <param name="exception">Exception object.</param>
+        /// <param name="environmentStackTrace">Environment stack trace, for pulling additional stack frames.</param>
+        public static string ToLogString(this Exception exception, string environmentStackTrace)
+        {
+            List<string> environmentStackTraceLines = GetUserStackTraceLines(environmentStackTrace);
+            environmentStackTraceLines.RemoveAt(0);
+
+            List<string> stackTraceLines = GetStackTraceLines(exception.StackTrace);
+            stackTraceLines.AddRange(environmentStackTraceLines);
+
+            string fullStackTrace = String.Join(Environment.NewLine, stackTraceLines);
+
+            string logMessage = exception.Message + Environment.NewLine + fullStackTrace;
+            return logMessage;
+        }
 
         /// <summary>
-        /// Generate stack traces that not exists in current thread stack trace
+        ///  Gets a list of stack frame lines, as strings.
         /// </summary>
-        /// <returns>Unique exception stack frames</returns>
-        internal static StackFrame[] GetExceptionStackFrames(this Exception source, DiagnosticStack firstFrame)
+        /// <param name="stackTrace">Stack trace string.</param>
+        private static List<string> GetStackTraceLines(string stackTrace)
         {
-            if (source == null)
-            {
-                return null;
-            }
-            var exceptionStackTrace = new StackTrace(source, true);
-            var exceptionStackFrames = exceptionStackTrace.GetFrames();
-            if (exceptionStackFrames == null || !exceptionStackFrames.Any())
-            {
-                return null;
-            }
-            if (firstFrame == null)
-            {
-                return exceptionStackFrames;
-            }
-            var comparer = exceptionStackFrames[0];
-            //validate if exception stack frame exists in environment stack trace
-            if (firstFrame.ILOffset == comparer.GetILOffset()
-                && firstFrame.FunctionName == comparer.GetMethod()?.Name)
-            {
-                return null;
-            }
-            return exceptionStackFrames;
+            return stackTrace.Split(new[] { Environment.NewLine }, StringSplitOptions.None).ToList();
         }
+
+        /// <summary>
+        ///  Gets a list of stack frame lines, as strings, only including those for which line number is known.
+        /// </summary>
+        /// <param name="fullStackTrace">Full stack trace, including external code.</param>
+        private static List<string> GetUserStackTraceLines(string fullStackTrace)
+        {
+            List<string> outputList = new List<string>();
+            Regex regex = new Regex(@"([^\)]*\)) in (.*):line (\d)*$", RegexOptions.Compiled);
+
+            List<string> stackTraceLines = ExceptionExtensions.GetStackTraceLines(fullStackTrace);
+            foreach (string stackTraceLine in stackTraceLines)
+            {
+                if (!regex.IsMatch(stackTraceLine))
+                {
+                    continue;
+                }
+
+                outputList.Add(stackTraceLine);
+            }
+
+            return outputList;
+        }
+#endif
     }
 }

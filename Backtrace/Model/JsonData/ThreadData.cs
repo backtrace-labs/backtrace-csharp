@@ -29,7 +29,7 @@ namespace Backtrace.Model.JsonData
         /// <summary>
         /// Create instance of ThreadData class to collect information about used threads
         /// </summary>
-        internal ThreadData(Assembly callingAssembly, IEnumerable<DiagnosticStack> exceptionStack)
+        internal ThreadData(Assembly callingAssembly, IEnumerable<ExceptionStack> exceptionStack)
         {
 #if NET45
             //use available in .NET 4.5 api to find stack trace of all available managed threads
@@ -46,7 +46,7 @@ namespace Backtrace.Model.JsonData
         /// Generate information for current thread
         /// </summary>
         /// <param name="exceptionStack">Current BacktraceReport exception stack</param>
-        private void GenerateCurrentThreadInformation(IEnumerable<DiagnosticStack> exceptionStack)
+        private void GenerateCurrentThreadInformation(IEnumerable<ExceptionStack> exceptionStack)
         {
             var current = Thread.CurrentThread;
             //get current thread id
@@ -117,7 +117,7 @@ namespace Backtrace.Model.JsonData
                     {
                         threadName = thread.ManagedThreadId.ToString();
                     }
-                    var frames = DiagnosticStack.Convert(thread.StackTrace);
+                    var frames = ExceptionStack.Convert(thread.StackTrace);
                     ThreadInformations[threadName] = new ThreadInformation(threadName, false, frames);
                 }
             }
