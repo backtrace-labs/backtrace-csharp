@@ -20,8 +20,10 @@ namespace Backtrace.Services
     /// </summary>
     public class BacktraceDatabase<T> : IBacktraceDatabase<T>
     {
-
-        //DATA STRUCTURE TO STORE REPORTS
+        /// <summary>
+        /// In memory database
+        /// </summary>
+        Dictionary<uint, IEnumerable<BacktraceData<T>>> Database = new Dictionary<uint, IEnumerable<BacktraceData<T>>>();
 
 
         /// <summary>
@@ -92,6 +94,9 @@ namespace Backtrace.Services
         /// </summary>
         public void Reset()
         {
+            //this code is right now deprecated 
+            //we can use this in future
+
             //var directoryInfo = new DirectoryInfo(DatabasePath);
             //IEnumerable<FileInfo> files = directoryInfo.GetFiles();
             //IEnumerable<DirectoryInfo> directories = directoryInfo.GetDirectories();
@@ -113,6 +118,9 @@ namespace Backtrace.Services
 
             //Flush method should USE data structure to store reports!!
 
+            //this code is right now deprecated 
+            //we can use this in future
+
 
             //var directoryInfo = new DirectoryInfo(DatabasePath);
             //var files = directoryInfo.GetFiles();
@@ -131,6 +139,8 @@ namespace Backtrace.Services
         public async Task FlushAsync()
         {
             //Flush method should USE data structure to store reports!!
+            //this code is right now deprecated 
+            //we can use this in future
 
             //var directoryInfo = new DirectoryInfo(DatabasePath);
             //var files = directoryInfo.GetFiles();
@@ -146,7 +156,7 @@ namespace Backtrace.Services
             throw new NotImplementedException();
         }
 
-      
+
 #endif
 
         /// <summary>
@@ -223,27 +233,48 @@ namespace Backtrace.Services
             return true;
         }
 
+        /// <summary>
+        /// Add new report to BacktraceDatabase
+        /// </summary>
         public void Add()
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Clear all reports in BacktraceDatabase
+        /// </summary>
         public void Delete()
         {
             throw new NotImplementedException();
         }
 
+
+        /// <summary>
+        /// Get all stored reports in BacktraceDatabase
+        /// </summary>
+        /// <returns>All stored reports in BacktraceDatabase</returns>
         public IEnumerable<BacktraceReportBase<T>> Get()
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Dispose BacktraceDatabase
+        /// </summary>
         public void Dispose()
         {
+            //dispose database
+            throw new NotImplementedException();
             RemoveOrphaned();
         }
 
         //THIS IS OUT OF SCOPE
+        /// <summary>
+        /// Get a report by using specific filter
+        /// </summary>
+        /// <param name="delegate">Report filter</param>
+        /// <returns>Stored reports that match filter criteria</returns>
         public IEnumerable<BacktraceReportBase<T>> Get(Func<BacktraceReportBase<T>, IEnumerable<BacktraceReportBase<T>>> @delegate)
         {
             throw new NotImplementedException();
