@@ -69,29 +69,26 @@ namespace Backtrace.Services
             {
                 return BacktraceResult.OnLimitReached(data.Report as BacktraceReport);
             }
-
-
-
-            Guid requestId = Guid.NewGuid();
-            var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
+            // execute user custom request handler
             if (RequestHandler != null)
             {
-                RequestHandler?.Invoke(_serverurl, FormDataHelper.GetContentTypeWithBoundary(requestId), data);
+                return RequestHandler?.Invoke(_serverurl, FormDataHelper.GetContentTypeWithBoundary(Guid.NewGuid()), data);
             }
-            return await SendAsync(requestId, json, data);
+            //get a json from diagnostic object
+            var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
+            return await SendAsync(Guid.NewGuid(), json, data.Attachments, data.Report as BacktraceReport);
         }
 
-        private async Task<BacktraceResult> SendAsync(Guid requestId, string json, BacktraceData<T> data)
+        private async Task<BacktraceResult> SendAsync(Guid requestId, string json, List<string> attachments, BacktraceReport report)
         {
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
             string boundary = FormDataHelper.GetBoundary(requestId);
-            var report = data.Report as BacktraceReport;
 
             using (var request = new HttpRequestMessage(HttpMethod.Post, _serverurl))
             using (var content = new MultipartFormDataContent(boundary))
             {
                 content.AddJson("upload_file.json", json);
-                content.AddFiles(data.Attachments);
+                content.AddFiles(attachments);
 
                 //// clear and add content type with boundary tag
                 content.Headers.Remove("Content-Type");

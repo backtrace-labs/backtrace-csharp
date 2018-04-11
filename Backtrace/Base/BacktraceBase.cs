@@ -30,23 +30,6 @@ namespace Backtrace.Base
                 _backtraceApi.RequestHandler = value;
             }
         }
-
-        /// <summary>
-        /// Use asynchronous method to send report to server
-        /// </summary>
-        //[Obsolete]
-        //public bool AsyncRequest
-        //{
-        //    get
-        //    {
-        //        return _backtraceApi.AsynchronousRequest;
-        //    }
-        //    set
-        //    {
-        //        _backtraceApi.AsynchronousRequest = value;
-        //    }
-        //}
-
         /// <summary>
         /// Set an event executed when received bad request, unauthorize request or other information from server
         /// </summary>
@@ -161,16 +144,6 @@ namespace Backtrace.Base
             _backtraceApi = new BacktraceApi<T>(backtraceCredentials, reportPerMin, tlsLegacySupport);
             Database = database;
             database.SetApi(_backtraceApi);
-        }
-
-        /// <summary>
-        /// Change maximum number of reportrs sending per one minute
-        /// </summary>
-        /// <param name="reportPerMin">Number of reports sending per one minute. If value is equal to zero, there is no request sending to API. Value have to be greater than or equal to 0</param>
-        [Obsolete("This method has been deprecated, please use SetClientReportLimit instead.")]
-        public void ChangeRateLimiting(uint reportPerMin)
-        {
-            _reportWatcher.SetClientReportLimit(reportPerMin);
         }
 
         /// <summary>

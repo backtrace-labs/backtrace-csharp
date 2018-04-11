@@ -34,12 +34,6 @@ namespace Backtrace.Interfaces
         Action<BacktraceResult> OnServerResponse { get; set; }
 
         /// <summary>
-        /// Use asynchronous method to send report to server
-        /// </summary>
-        //[Obsolete]
-        //bool AsynchronousRequest { get; set; }
-
-        /// <summary>
         /// Set custom request method to prepare HTTP request to Backtrace API
         /// </summary>
         Func<string, string, BacktraceData<T>, BacktraceResult> RequestHandler { get; set; }
