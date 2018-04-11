@@ -45,7 +45,7 @@ namespace Backtrace.Services
         /// <summary>
         /// Backtrace Api instance. Use BacktraceApi to send data to Backtrace server
         /// </summary>
-        private readonly BacktraceApi<T> _backtraceApi;
+        private IBacktraceApi<T> _backtraceApi;
 
         /// <summary>
         /// Determine if BacktraceDatabase is enable and library can store reports
@@ -56,7 +56,7 @@ namespace Backtrace.Services
         /// Create Backtrace database instance
         /// </summary>
         /// <param name="databaseSettings">Backtrace database settings</param>
-        public BacktraceDatabase(BacktraceDatabaseSettings databaseSettings, BacktraceCredentials credentials, bool tlsSupport = false)
+        public BacktraceDatabase(BacktraceDatabaseSettings databaseSettings)
         {
             if (databaseSettings == null || string.IsNullOrEmpty(databaseSettings.DatabasePath))
             {
@@ -65,21 +65,18 @@ namespace Backtrace.Services
             }
             DatabaseSettings = databaseSettings;
             ValidateDatabaseDirectory();
-            _backtraceApi = new BacktraceApi<T>(credentials, tlsSupport);
         }
 
         /// <summary>
-        /// Check if used directory database is available 
+        /// Set BacktraceApi instance
         /// </summary>
-        private void ValidateDatabaseDirectory()
+        /// <param name="backtraceApi">BacktraceApi instance</param>
+        public void SetApi(IBacktraceApi<T> backtraceApi)
         {
-            //there is no database directory
-            if (string.IsNullOrEmpty(DatabasePath))
-            {
-                return;
-            }
-            RemoveOrphaned();
+            _backtraceApi = backtraceApi;   
         }
+
+        
 
         /// <summary>
         /// Detect all orphaned minidump files
@@ -158,6 +155,18 @@ namespace Backtrace.Services
 
 
 #endif
+        /// <summary>
+        /// Check if used directory database is available 
+        /// </summary>
+        private void ValidateDatabaseDirectory()
+        {
+            //there is no database directory
+            if (string.IsNullOrEmpty(DatabasePath))
+            {
+                return;
+            }
+            RemoveOrphaned();
+        }
 
         /// <summary>
         /// Create new minidump file in database directory path. Minidump file name is a random Guid
@@ -279,5 +288,7 @@ namespace Backtrace.Services
         {
             throw new NotImplementedException();
         }
+
+       
     }
 }

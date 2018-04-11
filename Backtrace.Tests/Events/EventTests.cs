@@ -42,11 +42,11 @@ namespace Backtrace.Tests.Events
 
             //setup new client
             var credentials = new BacktraceCredentials("https://validurl.com/", "validToken");
-            _backtraceClient = new BacktraceClient(credentials, reportPerMin: 0)
-            {
-                _backtraceApi = api.Object,
-                Database = database.Object
-            };
+            //_backtraceClient = new BacktraceClient(credentials, reportPerMin: 0)
+            //{
+            //    _backtraceApi = api.Object,
+            //    Database = database.Object
+            //};
         }
 
         [TestCase(5, 2)]

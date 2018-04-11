@@ -3,6 +3,10 @@ using Backtrace.Types;
 using System;
 using System.Collections.Generic;
 using System.Text;
+#if !NET35
+using System.Threading.Tasks;
+#endif
+
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Interfaces
 {
@@ -36,8 +40,10 @@ namespace Backtrace.Interfaces
         /// <summary>
         /// Send all reports stored in BacktraceDatabase asynchronous and clean database
         /// </summary>
-        System.Threading.Tasks.Task FlushAsync();
+        Task FlushAsync();
 #endif
+
+        void SetApi(IBacktraceApi<T> backtraceApi);
 
         /// <summary>
         /// Remove all existing reports in BacktraceDatabase

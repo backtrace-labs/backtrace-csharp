@@ -145,12 +145,9 @@ namespace Backtrace.Base
             BacktraceDatabaseSettings databaseSettings = null,
             uint reportPerMin = 3,
             bool tlsLegacySupport = false)
-        {
-            _attributes = attributes ?? new Dictionary<string, T>();
-            Database = new BacktraceDatabase<T>(databaseSettings, backtraceCredentials);
-            //_backtraceApi = new BacktraceApi<T>(backtraceCredentials, tlsLegacySupport);
-            _reportWatcher = new ReportWatcher<T>(reportPerMin);
-        }
+            : this(backtraceCredentials, attributes, new BacktraceDatabase<T>(databaseSettings),
+                  reportPerMin, tlsLegacySupport)
+        { }
 
         /// <summary>
         /// Initialize new client instance with BacktraceCredentials
@@ -163,14 +160,15 @@ namespace Backtrace.Base
         public BacktraceBase(
             BacktraceCredentials backtraceCredentials,
             Dictionary<string, T> attributes = null,
-            IBacktraceDatabase<T> database= null,
+            IBacktraceDatabase<T> database = null,
             uint reportPerMin = 3,
             bool tlsLegacySupport = false)
         {
             _attributes = attributes ?? new Dictionary<string, T>();
-            Database = database;
-            //_backtraceApi = new BacktraceApi<T>(backtraceCredentials, tlsLegacySupport);
+            _backtraceApi = new BacktraceApi<T>(backtraceCredentials, tlsLegacySupport);
             _reportWatcher = new ReportWatcher<T>(reportPerMin);
+            Database = database;
+            database.SetApi(_backtraceApi);
         }
 
         /// <summary>
