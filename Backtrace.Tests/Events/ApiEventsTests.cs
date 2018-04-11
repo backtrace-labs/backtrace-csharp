@@ -47,18 +47,19 @@ namespace Backtrace.Tests.Events
 
             //mock database
             var database = new Mock<IBacktraceDatabase<object>>();
-            database.Setup(n => n.GenerateMiniDump(It.IsAny<BacktraceReportBase<object>>(), It.IsAny<MiniDumpType>()));
+            throw new NotImplementedException();
+            //database.Setup(n => n.GenerateMiniDump(It.IsAny<BacktraceReportBase<object>>(), It.IsAny<MiniDumpType>()));
 
             //setup new client
             _backtraceClient = new BacktraceClient(credentials, reportPerMin: 0)
             {
                 _backtraceApi = api.Object,
-                _database = database.Object
+                Database = database.Object
             };
             _clientWithInvalidParameters = new BacktraceClient(invalidCredentials, reportPerMin: 0)
             {
                 _backtraceApi = apiWithInvalidUrl.Object,
-                _database = database.Object
+                Database = database.Object
             };
         }
 

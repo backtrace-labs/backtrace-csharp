@@ -35,14 +35,15 @@ namespace Backtrace.Tests.IntegrationTests
 
             //mock database
             var database = new Mock<IBacktraceDatabase<object>>();
-            database.Setup(n => n.GenerateMiniDump(It.IsAny<BacktraceReportBase<object>>(), It.IsAny<MiniDumpType>()));
+            throw new NotImplementedException();
+            //database.Setup(n => n.GenerateMiniDump(It.IsAny<BacktraceReportBase<object>>(), It.IsAny<MiniDumpType>()));
 
             //setup new client
             var credentials = new BacktraceCredentials("https://validurl.com/", "validToken");
             _backtraceClient = new BacktraceClient(credentials)
             {
                 _backtraceApi = api.Object,
-                _database = database.Object
+                Database = database.Object
             };
 
             //Add new scoped attributes

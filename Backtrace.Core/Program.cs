@@ -1,5 +1,7 @@
 ﻿using Backtrace.Core.Model;
+using Backtrace.Interfaces;
 using Backtrace.Model;
+using Backtrace.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -201,8 +203,9 @@ namespace Backtrace.Core
                    }
                    return data;
                };
-
             backtraceClient.Send($"{DateTime.Now}: Library Initialized");
+
+            //backtraceClient.Database = new BacktraceDatabase<object>()
         }
         static void Main(string[] args)
         {

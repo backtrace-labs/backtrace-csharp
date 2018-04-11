@@ -8,6 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+#if !NET35
+using System.Threading.Tasks;
+#endif
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Services
@@ -15,12 +18,11 @@ namespace Backtrace.Services
     /// <summary>
     /// Backtrace Database 
     /// </summary>
-    internal class BacktraceDatabase<T> : IBacktraceDatabase<T>
+    public class BacktraceDatabase<T> : IBacktraceDatabase<T>
     {
-        /// <summary>
-        /// Determine if BacktraceDatabase is enable and library can store reports
-        /// </summary>
-        private readonly bool _enable = true;
+
+        //DATA STRUCTURE TO STORE REPORTS
+
 
         /// <summary>
         /// Database settings
@@ -39,10 +41,20 @@ namespace Backtrace.Services
         }
 
         /// <summary>
+        /// Backtrace Api instance. Use BacktraceApi to send data to Backtrace server
+        /// </summary>
+        private readonly BacktraceApi<T> _backtraceApi;
+
+        /// <summary>
+        /// Determine if BacktraceDatabase is enable and library can store reports
+        /// </summary>
+        private readonly bool _enable = true;
+
+        /// <summary>
         /// Create Backtrace database instance
         /// </summary>
         /// <param name="databaseSettings">Backtrace database settings</param>
-        public BacktraceDatabase(BacktraceDatabaseSettings databaseSettings)
+        public BacktraceDatabase(BacktraceDatabaseSettings databaseSettings, BacktraceCredentials credentials, bool tlsSupport = false)
         {
             if (databaseSettings == null || string.IsNullOrEmpty(databaseSettings.DatabasePath))
             {
@@ -51,6 +63,7 @@ namespace Backtrace.Services
             }
             DatabaseSettings = databaseSettings;
             ValidateDatabaseDirectory();
+            _backtraceApi = new BacktraceApi<T>(credentials, tlsSupport);
         }
 
         /// <summary>
@@ -63,35 +76,78 @@ namespace Backtrace.Services
             {
                 return;
             }
+            RemoveOrphaned();
+        }
 
-            ClearDatabase();
+        /// <summary>
+        /// Detect all orphaned minidump files
+        /// </summary>
+        private void RemoveOrphaned()
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
         /// Delete all existing files and directories in current database directory
         /// </summary>
-        private void ClearDatabase()
+        public void Reset()
         {
-            var directoryInfo = new DirectoryInfo(DatabasePath);
+            //var directoryInfo = new DirectoryInfo(DatabasePath);
+            //IEnumerable<FileInfo> files = directoryInfo.GetFiles();
+            //IEnumerable<DirectoryInfo> directories = directoryInfo.GetDirectories();
 
-            IEnumerable<FileInfo> files;
-            IEnumerable<DirectoryInfo> directories;
-#if !NET35
-            files = directoryInfo.EnumerateFiles();
-            directories = directoryInfo.EnumerateDirectories();
-#else
-            files = directoryInfo.GetFiles();
-            directories = directoryInfo.GetDirectories();
-#endif
-            foreach (FileInfo file in files)
-            {
-                file.Delete();
-            }
-            foreach (DirectoryInfo dir in directories)
-            {
-                dir.Delete(true);
-            }
+            //foreach (FileInfo file in files)
+            //{
+            //    file.Delete();
+            //}
+            //foreach (DirectoryInfo dir in directories)
+            //{
+            //    dir.Delete(true);
+            //}
+            throw new NotImplementedException();
         }
+
+
+        public void Flush()
+        {
+
+            //Flush method should USE data structure to store reports!!
+
+
+            //var directoryInfo = new DirectoryInfo(DatabasePath);
+            //var files = directoryInfo.GetFiles();
+            //foreach (var @file in files)
+            //{
+            //    if (!file.Name.StartsWith("attachment_"))
+            //    {
+            //        continue;
+            //    }
+
+            //}
+
+            throw new NotImplementedException();
+        }
+#if !NET35
+        public async Task FlushAsync()
+        {
+            //Flush method should USE data structure to store reports!!
+
+            //var directoryInfo = new DirectoryInfo(DatabasePath);
+            //var files = directoryInfo.GetFiles();
+            //foreach (var @file in files)
+            //{
+            //    if (!file.Name.StartsWith("attachment_"))
+            //    {
+            //        continue;
+            //    }
+
+            //}
+
+            throw new NotImplementedException();
+        }
+
+      
+#endif
 
         /// <summary>
         /// Create new minidump file in database directory path. Minidump file name is a random Guid
@@ -99,7 +155,7 @@ namespace Backtrace.Services
         /// <param name="backtraceReport">Current report</param>
         /// <param name="miniDumpType">Generated minidump type</param>
         /// <returns>Path to minidump file</returns>
-        public string GenerateMiniDump(BacktraceReportBase<T> backtraceReport, MiniDumpType miniDumpType)
+        private string GenerateMiniDump(BacktraceReportBase<T> backtraceReport, MiniDumpType miniDumpType)
         {
             if (!_enable)
             {
@@ -126,7 +182,7 @@ namespace Backtrace.Services
         /// Clear generated minidumps
         /// </summary>
         /// <param name="pathToMinidump">Path to created minidump</param>
-        public void ClearMiniDump(string pathToMinidump)
+        private void ClearMiniDump(string pathToMinidump)
         {
             //if _enable == false then application wont generate any minidump file
             //note that every minidump file generated by app ends with .dmp extension
@@ -142,8 +198,7 @@ namespace Backtrace.Services
         /// Save diagnostic report on hard drive
         /// </summary>
         /// <param name="backtraceReport"></param>
-        [Obsolete]
-        public bool SaveReport(BacktraceData<T> backtraceReport)
+        private bool SaveReport(BacktraceData<T> backtraceReport)
         {
             if (!_enable)
             {
@@ -152,7 +207,7 @@ namespace Backtrace.Services
 
             string json = JsonConvert.SerializeObject(backtraceReport);
             byte[] file = Encoding.UTF8.GetBytes(json);
-            string filename = $"Backtrace_{backtraceReport.Timestamp}";
+            string filename = $"attachment_{backtraceReport.Timestamp}";
             string filePath = Path.Combine(DatabasePath, filename);
             try
             {
@@ -166,6 +221,32 @@ namespace Backtrace.Services
                 return false;
             }
             return true;
+        }
+
+        public void Add()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Delete()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<BacktraceReportBase<T>> Get()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+            RemoveOrphaned();
+        }
+
+        //THIS IS OUT OF SCOPE
+        public IEnumerable<BacktraceReportBase<T>> Get(Func<BacktraceReportBase<T>, IEnumerable<BacktraceReportBase<T>>> @delegate)
+        {
+            throw new NotImplementedException();
         }
     }
 }

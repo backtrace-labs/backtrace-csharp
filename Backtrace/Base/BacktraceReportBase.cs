@@ -1,5 +1,6 @@
 ﻿using Backtrace.Common;
 using Backtrace.Extensions;
+using Backtrace.Model;
 using Backtrace.Model.JsonData;
 using System;
 using System.Collections.Generic;
@@ -134,6 +135,11 @@ namespace Backtrace.Base
             }
             MinidumpFile = minidumpPath;
             AttachmentPaths.Add(minidumpPath);
+        }
+        
+        internal BacktraceData<T> ToBacktraceData(Dictionary<string, T> clientAttributes)
+        {
+            return new BacktraceData<T>(this, clientAttributes);
         }
 
         /// <summary>
