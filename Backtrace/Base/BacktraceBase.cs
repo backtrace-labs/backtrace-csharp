@@ -16,7 +16,6 @@ namespace Backtrace.Base
     /// </summary>
     public class BacktraceBase<T>
     {
-
         /// <summary>
         /// Custom request handler for HTTP call to server
         /// </summary>
@@ -35,18 +34,18 @@ namespace Backtrace.Base
         /// <summary>
         /// Use asynchronous method to send report to server
         /// </summary>
-        [Obsolete]
-        public bool AsyncRequest
-        {
-            get
-            {
-                return _backtraceApi.AsynchronousRequest;
-            }
-            set
-            {
-                _backtraceApi.AsynchronousRequest = value;
-            }
-        }
+        //[Obsolete]
+        //public bool AsyncRequest
+        //{
+        //    get
+        //    {
+        //        return _backtraceApi.AsynchronousRequest;
+        //    }
+        //    set
+        //    {
+        //        _backtraceApi.AsynchronousRequest = value;
+        //    }
+        //}
 
         /// <summary>
         /// Set an event executed when received bad request, unauthorize request or other information from server
@@ -86,7 +85,13 @@ namespace Backtrace.Base
         /// <summary>
         /// Set event executed when client site report limit reached
         /// </summary>
-        public Action<BacktraceReport> OnClientReportLimitReached = null;
+        public Action<BacktraceReport> OnClientReportLimitReached
+        {
+            set
+            {
+                _backtraceApi.reportWatcher.OnClientReportLimitReached = value;
+            }
+        }
 
         /// <summary>
         /// Set event executed before sending data to Backtrace API
@@ -101,29 +106,17 @@ namespace Backtrace.Base
         /// <summary>
         /// Get custom client attributes. Every argument stored in dictionary will be send to Backtrace API
         /// </summary>
-        public Dictionary<string, T> Attributes
-        {
-            get
-            {
-                return _attributes;
-            }
-        }
+        public readonly Dictionary<string, T> Attributes;
 
         /// <summary>
         /// Backtrace database instance that allows to manage minidump files 
         /// </summary>
         public IBacktraceDatabase<T> Database;
-
-        /// <summary>
-        /// Client attributes
-        /// </summary>
-        protected Dictionary<string, T> _attributes;
-
-
+        
         /// <summary>
         /// Instance of BacktraceApi that allows to send data to Backtrace API
         /// </summary>
-        internal IBacktraceApi<T> _backtraceApi;
+        internal BacktraceApi<T> _backtraceApi;
 
 
         /// <summary>
@@ -164,9 +157,8 @@ namespace Backtrace.Base
             uint reportPerMin = 3,
             bool tlsLegacySupport = false)
         {
-            _attributes = attributes ?? new Dictionary<string, T>();
-            _backtraceApi = new BacktraceApi<T>(backtraceCredentials, tlsLegacySupport);
-            _reportWatcher = new ReportWatcher<T>(reportPerMin);
+            Attributes = attributes ?? new Dictionary<string, T>();
+            _backtraceApi = new BacktraceApi<T>(backtraceCredentials, reportPerMin, tlsLegacySupport);
             Database = database;
             database.SetApi(_backtraceApi);
         }
@@ -202,7 +194,6 @@ namespace Backtrace.Base
             if (!watcherValidation)
             {
                 var resultReport = report as BacktraceReport;
-                OnClientReportLimitReached?.Invoke(resultReport);
                 return BacktraceResult.OnLimitReached(resultReport);
             }
             throw new NotImplementedException();
@@ -236,7 +227,7 @@ namespace Backtrace.Base
             if (!watcherValidation)
             {
                 var resultReport = report as BacktraceReport;
-                OnClientReportLimitReached?.Invoke(resultReport);
+                //OnClientReportLimitReached?.Invoke(resultReport);
                 return BacktraceResult.OnLimitReached(resultReport);
             }
             throw new NotImplementedException();

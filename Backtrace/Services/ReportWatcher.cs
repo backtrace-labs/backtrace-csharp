@@ -13,11 +13,17 @@ namespace Backtrace.Services
     /// </summary>
     internal class ReportWatcher<T>
     {
-        private readonly long _queReportTime = 60;
-        internal readonly Queue<long> _reportQue;
-        private bool _watcherEnable;
+        /// <summary>
+        /// Set event executed when client site report limit reached
+        /// </summary>
+        internal Action<BacktraceReport> OnClientReportLimitReached = null;
 
+        internal readonly Queue<long> _reportQue;
+
+        private readonly long _queReportTime = 60;
+        private bool _watcherEnable;
         private int _reportPerSec;
+
 
         /// <summary>
         /// Create new instance of background watcher
@@ -58,6 +64,7 @@ namespace Backtrace.Services
             Clear();
             if (_reportQue.Count + 1 > _reportPerSec)
             {
+                OnClientReportLimitReached?.Invoke(report as BacktraceReport);
                 return false;
             }
             _reportQue.Enqueue(report.Timestamp);

@@ -7,6 +7,7 @@ using System.IO;
 using Backtrace.Common;
 using System.Collections.Generic;
 using Backtrace.Extensions;
+using Backtrace.Base;
 #if !NET35
 using System.Threading.Tasks;
 using System.Net.Http;
@@ -20,12 +21,6 @@ namespace Backtrace.Services
     /// </summary>
     internal class BacktraceApi<T> : IBacktraceApi<T>
     {
-        /// <summary>
-        /// Asynchronous request flag. If value is equal to true, data will be send to server asynchronous
-        /// </summary>
-        [Obsolete]
-        public bool AsynchronousRequest { get; set; } = false;
-
         /// <summary>
         /// User custom request method
         /// </summary>
@@ -41,6 +36,8 @@ namespace Backtrace.Services
         /// </summary>
         public Action<BacktraceResult> OnServerResponse { get; set; }
 
+        internal readonly ReportWatcher<T> reportWatcher;
+
         /// <summary>
         /// Url to server
         /// </summary>
@@ -50,10 +47,11 @@ namespace Backtrace.Services
         /// Create a new instance of Backtrace API
         /// </summary>
         /// <param name="credentials">API credentials</param>
-        public BacktraceApi(BacktraceCredentials credentials, bool tlsLegacySupport)
+        public BacktraceApi(BacktraceCredentials credentials, uint reportPerMin, bool tlsLegacySupport)
         {
             _serverurl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
             SetTlsLegacy(tlsLegacySupport);
+            reportWatcher = new ReportWatcher<T>(reportPerMin);
         }
         #region asyncRequest
 #if !NET35
@@ -65,6 +63,15 @@ namespace Backtrace.Services
 
         public async Task<BacktraceResult> SendAsync(BacktraceData<T> data)
         {
+            //check rate limiting
+            bool watcherValidation = reportWatcher.WatchReport(data.Report);
+            if (!watcherValidation)
+            {
+                return BacktraceResult.OnLimitReached(data.Report as BacktraceReport);
+            }
+
+
+
             Guid requestId = Guid.NewGuid();
             var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
             if (RequestHandler != null)
@@ -142,6 +149,13 @@ namespace Backtrace.Services
         /// <returns>Server response</returns>
         public BacktraceResult Send(BacktraceData<T> data)
         {
+            //check rate limiting
+            bool watcherValidation = reportWatcher.WatchReport(data.Report);
+            if (!watcherValidation)
+            {
+                return BacktraceResult.OnLimitReached(data.Report as BacktraceReport);
+            }
+
             Guid requestId = Guid.NewGuid();
             string json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
             var report = data.Report as BacktraceReport;
@@ -217,7 +231,7 @@ namespace Backtrace.Services
                 _disposed = true;
             }
         }
-        
+
         ~BacktraceApi()
         {
             Dispose(false);

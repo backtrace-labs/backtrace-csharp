@@ -36,8 +36,8 @@ namespace Backtrace.Interfaces
         /// <summary>
         /// Use asynchronous method to send report to server
         /// </summary>
-        [Obsolete]
-        bool AsynchronousRequest { get; set; }
+        //[Obsolete]
+        //bool AsynchronousRequest { get; set; }
 
         /// <summary>
         /// Set custom request method to prepare HTTP request to Backtrace API
