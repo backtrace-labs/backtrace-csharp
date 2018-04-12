@@ -48,17 +48,12 @@ namespace Backtrace.Interfaces
         /// <summary>
         /// Remove all existing reports in BacktraceDatabase
         /// </summary>
-        void Reset();
+        void Clear();
 
         /// <summary>
         /// Add new report to Database
         /// </summary>
         void Add();
-
-        /// <summary>
-        /// Delete report from Database
-        /// </summary>
-        void Delete();
 
         /// <summary>
         /// Get all repots stored in Database

@@ -23,7 +23,7 @@ namespace Backtrace.Services
         /// <summary>
         /// In memory database
         /// </summary>
-        Dictionary<uint, IEnumerable<BacktraceData<T>>> Database = new Dictionary<uint, IEnumerable<BacktraceData<T>>>();
+        Dictionary<uint, List<string>> Database = new Dictionary<uint, List<string>>();
 
 
         /// <summary>
@@ -52,6 +52,8 @@ namespace Backtrace.Services
         /// </summary>
         private readonly bool _enable = true;
 
+        private const string reportPrefix = "attachment_";
+
         /// <summary>
         /// Create Backtrace database instance
         /// </summary>
@@ -65,6 +67,7 @@ namespace Backtrace.Services
             }
             DatabaseSettings = databaseSettings;
             ValidateDatabaseDirectory();
+            LoadReports();
         }
 
         /// <summary>
@@ -73,51 +76,37 @@ namespace Backtrace.Services
         /// <param name="backtraceApi">BacktraceApi instance</param>
         public void SetApi(IBacktraceApi<T> backtraceApi)
         {
-            _backtraceApi = backtraceApi;   
-        }
-
-        
-
-        /// <summary>
-        /// Detect all orphaned minidump files
-        /// </summary>
-        private void RemoveOrphaned()
-        {
-            throw new NotImplementedException();
+            _backtraceApi = backtraceApi;
         }
 
         /// <summary>
         /// Delete all existing files and directories in current database directory
         /// </summary>
-        public void Reset()
+        public void Clear()
         {
-            //this code is right now deprecated 
-            //we can use this in future
+            var directoryInfo = new DirectoryInfo(DatabasePath);
+            IEnumerable<FileInfo> files = directoryInfo.GetFiles();
+            IEnumerable<DirectoryInfo> directories = directoryInfo.GetDirectories();
 
-            //var directoryInfo = new DirectoryInfo(DatabasePath);
-            //IEnumerable<FileInfo> files = directoryInfo.GetFiles();
-            //IEnumerable<DirectoryInfo> directories = directoryInfo.GetDirectories();
-
-            //foreach (FileInfo file in files)
-            //{
-            //    file.Delete();
-            //}
-            //foreach (DirectoryInfo dir in directories)
-            //{
-            //    dir.Delete(true);
-            //}
-            throw new NotImplementedException();
+            foreach (FileInfo file in files)
+            {
+                file.Delete();
+            }
+            foreach (DirectoryInfo dir in directories)
+            {
+                dir.Delete(true);
+            }
+            Database.Clear();
         }
 
 
         public void Flush()
         {
-
             //Flush method should USE data structure to store reports!!
 
             //this code is right now deprecated 
             //we can use this in future
-
+            Database.Clear();
 
             //var directoryInfo = new DirectoryInfo(DatabasePath);
             //var files = directoryInfo.GetFiles();
@@ -129,8 +118,6 @@ namespace Backtrace.Services
             //    }
 
             //}
-
-            throw new NotImplementedException();
         }
 #if !NET35
         public async Task FlushAsync()
@@ -138,6 +125,7 @@ namespace Backtrace.Services
             //Flush method should USE data structure to store reports!!
             //this code is right now deprecated 
             //we can use this in future
+            Database.Clear();
 
             //var directoryInfo = new DirectoryInfo(DatabasePath);
             //var files = directoryInfo.GetFiles();
@@ -226,7 +214,7 @@ namespace Backtrace.Services
 
             string json = JsonConvert.SerializeObject(backtraceReport);
             byte[] file = Encoding.UTF8.GetBytes(json);
-            string filename = $"attachment_{backtraceReport.Timestamp}";
+            string filename = $"{reportPrefix}{backtraceReport.Timestamp}";
             string filePath = Path.Combine(DatabasePath, filename);
             try
             {
@@ -246,14 +234,6 @@ namespace Backtrace.Services
         /// Add new report to BacktraceDatabase
         /// </summary>
         public void Add()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Clear all reports in BacktraceDatabase
-        /// </summary>
-        public void Delete()
         {
             throw new NotImplementedException();
         }
@@ -288,7 +268,29 @@ namespace Backtrace.Services
         {
             throw new NotImplementedException();
         }
+        /// <summary>
+        /// Detect all orphaned minidump files
+        /// </summary>
+        private void RemoveOrphaned()
+        {
+            throw new NotImplementedException();
+        }
 
-       
+        private void LoadReports()
+        {
+            var directoryInfo = new DirectoryInfo(DatabasePath);
+            IEnumerable<FileInfo> files = directoryInfo.GetFiles($"{reportPrefix}*.json", SearchOption.TopDirectoryOnly);
+            foreach (var file in files)
+            {
+                using (var fileStream = file.OpenText())
+                {
+                    var json = fileStream.ReadToEnd();
+                    //todo
+                    //check if json is valid
+                    var data = JsonConvert.DeserializeObject<BacktraceData<T>>(json);
+                    Database[0].Add(file.FullName);
+                }
+            }
+        }
     }
 }

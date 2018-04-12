@@ -30,7 +30,7 @@ namespace Backtrace.Interfaces
 
         /// <summary>
         /// Set an event executed when server return information after sending data to API
-        /// </summary>]
+        /// </summary>
         Action<BacktraceResult> OnServerResponse { get; set; }
 
         /// <summary>
