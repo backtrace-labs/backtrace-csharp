@@ -1,5 +1,8 @@
 ﻿# Backtrace C# Release Notes
 
+## Version 1.1.3 - 13.04.2018
+- Improved `async Task` sample applications
+
 ## Version 1.1.2 - 09.04.2018
 - Fix: Clean Backtrace client’s data storage on startup
 

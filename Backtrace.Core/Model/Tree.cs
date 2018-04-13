@@ -7,11 +7,9 @@ namespace Backtrace.Core.Model
     public class Tree : IEnumerable<String>
     {
         private Node _root { get; set; }
-        private readonly BacktraceClient _backtraceClient;
 
-        public Tree(BacktraceClient client)
+        public Tree()
         {
-            _backtraceClient = client;
             _root = new Node(' ', false);
         }
 
@@ -54,12 +52,9 @@ namespace Backtrace.Core.Model
         {
             if (string.IsNullOrEmpty(word))
             {
-                var exception = new ArgumentException("Word is empty or null.");
-                _backtraceClient.Send(exception);
-                throw exception;
+                throw new ArgumentException("Word is empty or null.");
             }
-
-
+            
             var current = _root;
 
             for (int i = 0; i < word.Length; ++i)
@@ -67,7 +62,6 @@ namespace Backtrace.Core.Model
                 if (!current.Children.ContainsKey(word[i]))
                 {
                     var exception = new KeyNotFoundException("Word doesn't belong to tree.");
-                    _backtraceClient.Send(exception);
                     throw exception;
                 }
                 current = current.Children[word[i]];
@@ -76,7 +70,6 @@ namespace Backtrace.Core.Model
             if (!current.IsTerminal)
             {
                 var exception = new KeyNotFoundException("Word doesn't belong to tree.");
-                _backtraceClient.Send(exception);
                 throw exception;
             }
             current.Remove();
