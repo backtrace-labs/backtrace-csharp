@@ -2,19 +2,14 @@
 using Backtrace.Model;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Backtrace.Framework45Example
 {
     class Program
     {
-        private bool treeGenerated = false;
         private Tree tree;
-        private HashSet<Thread> threads = new HashSet<Thread>();
         //initialize new BacktraceClient with custom configuration section readed from file App.config
         //Client will be initialized with values stored in default section name "BacktraceCredentials"
         private BacktraceClient backtraceClient = new BacktraceClient(
@@ -26,8 +21,12 @@ namespace Backtrace.Framework45Example
         public Program()
         {
             SetupBacktraceLibrary();
-            SetupStartupTasks();
-            StartTasks();
+        }
+
+        public async Task Start()
+        {
+            await GenerateRandomStrings();
+            await TryClean();
             //handle uncaught exception from unsafe code
             ThrowUnsafeException();
         }
@@ -42,18 +41,6 @@ namespace Backtrace.Framework45Example
                 int t = 0;
                 int j = 0;
                 DividePtrParam(&t, &j);
-            }
-        }
-
-        private void StartTasks()
-        {
-            foreach (var task in threads)
-            {
-                task.Start();
-            }
-            foreach (var task in threads)
-            {
-                task.Join();
             }
         }
 
@@ -83,8 +70,7 @@ namespace Backtrace.Framework45Example
                 int copyIndex = random.Next(0, totalStrings);
                 randomStrings[totalStrings + i] = randomStrings[copyIndex];
             }
-            Thread.Sleep(100);
-            tree = new Tree(backtraceClient);
+            tree = new Tree();
             for (int i = 0; i < totalStrings + 3; i++)
             {
                 try
@@ -93,24 +79,17 @@ namespace Backtrace.Framework45Example
                 }
                 catch (Exception exception)
                 {
-                    var response = await backtraceClient.SendAsync(exception);
+                    await backtraceClient.SendAsync(exception);
                     //we catch exception inside three add method
                     continue;
                 }
             }
-            Thread.Sleep(150);
-            await EndTreeGeneration();
+            var response = await backtraceClient.SendAsync($"{DateTime.Now}: Tree generated");
+            Console.WriteLine($"Tree generated! Backtrace object id for last message: {response.Object}");
         }
 
         private async Task TryClean()
         {
-            if (!treeGenerated)
-            {
-                Thread.Sleep(100);
-                await TryClean();
-                return;
-            }
-
             var orderedWords = tree.ToList();
             int total = orderedWords.Count();
             Random random = new Random();
@@ -134,34 +113,17 @@ namespace Backtrace.Framework45Example
                     string word = shuffledWords[i];
                     tree.Remove(word);
                 }
-                catch
+                catch (KeyNotFoundException keyNotFound)
                 {
-                    //we catch exception inside three add method
-                    continue;
+                    await backtraceClient.SendAsync(keyNotFound);
+                }
+                catch (ArgumentException argumentException)
+                {
+                    await backtraceClient.SendAsync(argumentException);
                 }
             }
-            await EndCleaning();
+            await backtraceClient.SendAsync($"{DateTime.Now}: Tree clean");
 
-        }
-
-        private async Task EndCleaning()
-        {
-            var response = await backtraceClient.SendAsync($"{DateTime.Now}: Tree clean");
-        }
-
-        private async Task EndTreeGeneration()
-        {
-            treeGenerated = true;
-            var response = await backtraceClient.SendAsync($"{DateTime.Now}: Tree generated");
-        }
-
-        /// <summary>
-        /// Prepare multithreading calculations
-        /// </summary>
-        private void SetupStartupTasks()
-        {
-            threads.Add(new Thread(new ThreadStart(() => { TryClean().Wait(); })));
-            threads.Add(new Thread(new ThreadStart(() => { GenerateRandomStrings().Wait(); })));
         }
 
         unsafe static void DividePtrParam(int* p, int* j)
@@ -202,12 +164,12 @@ namespace Backtrace.Framework45Example
                    }
                    return data;
                };
-
-            //backtraceClient.Send($"{DateTime.Now}: Library Initialized");
         }
+            
         static void Main(string[] args)
         {
             Program program = new Program();
+            program.Start().Wait();
         }
     }
 }
