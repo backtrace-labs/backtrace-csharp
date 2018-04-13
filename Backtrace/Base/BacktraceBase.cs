@@ -72,7 +72,7 @@ namespace Backtrace.Base
         {
             set
             {
-                _backtraceApi.reportWatcher.OnClientReportLimitReached = value;
+                _backtraceApi.reportLimitWatcher.OnClientReportLimitReached = value;
             }
         }
 
@@ -105,7 +105,7 @@ namespace Backtrace.Base
         /// <summary>
         /// Backtrace report watcher that controls number of request sending per minute
         /// </summary>
-        internal ReportWatcher<T> _reportWatcher;
+        internal ReportLimitWatcher<T> _reportWatcher;
 
         /// <summary>
         /// Initialize new client instance with BacktraceCredentials

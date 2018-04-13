@@ -36,7 +36,7 @@ namespace Backtrace.Services
         /// </summary>
         public Action<BacktraceResult> OnServerResponse { get; set; }
 
-        internal readonly ReportWatcher<T> reportWatcher;
+        internal readonly ReportLimitWatcher<T> reportLimitWatcher;
 
         /// <summary>
         /// Url to server
@@ -51,7 +51,7 @@ namespace Backtrace.Services
         {
             _serverurl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
             SetTlsLegacy(tlsLegacySupport);
-            reportWatcher = new ReportWatcher<T>(reportPerMin);
+            reportLimitWatcher = new ReportLimitWatcher<T>(reportPerMin);
         }
         #region asyncRequest
 #if !NET35
@@ -64,7 +64,7 @@ namespace Backtrace.Services
         public async Task<BacktraceResult> SendAsync(BacktraceData<T> data)
         {
             //check rate limiting
-            bool watcherValidation = reportWatcher.WatchReport(data.Report);
+            bool watcherValidation = reportLimitWatcher.WatchReport(data.Report);
             if (!watcherValidation)
             {
                 return BacktraceResult.OnLimitReached(data.Report as BacktraceReport);
@@ -147,7 +147,7 @@ namespace Backtrace.Services
         public BacktraceResult Send(BacktraceData<T> data)
         {
             //check rate limiting
-            bool watcherValidation = reportWatcher.WatchReport(data.Report);
+            bool watcherValidation = reportLimitWatcher.WatchReport(data.Report);
             if (!watcherValidation)
             {
                 return BacktraceResult.OnLimitReached(data.Report as BacktraceReport);

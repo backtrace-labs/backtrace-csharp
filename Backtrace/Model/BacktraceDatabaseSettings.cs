@@ -33,7 +33,7 @@ namespace Backtrace.Model
         /// <summary>
         /// Retry behaviour
         /// </summary>
-        public RetryBehaviour RetryBehaviour { get; set; } = RetryBehaviour.ByInterval;
+        public RetryBehavior RetryBehavior { get; set; } = RetryBehavior.ByInterval;
 
         /// <summary>
         /// How much secounds library should wait before next retry.

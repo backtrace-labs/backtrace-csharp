@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Backtrace.Types
 {
-    public enum RetryBehaviour
+    public enum RetryBehavior
     {
         ByInterval,
         NoRetry

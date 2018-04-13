@@ -23,8 +23,7 @@ namespace Backtrace.Services
         /// <summary>
         /// In memory database
         /// </summary>
-        Dictionary<uint, List<string>> Database = new Dictionary<uint, List<string>>();
-
+        Dictionary<uint, List<string>> BatchRetry = new Dictionary<uint, List<string>>();
 
         /// <summary>
         /// Database settings
@@ -96,7 +95,7 @@ namespace Backtrace.Services
             {
                 dir.Delete(true);
             }
-            Database.Clear();
+            BatchRetry.Clear();
         }
 
 
@@ -106,7 +105,7 @@ namespace Backtrace.Services
 
             //this code is right now deprecated 
             //we can use this in future
-            Database.Clear();
+            BatchRetry.Clear();
 
             //var directoryInfo = new DirectoryInfo(DatabasePath);
             //var files = directoryInfo.GetFiles();
@@ -125,7 +124,7 @@ namespace Backtrace.Services
             //Flush method should USE data structure to store reports!!
             //this code is right now deprecated 
             //we can use this in future
-            Database.Clear();
+            BatchRetry.Clear();
 
             //var directoryInfo = new DirectoryInfo(DatabasePath);
             //var files = directoryInfo.GetFiles();
@@ -288,7 +287,7 @@ namespace Backtrace.Services
                     //todo
                     //check if json is valid
                     var data = JsonConvert.DeserializeObject<BacktraceData<T>>(json);
-                    Database[0].Add(file.FullName);
+                    BatchRetry[0].Add(file.FullName);
                 }
             }
         }
