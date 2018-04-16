@@ -40,11 +40,11 @@ namespace Backtrace.Tests.IntegrationTests
 
             //setup new client
             var credentials = new BacktraceCredentials("https://validurl.com/", "validToken");
-            _backtraceClient = new BacktraceClient(credentials)
-            {
-                _backtraceApi = api.Object,
-                Database = database.Object
-            };
+            //_backtraceClient = new BacktraceClient(credentials)
+            //{
+            //    _backtraceApi = api.Object,
+            //    Database = database.Object
+            //};
 
             //Add new scoped attributes
             _backtraceClient.Attributes["ClientAttributeNumber"] = 1;
@@ -62,10 +62,10 @@ namespace Backtrace.Tests.IntegrationTests
 
 
             //to check if client report limit reached use OnClientReportLimitReached 
-            _backtraceClient.OnClientReportLimitReached += (BacktraceReport report) =>
-            {
-                reportLimitReached = true;
-            };
+            //_backtraceClient.OnClientReportLimitReached += (BacktraceReport report) =>
+            //{
+            //    reportLimitReached = true;
+            //};
         }
 
         private void DivideByZeroMethod()
@@ -165,11 +165,11 @@ namespace Backtrace.Tests.IntegrationTests
             List<Thread> threads = new List<Thread>();
             int totalSend = 0;
             int totalDrop = 0;
-
-            _backtraceClient.OnClientReportLimitReached += (BacktraceReport report) =>
-            {
-                totalDrop++;
-            };
+            throw new NotImplementedException();
+            //_backtraceClient.OnClientReportLimitReached += (BacktraceReport report) =>
+            //{
+            //    totalDrop++;
+            //};
 
             for (int threadIndex = 0; threadIndex < numberOfThread; threadIndex++)
             {

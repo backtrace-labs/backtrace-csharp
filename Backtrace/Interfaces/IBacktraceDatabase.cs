@@ -1,4 +1,5 @@
 ﻿using Backtrace.Base;
+using Backtrace.Model;
 using Backtrace.Types;
 using System;
 using System.Collections.Generic;
@@ -59,6 +60,14 @@ namespace Backtrace.Interfaces
         /// Get all repots stored in Database
         /// </summary>
         IEnumerable<BacktraceReportBase<T>> Get();
+
+        /// <summary>
+        /// Set new BacktraceDatabase settings
+        /// </summary>
+        /// <param name="databaseSettings"></param>
+        void SetSettings(BacktraceDatabaseSettings databaseSettings);
+
+        bool SaveReport(BacktraceReportBase<T> backtraceReport);
 
         /// <summary>
         /// Get all repots stored in Database

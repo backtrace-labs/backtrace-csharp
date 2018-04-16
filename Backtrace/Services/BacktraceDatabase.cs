@@ -6,6 +6,7 @@ using Backtrace.Types;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 #if !NET35
@@ -54,6 +55,15 @@ namespace Backtrace.Services
         private const string reportPrefix = "attachment_";
 
         /// <summary>
+        /// Create disabled instance of BacktraceDatabase
+        /// </summary>
+        /// <param name="databaseSettings"></param>
+        public BacktraceDatabase()
+        {
+            _enable = false;
+        }
+
+        /// <summary>
         /// Create Backtrace database instance
         /// </summary>
         /// <param name="databaseSettings">Backtrace database settings</param>
@@ -64,8 +74,13 @@ namespace Backtrace.Services
                 _enable = false;
                 return;
             }
+            if (!Directory.Exists(databaseSettings.DatabasePath))
+            {
+                throw new ArgumentException("Databse path does not exists");
+            }
+
             DatabaseSettings = databaseSettings;
-            ValidateDatabaseDirectory();
+            RemoveOrphaned();
             LoadReports();
         }
 
@@ -98,9 +113,12 @@ namespace Backtrace.Services
             BatchRetry.Clear();
         }
 
-
         public void Flush()
         {
+            if (_backtraceApi == null)
+            {
+                throw new ArgumentException("BacktraceApi is required if you want to use Flush method");
+            }
             //Flush method should USE data structure to store reports!!
 
             //this code is right now deprecated 
@@ -142,18 +160,6 @@ namespace Backtrace.Services
 
 
 #endif
-        /// <summary>
-        /// Check if used directory database is available 
-        /// </summary>
-        private void ValidateDatabaseDirectory()
-        {
-            //there is no database directory
-            if (string.IsNullOrEmpty(DatabasePath))
-            {
-                return;
-            }
-            RemoveOrphaned();
-        }
 
         /// <summary>
         /// Create new minidump file in database directory path. Minidump file name is a random Guid
@@ -204,19 +210,22 @@ namespace Backtrace.Services
         /// Save diagnostic report on hard drive
         /// </summary>
         /// <param name="backtraceReport"></param>
-        private bool SaveReport(BacktraceData<T> backtraceReport)
+        public bool SaveReport(BacktraceReportBase<T> backtraceReport)
         {
-            if (!_enable)
-            {
-                return true;
-            }
-
+            //if (!_enable)
+            //{
+            //    return true;
+            //}
             string json = JsonConvert.SerializeObject(backtraceReport);
             byte[] file = Encoding.UTF8.GetBytes(json);
-            string filename = $"{reportPrefix}{backtraceReport.Timestamp}";
+            string filename = $"{reportPrefix}-{Guid.NewGuid()}-{backtraceReport.Timestamp}.json";
             string filePath = Path.Combine(DatabasePath, filename);
             try
             {
+                using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                {
+                    fs.Write(file, 0, file.Length);
+                }
                 using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
                 {
                     fs.Write(file, 0, file.Length);
@@ -272,7 +281,7 @@ namespace Backtrace.Services
         /// </summary>
         private void RemoveOrphaned()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         private void LoadReports()
@@ -281,15 +290,18 @@ namespace Backtrace.Services
             IEnumerable<FileInfo> files = directoryInfo.GetFiles($"{reportPrefix}*.json", SearchOption.TopDirectoryOnly);
             foreach (var file in files)
             {
-                using (var fileStream = file.OpenText())
+                using (StreamReader streamReader = file.OpenText())
                 {
-                    var json = fileStream.ReadToEnd();
-                    //todo
-                    //check if json is valid
-                    var data = JsonConvert.DeserializeObject<BacktraceData<T>>(json);
+                    var json = streamReader.ReadToEnd();
+                    var data = JsonConvert.DeserializeObject<BacktraceReportBase<T>>(json);
                     BatchRetry[0].Add(file.FullName);
                 }
             }
+        }
+
+        public void SetSettings(BacktraceDatabaseSettings databaseSettings)
+        {
+            throw new NotImplementedException();
         }
     }
 }

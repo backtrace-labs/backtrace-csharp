@@ -47,7 +47,7 @@ namespace Backtrace.Services
         /// Create a new instance of Backtrace API
         /// </summary>
         /// <param name="credentials">API credentials</param>
-        public BacktraceApi(BacktraceCredentials credentials, uint reportPerMin, bool tlsLegacySupport)
+        public BacktraceApi(BacktraceCredentials credentials, uint reportPerMin = 3, bool tlsLegacySupport = false)
         {
             _serverurl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
             SetTlsLegacy(tlsLegacySupport);

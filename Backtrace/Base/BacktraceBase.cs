@@ -95,7 +95,7 @@ namespace Backtrace.Base
         /// Backtrace database instance that allows to manage minidump files 
         /// </summary>
         public IBacktraceDatabase<T> Database;
-        
+
         /// <summary>
         /// Instance of BacktraceApi that allows to send data to Backtrace API
         /// </summary>
@@ -142,8 +142,8 @@ namespace Backtrace.Base
         {
             Attributes = attributes ?? new Dictionary<string, T>();
             _backtraceApi = new BacktraceApi<T>(backtraceCredentials, reportPerMin, tlsLegacySupport);
-            Database = database;
-            database.SetApi(_backtraceApi);
+            Database = database ?? new BacktraceDatabase<T>();
+            Database.SetApi(_backtraceApi);
         }
 
         /// <summary>
@@ -162,13 +162,14 @@ namespace Backtrace.Base
         /// <param name="report">Report to send</param>
         public virtual BacktraceResult Send(BacktraceReportBase<T> report)
         {
-            //check rate limiting
-            bool watcherValidation = _reportWatcher.WatchReport(report);
-            if (!watcherValidation)
-            {
-                var resultReport = report as BacktraceReport;
-                return BacktraceResult.OnLimitReached(resultReport);
-            }
+            ////check rate limiting
+            //bool watcherValidation = _reportWatcher.WatchReport(report);
+            //if (!watcherValidation)
+            //{
+            //    var resultReport = report as BacktraceReport;
+            //    return BacktraceResult.OnLimitReached(resultReport);
+            //}
+            Database.SaveReport(report);
             throw new NotImplementedException();
             //generate minidump and add minidump to report 
             //string minidumpPath = Database.GenerateMiniDump(report, MiniDumpType);
@@ -250,5 +251,6 @@ namespace Backtrace.Base
             OnUnhandledApplicationException?.Invoke(exception);
         }
 #endif
+
     }
 }

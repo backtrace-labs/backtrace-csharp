@@ -19,6 +19,7 @@ namespace Backtrace.Base
     /// <summary>
     /// Capture application report
     /// </summary>
+    [Serializable]
     public class BacktraceReportBase<T>
     {
         /// <summary>
@@ -240,6 +241,17 @@ namespace Backtrace.Base
                 DiagnosticStack.Insert(startingIndex, diagnosticStack);
                 startingIndex++;
             }
+        }
+
+        /// <summary>
+        /// create a copy of BacktraceReport for inner exception object inside exception
+        /// </summary>
+        /// <returns>BacktraceReport for InnerExceptionObject</returns>
+        internal BacktraceReport CreateInnerReport()
+        {
+            var copy = (BacktraceReport)this.MemberwiseClone();
+            copy.Exception = this.Exception.InnerException;
+            return copy;
         }
     }
 }
