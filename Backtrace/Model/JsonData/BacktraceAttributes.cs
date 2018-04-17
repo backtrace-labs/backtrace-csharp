@@ -43,6 +43,11 @@ namespace Backtrace.Model.JsonData
             SetExceptionAttributes(report);
         }
 
+        internal BacktraceAttributes()
+        {
+
+        }
+
         /// <summary>
         /// Set library attributes
         /// </summary>

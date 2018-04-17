@@ -28,6 +28,11 @@ namespace Backtrace.Model.JsonData
         [JsonProperty(PropertyName = "stack")]
         internal IEnumerable<DiagnosticStack> Stack = new List<DiagnosticStack>();
 
+        public ThreadInformation()
+        {
+            //TODO
+        }
+
         /// <summary>
         /// Create new instance of ThreadInformation
         /// </summary>

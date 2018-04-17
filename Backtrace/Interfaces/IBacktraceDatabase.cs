@@ -1,5 +1,6 @@
 ﻿using Backtrace.Base;
 using Backtrace.Model;
+using Backtrace.Model.Database;
 using Backtrace.Types;
 using System;
 using System.Collections.Generic;
@@ -43,7 +44,6 @@ namespace Backtrace.Interfaces
         /// </summary>
         Task FlushAsync();
 #endif
-
         void SetApi(IBacktraceApi<T> backtraceApi);
 
         /// <summary>
@@ -54,20 +54,18 @@ namespace Backtrace.Interfaces
         /// <summary>
         /// Add new report to Database
         /// </summary>
-        void Add();
+        BacktraceDatabaseEntry<T> Add(BacktraceReportBase<T> backtraceReport, Dictionary<string, T> attributes, MiniDumpType miniDumpType = MiniDumpType.Normal);
 
         /// <summary>
         /// Get all repots stored in Database
         /// </summary>
-        IEnumerable<BacktraceReportBase<T>> Get();
-
+        IEnumerable<BacktraceDatabaseEntry<T>> Get();
+        
         /// <summary>
-        /// Set new BacktraceDatabase settings
+        /// Delete database entry by using BacktraceDatabaseEntry
         /// </summary>
-        /// <param name="databaseSettings"></param>
-        void SetSettings(BacktraceDatabaseSettings databaseSettings);
-
-        bool SaveReport(BacktraceReportBase<T> backtraceReport);
+        /// <param name="entry">Database entry</param>
+        void Delete(BacktraceDatabaseEntry<T> entry);
 
         /// <summary>
         /// Get all repots stored in Database

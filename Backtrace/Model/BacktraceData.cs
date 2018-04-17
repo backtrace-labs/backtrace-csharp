@@ -91,7 +91,15 @@ namespace Backtrace.Model
         {
             get
             {
-                return _backtraceAttributes.Attributes;
+                return _backtraceAttributes?.Attributes;
+            }
+            set
+            {
+                if (_backtraceAttributes == null)
+                {
+                    _backtraceAttributes = new BacktraceAttributes<T>();
+                }
+                _backtraceAttributes.Attributes = value;
             }
         }
 
@@ -103,6 +111,10 @@ namespace Backtrace.Model
         {
             get
             {
+                if (Report == null || _backtraceAttributes == null)
+                {
+                    return null;
+                }
                 return new Annotations(Report.CallingAssembly, _backtraceAttributes.ComplexAttributes);
             }
         }
@@ -186,7 +198,7 @@ namespace Backtrace.Model
         /// <summary>
         /// Get a Backtrace a built-in attributes from current application
         /// </summary>
-        private readonly BacktraceAttributes<T> _backtraceAttributes;
+        private BacktraceAttributes<T> _backtraceAttributes;
 
         private readonly AssemblyName CurrentAssembly = Assembly.GetExecutingAssembly().GetName();
 
@@ -201,5 +213,11 @@ namespace Backtrace.Model
             _backtraceAttributes = new BacktraceAttributes<T>(Report, scopedAttributes);
             ThreadData = new ThreadData(report.CallingAssembly, Report.DiagnosticStack);
         }
+
+        public BacktraceData()
+        {
+            System.Diagnostics.Trace.WriteLine("BacktraceData constructor");
+        }
+
     }
 }

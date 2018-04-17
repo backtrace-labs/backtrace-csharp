@@ -31,6 +31,18 @@ namespace Backtrace.Model.JsonData
         public int Line { get; set; }
 
         /// <summary>
+        /// IL Offset
+        /// </summary>
+        [JsonProperty(PropertyName = "il")]
+        public int? Il { get; set; }
+
+        /// <summary>
+        /// PBD Unique identifier
+        /// </summary>
+        [JsonProperty(PropertyName = "metadata_token")]
+        public int? MemberInfo { get; set; }
+
+        /// <summary>
         /// Full path to source code where exception occurs
         /// </summary>
         [JsonIgnore]
@@ -74,12 +86,15 @@ namespace Backtrace.Model.JsonData
             }
             int? ILOffset = stackFrame.GetILOffset();
             string functionName = stackFrame.GetMethod()?.Name;
+
             return new DiagnosticStack()
             {
                 Column = stackFrame.GetFileColumnNumber(),
                 Library = libraryName,
-                ILOffset = ILOffset <=0 ? null : ILOffset,
-                FunctionName = string.IsNullOrEmpty(functionName)?libraryName : functionName ,
+                ILOffset = ILOffset <= 0 ? null : ILOffset,
+                Il = ILOffset <= 0 ? null : ILOffset,
+                MemberInfo = stackFrame.GetMethod()?.MetadataToken,
+                FunctionName = string.IsNullOrEmpty(functionName) ? libraryName : functionName,
                 Line = stackFrame.GetFileLineNumber(),
                 SourceCode = generatedByException ? Guid.NewGuid().ToString() : string.Empty,
                 SourceCodeFullPath = stackFrame.GetFileName()

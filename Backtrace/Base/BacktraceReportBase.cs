@@ -19,7 +19,6 @@ namespace Backtrace.Base
     /// <summary>
     /// Capture application report
     /// </summary>
-    [Serializable]
     public class BacktraceReportBase<T>
     {
         /// <summary>
