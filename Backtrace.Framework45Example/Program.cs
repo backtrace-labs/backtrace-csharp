@@ -3,6 +3,7 @@ using Backtrace.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Backtrace.Framework45Example
@@ -26,6 +27,11 @@ namespace Backtrace.Framework45Example
 
         public async Task Start()
         {
+            Task.WaitAll(Task.Factory.StartNew(async () =>
+            {
+                var client = new HttpClient();
+                string getStringTask = await client.GetStringAsync(string.Empty);
+            }));
             await GenerateRandomStrings();
             await TryClean();
             //handle uncaught exception from unsafe code
@@ -165,6 +171,7 @@ namespace Backtrace.Framework45Example
                    }
                    return data;
                };
+            backtraceClient.HandleUnobservedTaskExceptions();
         }
             
         static void Main(string[] args)

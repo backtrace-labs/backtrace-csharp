@@ -128,7 +128,7 @@ namespace Backtrace.Services
 
         public void Flush()
         {
-            if(!_enable)
+            if (!_enable)
             {
                 return;
             }
@@ -141,7 +141,7 @@ namespace Backtrace.Services
                 foreach (var databaseEntry in batch.Value)
                 {
                     var backtraceData = databaseEntry.BacktraceData;
-                    _backtraceApi.Send(backtraceData);
+                    var result = _backtraceApi.Send(backtraceData);
                     Delete(databaseEntry);
                 }
             }

@@ -30,6 +30,12 @@ namespace Backtrace.Model.Database
         /// </summary>
         [JsonProperty(PropertyName = "dataPath")]
         internal string DiagnosticDataPath { get; set; }
+        
+        /// <summary>
+        /// Path to minidump file
+        /// </summary>
+        [JsonProperty(PropertyName = "minidumpPath")]
+        internal string MiniDumpPath { get; set; }
 
         /// <summary>
         /// Path to minidump file
@@ -71,9 +77,10 @@ namespace Backtrace.Model.Database
 
         internal BacktraceDatabaseEntry(BacktraceData<T> data, string path)
         {
-
+            Id = data.Uuid;
             DiagnosticDataPath = Save(data, "_attachment", path);
             ReportPath = Save(data.Report, "_report", path);
+            MiniDumpPath = data.Report.MinidumpFile;
             EntryPath = Path.Combine(path, $"_entry-{Id}.json");
             Save(this, "_entry", path);
         }
@@ -83,6 +90,7 @@ namespace Backtrace.Model.Database
             File.Delete(DiagnosticDataPath);
             File.Delete(EntryPath);
             File.Delete(ReportPath);
+            File.Delete(MiniDumpPath);
         }
 
         private string Save(object o, string jsonPrefix, string path)

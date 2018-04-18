@@ -189,7 +189,7 @@ namespace Backtrace.Base
             //valid user custom events
             data = BeforeSend?.Invoke(data) ?? data;
             var result = await _backtraceApi.SendAsync(data);
-            if(result.Status == BacktraceResultStatus.Ok)
+            if (result.Status == BacktraceResultStatus.Ok)
             {
                 Database.Delete(entry);
             }
@@ -211,6 +211,23 @@ namespace Backtrace.Base
         {
             SendAsync(new BacktraceReportBase<T>(e.Exception)).Wait();
             OnUnhandledApplicationException?.Invoke(e.Exception);
+        }
+        public virtual void HandleUnobservedTaskExceptions()
+        {
+            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+        }
+
+        private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        {
+            try
+            {
+                SendAsync(new BacktraceReportBase<T>(e.Exception)).Wait();
+                OnUnhandledApplicationException?.Invoke(e.Exception);
+            }
+            catch(Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine(ex);
+            }
         }
 
         /// <summary>
