@@ -100,7 +100,7 @@ namespace Backtrace.Model
         /// <summary>
         /// Current BacktraceReport
         /// </summary>
-        internal readonly BacktraceReportBase<T> Report;
+        internal BacktraceReportBase<T> Report { get; set; }
 
         /// <summary>
         /// Create instance of report data
@@ -110,7 +110,7 @@ namespace Backtrace.Model
         [JsonConstructor]
         public BacktraceData(BacktraceReportBase<T> report, Dictionary<string, T> clientAttributes)
         {
-            if(report == null)
+            if (report == null)
             {
                 return;
             }

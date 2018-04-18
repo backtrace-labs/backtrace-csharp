@@ -144,6 +144,7 @@ namespace Backtrace.Base
             _backtraceApi = new BacktraceApi<T>(backtraceCredentials, reportPerMin, tlsLegacySupport);
             Database = database ?? new BacktraceDatabase<T>();
             Database.SetApi(_backtraceApi);
+            Database.Flush();
         }
 
         /// <summary>

@@ -28,7 +28,7 @@ namespace Backtrace.Base
         /// server will reject request if uuid is already found
         /// </summary>s
         [JsonProperty(PropertyName = "uuid")]
-        public Guid Uuid { get; private set; } = new Guid();
+        public Guid Uuid { get; private set; } = Guid.NewGuid();
 
         /// <summary>
         /// UTC timestamp in seconds
@@ -58,13 +58,13 @@ namespace Backtrace.Base
         /// Get a custom client message
         /// </summary>
         [JsonProperty(PropertyName = "message")]
-        public readonly string Message;
+        public string Message { get; private set; }
 
         /// <summary>
         /// Get a report exception
         /// </summary>
         [JsonProperty(PropertyName = "exception")]
-        public Exception Exception { get; set; }
+        public Exception Exception { get; private set; }
 
         /// <summary>
         /// Get all paths to attachments
@@ -76,7 +76,7 @@ namespace Backtrace.Base
         /// Get or set minidump attachment path
         /// </summary>
         [JsonProperty(PropertyName = "minidumpFile")]
-        internal string MinidumpFile { get; set; }
+        internal string MinidumpFile { get; private set; }
 
         /// <summary>
         /// Get an assembly where report was created (or should be created)
@@ -95,6 +95,7 @@ namespace Backtrace.Base
         /// <param name="message">Custom client message</param>
         /// <param name="attributes">Additional information about application state</param>
         /// <param name="attachmentPaths">Path to all report attachments</param>
+        [JsonConstructor]
         public BacktraceReportBase(
             string message,
             Dictionary<string, T> attributes = null,

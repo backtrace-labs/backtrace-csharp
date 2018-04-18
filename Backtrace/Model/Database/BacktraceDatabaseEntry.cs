@@ -7,44 +7,58 @@ using System.Text;
 
 namespace Backtrace.Model.Database
 {
+    /// <summary>
+    /// Single entry in BacktraceDatabase
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class BacktraceDatabaseEntry<T>
     {
+        /// <summary>
+        /// Entry Id
+        /// </summary>
         [JsonProperty]
         public Guid Id { get; set; } = Guid.NewGuid();
 
+        /// <summary>
+        /// Path to json stored all information about current entry
+        /// </summary>
         [JsonProperty(PropertyName = "entryName")]
         internal string EntryPath { get; set; }
 
-        [JsonProperty(PropertyName = "attachmentPath")]
-        internal string FilePath { get; set; }
+        /// <summary>
+        /// Path to a diagnostic data json
+        /// </summary>
+        [JsonProperty(PropertyName = "dataPath")]
+        internal string DiagnosticDataPath { get; set; }
+
+        /// <summary>
+        /// Path to minidump file
+        /// </summary>
+        [JsonProperty(PropertyName = "reportPath")]
+        internal string ReportPath { get; set; }
 
         [JsonIgnore]
-        public string JsonReport
+        public BacktraceData<T> BacktraceData
         {
             get
             {
-                using (var streamReader = new StreamReader(FilePath))
+                //read json files stored in BacktraceDatabase
+                using (var dataReader = new StreamReader(DiagnosticDataPath))
+                using (var reportReader = new StreamReader(ReportPath))
                 {
-                    return streamReader.ReadToEnd();
-                }
-            }
-        }
+                    //read report
+                    var reportJson = reportReader.ReadToEnd();
+                    var report = JsonConvert.DeserializeObject<BacktraceReportBase<T>>(reportJson);
 
-        [JsonProperty(PropertyName = "minidumpPath")]
-        internal string MiniDumpPath { get; set; }
-
-        [JsonProperty(PropertyName = "metadataPath")]
-        internal string MetadataPath { get; set; }
-
-        [JsonIgnore]
-        public IEnumerable<string> Attachments
-        {
-            get
-            {
-                using (var streamReader = new StreamReader(MetadataPath))
-                {
-                    var json = streamReader.ReadToEnd();
-                    return JsonConvert.DeserializeObject<IEnumerable<string>>(json);
+                    //read diagnostic data
+                    var diagnosticDataJson = dataReader.ReadToEnd();
+                    var diagnosticData = JsonConvert.DeserializeObject<BacktraceData<T>>(diagnosticDataJson);
+                    //add report to diagnostic data
+                    //we don't store report with diagnostic data in the same json
+                    //because we have easier way to serialize and deserialize data
+                    //and no problem/condition with serialization when BacktraceApi want to send diagnostic data to API
+                    diagnosticData.Report = report;
+                    return diagnosticData;
                 }
             }
         }
@@ -57,21 +71,18 @@ namespace Backtrace.Model.Database
 
         internal BacktraceDatabaseEntry(BacktraceData<T> data, string path)
         {
-            EntryPath = Path.Combine(path, $"_entry-{Id}.json");
 
-            FilePath = Save(data, "_attachment", path);
-            MiniDumpPath = data.Report.MinidumpFile;
-            MetadataPath = Save(data.Report.AttachmentPaths, "_metadata", path);
-            var entry = JsonConvert.SerializeObject(this);
-            Save(entry, "_entry", path);
+            DiagnosticDataPath = Save(data, "_attachment", path);
+            ReportPath = Save(data.Report, "_report", path);
+            EntryPath = Path.Combine(path, $"_entry-{Id}.json");
+            Save(this, "_entry", path);
         }
 
         internal void Delete()
         {
-            File.Delete(FilePath);
-            File.Delete(MetadataPath);
+            File.Delete(DiagnosticDataPath);
             File.Delete(EntryPath);
-            File.Delete(MiniDumpPath);
+            File.Delete(ReportPath);
         }
 
         private string Save(object o, string jsonPrefix, string path)

@@ -154,7 +154,7 @@ namespace Backtrace.Services
             }
 
             Guid requestId = Guid.NewGuid();
-            string json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
+            string json = JsonConvert.SerializeObject(data);
             var report = data.Report as BacktraceReport;
 
             var formData = FormDataHelper.GetFormData(json, data.Attachments, requestId);
