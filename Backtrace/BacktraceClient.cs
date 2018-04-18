@@ -37,8 +37,8 @@ namespace Backtrace
         /// <param name="reportPerMin">Numbers of records sending per one min</param>
         /// <param name="tlsLegacySupport">Set SSL and TLS flags for https request to Backtrace API</param>
         public BacktraceClient(
-            string databasePath,
-            string sectionName = "BacktraceCredentials",
+            string sectionName,
+            string databasePath,            
             Dictionary<string, object> attributes = null,
             uint reportPerMin = 3,
             bool tlsLegacySupport = false)
