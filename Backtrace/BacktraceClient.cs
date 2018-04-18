@@ -177,10 +177,6 @@ namespace Backtrace
             OnReportStart?.Invoke(backtraceReport);
             var result = base.Send(backtraceReport);
             AfterSend?.Invoke(result);
-
-            //check if there is more errors to send
-            //handle inner exception
-            result.InnerExceptionResult = HandleInnerException(backtraceReport);
             return result;
         }
         #endregion
@@ -198,9 +194,7 @@ namespace Backtrace
             var result = await base.SendAsync(backtraceReport);
             AfterSend?.Invoke(result);
 
-            //check if there is more errors to send
-            //handle inner exception
-            result.InnerExceptionResult = await HandleInnerExceptionAsync(backtraceReport);
+           
             return result;
         }
 
@@ -232,49 +226,10 @@ namespace Backtrace
             return await SendAsync(new BacktraceReport(exception, attributes, attachmentPaths));
         }
         #endregion
-
-        /// <summary>
-        /// Handle inner exception in current backtrace report
-        /// if inner exception exists, client should send report twice - one with current exception, one with inner exception
-        /// </summary>
-        /// <param name="report">current report</param>
-        private async Task<BacktraceResult> HandleInnerExceptionAsync(BacktraceReport report)
-        {
-            var innerExceptionReport = CreateInnerReport(report);
-            if (innerExceptionReport == null)
-            {
-                return null;
-            }
-            return await SendAsync(innerExceptionReport);
-        }
 #endif
 
-        /// <summary>
-        /// Handle inner exception in current backtrace report
-        /// if inner exception exists, client should send report twice - one with current exception, one with inner exception
-        /// </summary>
-        /// <param name="report">current report</param>
-        private BacktraceResult HandleInnerException(BacktraceReport report)
-        {
-            var innerExceptionReport = CreateInnerReport(report);
-            if (innerExceptionReport == null)
-            {
-                return null;
-            }
-            return Send(innerExceptionReport);
-        }
 
-        private BacktraceReport CreateInnerReport(BacktraceReport report)
-        {
-            // there is no additional exception inside current exception
-            // or exception does not exists
-            if (!report.ExceptionTypeReport || report.Exception.InnerException == null)
-            {
-                return null;
-            }
-            //we have to create a copy of an inner exception report
-            //to have the same calling assembly property
-            return report.CreateInnerReport();
-        }
+
+       
     }
 }

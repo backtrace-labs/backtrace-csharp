@@ -173,7 +173,25 @@ namespace Backtrace.Base
             {
                 Database.Delete(entry);
             }
+            //check if there is more errors to send
+            //handle inner exception
+            result.InnerExceptionResult = HandleInnerException(report);
             return result;
+        }
+
+        /// <summary>
+        /// Handle inner exception in current backtrace report
+        /// if inner exception exists, client should send report twice - one with current exception, one with inner exception
+        /// </summary>
+        /// <param name="report">current report</param>
+        private BacktraceResult HandleInnerException(BacktraceReportBase<T> report)
+        {
+            var innerExceptionReport = CreateInnerReport(report);
+            if (innerExceptionReport == null)
+            {
+                return null;
+            }
+            return Send(innerExceptionReport);
         }
 #if !NET35
 
@@ -193,7 +211,25 @@ namespace Backtrace.Base
             {
                 Database.Delete(entry);
             }
+            //check if there is more errors to send
+            //handle inner exception
+            result.InnerExceptionResult = await HandleInnerExceptionAsync(report);
             return result;
+        }
+
+        /// <summary>
+        /// Handle inner exception in current backtrace report
+        /// if inner exception exists, client should send report twice - one with current exception, one with inner exception
+        /// </summary>
+        /// <param name="report">current report</param>
+        private async Task<BacktraceResult> HandleInnerExceptionAsync(BacktraceReportBase<T> report)
+        {
+            var innerExceptionReport = CreateInnerReport(report);
+            if (innerExceptionReport == null)
+            {
+                return null;
+            }
+            return await SendAsync(innerExceptionReport);
         }
 
         /// <summary>
@@ -212,22 +248,15 @@ namespace Backtrace.Base
             SendAsync(new BacktraceReportBase<T>(e.Exception)).Wait();
             OnUnhandledApplicationException?.Invoke(e.Exception);
         }
-        public virtual void HandleUnobservedTaskExceptions()
-        {
-            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
-        }
+        //public virtual void HandleUnobservedTaskExceptions()
+        //{
+        //    TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+        //}
 
         private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
-            try
-            {
-                SendAsync(new BacktraceReportBase<T>(e.Exception)).Wait();
-                OnUnhandledApplicationException?.Invoke(e.Exception);
-            }
-            catch(Exception ex)
-            {
-                System.Diagnostics.Trace.WriteLine(ex);
-            }
+            SendAsync(new BacktraceReportBase<T>(e.Exception)).Wait();
+            OnUnhandledApplicationException?.Invoke(e.Exception);
         }
 
         /// <summary>
@@ -243,5 +272,17 @@ namespace Backtrace.Base
             OnUnhandledApplicationException?.Invoke(exception);
         }
 #endif
+        private BacktraceReportBase<T> CreateInnerReport(BacktraceReportBase<T> report)
+        {
+            // there is no additional exception inside current exception
+            // or exception does not exists
+            if (!report.ExceptionTypeReport || report.Exception.InnerException == null)
+            {
+                return null;
+            }
+            //we have to create a copy of an inner exception report
+            //to have the same calling assembly property
+            return report.CreateInnerReport();
+        }
     }
 }

@@ -100,7 +100,7 @@ namespace Backtrace.Base
             string message,
             Dictionary<string, T> attributes = null,
             List<string> attachmentPaths = null)
-        { 
+        {
             Message = message;
             Attributes = attributes ?? new Dictionary<string, T>();
             AttachmentPaths = attachmentPaths ?? new List<string>();
@@ -124,7 +124,9 @@ namespace Backtrace.Base
             Exception = exception;
             ExceptionTypeReport = Exception != null;
             Classifier = ExceptionTypeReport ? Exception.GetType().Name : string.Empty;
+            CallingAssembly = exception.TargetSite?.DeclaringType?.Assembly;
             SetCallingAppInformation();
+
         }
 
         /// <summary>
@@ -140,7 +142,7 @@ namespace Backtrace.Base
             MinidumpFile = minidumpPath;
             AttachmentPaths.Add(minidumpPath);
         }
-        
+
         internal BacktraceData<T> ToBacktraceData(Dictionary<string, T> clientAttributes)
         {
             return new BacktraceData<T>(this, clientAttributes);
@@ -167,7 +169,7 @@ namespace Backtrace.Base
         /// Set Calling Assembly and current thread stack trace property. 
         /// CallingAssembly and StackTrace are necessary to prepare diagnostic JSON in BacktraceData class
         /// </summary>
-        private void SetCallingAppInformation()
+        internal void SetCallingAppInformation()
         {
             // generate stacktrace with file info
             // if assembly have pbd files, diagnostic JSON will contain information about 
@@ -184,6 +186,14 @@ namespace Backtrace.Base
             var head = DiagnosticStack.Any() ? DiagnosticStack[0] : null;
             var generatedStack = Exception.GetExceptionStackFrames(head);
             SetStacktraceInformation(generatedStack, false);
+
+            //Library didn't found Calling assembly
+            //The reason for this behaviour is because we throw exception from TaskScheduler
+            //or other method that don't generate valid stack trace
+            if(CallingAssembly == null)
+            {
+                CallingAssembly = Assembly.GetExecutingAssembly();
+            }
         }
 
         private void SetStacktraceInformation(StackFrame[] stackFrames, bool includeCallingAssembly, int startingIndex = 0)
@@ -212,7 +222,7 @@ namespace Backtrace.Base
                     continue;
                 }
                 var assemblyName = assembly.FullName;
-                if (executedAssemblyName.Equals(assemblyName) && CallingAssembly == null)
+                if (executedAssemblyName.Equals(assemblyName))
                 {
                     // remove all system and microsoft stack frames 
                     //if we add any stackframe to list this is mistake because we receive 
@@ -221,8 +231,8 @@ namespace Backtrace.Base
                     startingIndex = 0;
                     continue;
                 }
-
-                if (!callingAssemblyFound && !(SystemHelper.SystemAssembly(assembly)))
+                if (!callingAssemblyFound && ((!(SystemHelper.SystemAssembly(assembly))) 
+                    || (CallingAssembly !=null && assembly?.FullName == CallingAssembly.FullName)))
                 {
                     callingAssemblyFound = true;
                     CallingAssembly = assembly;
@@ -250,10 +260,11 @@ namespace Backtrace.Base
         /// create a copy of BacktraceReport for inner exception object inside exception
         /// </summary>
         /// <returns>BacktraceReport for InnerExceptionObject</returns>
-        internal BacktraceReport CreateInnerReport()
+        internal BacktraceReportBase<T> CreateInnerReport()
         {
-            var copy = (BacktraceReport)this.MemberwiseClone();
+            var copy = (BacktraceReportBase<T>)this.MemberwiseClone();
             copy.Exception = this.Exception.InnerException;
+            copy.SetCallingAppInformation();
             return copy;
         }
     }
