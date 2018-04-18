@@ -37,5 +37,7 @@ namespace Backtrace.Interfaces
         /// Set custom request method to prepare HTTP request to Backtrace API
         /// </summary>
         Func<string, string, BacktraceData<T>, BacktraceResult> RequestHandler { get; set; }
+
+        void SetClientRateLimitEvent(Action<BacktraceReport> onClientReportLimitReached);
     }
 }

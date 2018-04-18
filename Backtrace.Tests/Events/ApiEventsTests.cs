@@ -1,6 +1,7 @@
 ﻿using Backtrace.Base;
 using Backtrace.Interfaces;
 using Backtrace.Model;
+using Backtrace.Model.Database;
 using Backtrace.Services;
 using Backtrace.Types;
 using Moq;
@@ -47,8 +48,13 @@ namespace Backtrace.Tests.Events
 
             //mock database
             var database = new Mock<IBacktraceDatabase<object>>();
-            throw new NotImplementedException();
-            //database.Setup(n => n.GenerateMiniDump(It.IsAny<BacktraceReportBase<object>>(), It.IsAny<MiniDumpType>()));
+            database.Setup(n => 
+                n.Add(It.IsAny<BacktraceReportBase<object>>(), 
+                    It.IsAny<Dictionary<string,object>>(), 
+                    It.IsAny<MiniDumpType>()));
+
+            database.Setup(n =>
+               n.Delete(It.IsAny<BacktraceDatabaseEntry<object>>()));
 
             //setup new client
             _backtraceClient = new BacktraceClient(credentials, reportPerMin: 0)

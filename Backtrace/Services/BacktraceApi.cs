@@ -229,10 +229,17 @@ namespace Backtrace.Services
             }
         }
 
+        
+
         ~BacktraceApi()
         {
             Dispose(false);
         }
         #endregion
+
+        public void SetClientRateLimitEvent(Action<BacktraceReport> onClientReportLimitReached)
+        {
+            reportLimitWatcher.OnClientReportLimitReached = onClientReportLimitReached;
+        }
     }
 }

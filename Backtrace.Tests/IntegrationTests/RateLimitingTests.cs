@@ -1,6 +1,7 @@
 ﻿using Backtrace.Base;
 using Backtrace.Interfaces;
 using Backtrace.Model;
+using Backtrace.Model.Database;
 using Backtrace.Services;
 using Backtrace.Types;
 using Moq;
@@ -35,16 +36,21 @@ namespace Backtrace.Tests.IntegrationTests
 
             //mock database
             var database = new Mock<IBacktraceDatabase<object>>();
-            throw new NotImplementedException();
-            //database.Setup(n => n.GenerateMiniDump(It.IsAny<BacktraceReportBase<object>>(), It.IsAny<MiniDumpType>()));
+            database.Setup(n =>
+                n.Add(It.IsAny<BacktraceReportBase<object>>(),
+                    It.IsAny<Dictionary<string, object>>(),
+                    It.IsAny<MiniDumpType>()));
+
+            database.Setup(n =>
+               n.Delete(It.IsAny<BacktraceDatabaseEntry<object>>()));
 
             //setup new client
             var credentials = new BacktraceCredentials("https://validurl.com/", "validToken");
-            //_backtraceClient = new BacktraceClient(credentials)
-            //{
-            //    _backtraceApi = api.Object,
-            //    Database = database.Object
-            //};
+            _backtraceClient = new BacktraceClient(credentials)
+            {
+                _backtraceApi = api.Object,
+                Database = database.Object
+            };
 
             //Add new scoped attributes
             _backtraceClient.Attributes["ClientAttributeNumber"] = 1;
@@ -165,11 +171,10 @@ namespace Backtrace.Tests.IntegrationTests
             List<Thread> threads = new List<Thread>();
             int totalSend = 0;
             int totalDrop = 0;
-            throw new NotImplementedException();
-            //_backtraceClient.OnClientReportLimitReached += (BacktraceReport report) =>
-            //{
-            //    totalDrop++;
-            //};
+            _backtraceClient.OnClientReportLimitReached = (BacktraceReport report) =>
+            {
+                totalDrop++;
+            };
 
             for (int threadIndex = 0; threadIndex < numberOfThread; threadIndex++)
             {

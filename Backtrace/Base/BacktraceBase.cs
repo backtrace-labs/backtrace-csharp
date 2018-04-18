@@ -72,7 +72,7 @@ namespace Backtrace.Base
         {
             set
             {
-                _backtraceApi.reportLimitWatcher.OnClientReportLimitReached = value;
+                _backtraceApi.SetClientRateLimitEvent(value);
             }
         }
 
@@ -99,7 +99,7 @@ namespace Backtrace.Base
         /// <summary>
         /// Instance of BacktraceApi that allows to send data to Backtrace API
         /// </summary>
-        internal BacktraceApi<T> _backtraceApi;
+        internal IBacktraceApi<T> _backtraceApi;
 
 
         /// <summary>
