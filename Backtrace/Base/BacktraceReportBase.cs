@@ -2,6 +2,7 @@
 using Backtrace.Extensions;
 using Backtrace.Model;
 using Backtrace.Model.JsonData;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,73 +20,74 @@ namespace Backtrace.Base
     /// <summary>
     /// Capture application report
     /// </summary>
+    [Serializable]
     public class BacktraceReportBase<T>
     {
         /// <summary>
         /// 16 bytes of randomness in human readable UUID format
         /// server will reject request if uuid is already found
         /// </summary>s
-        public readonly Guid Uuid = Guid.NewGuid();
+        [JsonProperty(PropertyName = "uuid")]
+        public Guid Uuid { get; private set; } = new Guid();
 
         /// <summary>
         /// UTC timestamp in seconds
         /// </summary>
-        public readonly long Timestamp = (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+        [JsonProperty(PropertyName = "timestamp")]
+        public long Timestamp { get; private set; } = (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
 
         /// <summary>
         /// Get information aboout report type. If value is true the BacktraceReport has an error information
         /// </summary>
-        public bool ExceptionTypeReport = false;
+        [JsonProperty(PropertyName = "reportType")]
+        public bool ExceptionTypeReport { get; private set; } = false;
 
         /// <summary>
         /// Get a report classification 
         /// </summary>
-        public string Classifier
-        {
-            get
-            {
-                if (ExceptionTypeReport)
-                {
-                    return Exception.GetType().Name;
-                }
-                return string.Empty;
-            }
-        }
+        [JsonProperty(PropertyName = "classifier")]
+        public string Classifier { get; set; } = string.Empty;
 
         /// <summary>
         /// Get an report attributes
         /// </summary>
+        [JsonProperty(PropertyName = "attributes")]
         public Dictionary<string, T> Attributes { get; private set; }
 
         /// <summary>
         /// Get a custom client message
         /// </summary>
+        [JsonProperty(PropertyName = "message")]
         public readonly string Message;
 
         /// <summary>
         /// Get a report exception
         /// </summary>
+        [JsonProperty(PropertyName = "exception")]
         public Exception Exception { get; set; }
 
         /// <summary>
         /// Get all paths to attachments
         /// </summary>
+        [JsonProperty(PropertyName = "attachmentPaths")]
         public List<string> AttachmentPaths { get; set; }
 
         /// <summary>
         /// Get or set minidump attachment path
         /// </summary>
+        [JsonProperty(PropertyName = "minidumpFile")]
         internal string MinidumpFile { get; set; }
 
         /// <summary>
         /// Get an assembly where report was created (or should be created)
         /// </summary>
-        internal Assembly CallingAssembly { get; set; }
+        internal Assembly CallingAssembly { get; private set; }
 
         /// <summary>
         /// Current report exception stack
         /// </summary>
-        public List<DiagnosticStack> DiagnosticStack { get; set; } = new List<DiagnosticStack>();
+        [JsonProperty(PropertyName = "diagnosticStack")]
+        public List<DiagnosticStack> DiagnosticStack { get; private set; } = new List<DiagnosticStack>();
 
         /// <summary>
         /// Create new instance of Backtrace report to sending a report with custom client message
@@ -97,7 +99,7 @@ namespace Backtrace.Base
             string message,
             Dictionary<string, T> attributes = null,
             List<string> attachmentPaths = null)
-        {
+        { 
             Message = message;
             Attributes = attributes ?? new Dictionary<string, T>();
             AttachmentPaths = attachmentPaths ?? new List<string>();
@@ -120,6 +122,7 @@ namespace Backtrace.Base
             AttachmentPaths = attachmentPaths ?? new List<string>();
             Exception = exception;
             ExceptionTypeReport = Exception != null;
+            Classifier = ExceptionTypeReport ? Exception.GetType().Name : string.Empty;
             SetCallingAppInformation();
         }
 

@@ -276,9 +276,9 @@ namespace Backtrace.Services
                 {
                     var json = streamReader.ReadToEnd();
                     var entry = JsonConvert.DeserializeObject<BacktraceDatabaseEntry<T>>(json);
-                    //var diagnosticJson = entry.JsonReport;
+                    var diagnosticJson = entry.JsonReport;
 
-                    //var backtraceData = JsonConvert.DeserializeObject<BacktraceData<object>>(diagnosticJson);
+                    var backtraceData = JsonConvert.DeserializeObject<BacktraceData<object>>(diagnosticJson);
 
                     BatchRetry[0].Add(entry);
                     _totalEntries++;
