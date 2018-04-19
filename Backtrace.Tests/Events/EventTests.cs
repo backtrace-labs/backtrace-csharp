@@ -71,7 +71,7 @@ namespace Backtrace.Tests.Events
         [TestCase(5, 2)]
         [TestCase(15, 5)]
         [Test(Author = "Konrad Dysput", Description = "Test rate limiting and after send event")]
-        public async Task TestRateLimiting(int numberOfCycles, int rateLimit)
+        public async Task TestClientRateLimiting(int numberOfCycles, int rateLimit)
         {
             //we send reports by using Send method and SendAsync method - 8 per c
             int totalSendReport = numberOfCycles * 8;

@@ -20,7 +20,7 @@ namespace Backtrace.Tests.IntegrationTests
     /// Runs Integration Tests
     /// </summary>
     [TestFixture(Author = "Arthur Tu", Category = "Submission tests", Description = "Test rate limiting with diffrent threads")]
-    public class RateLimitingTests
+    public class ClientRateLimitingTests
     {
         private BacktraceClient _backtraceClient;
         private bool reportLimitReached = false;
@@ -157,15 +157,15 @@ namespace Backtrace.Tests.IntegrationTests
         [TestCase(5, 10)]
         [TestCase(5, 20)]
         [Test(Author = "Arthur Tu and Konrad Dysput", Description = "Test a initialization and submission sequence for backtrace client w/ threading w/o rate limiting")]
-        public void ThreadedWithReportRateLimit(int numberOfTasks, int rateLimiting)
+        public void ThreadedWithReportRateLimit(int numberOfTasks, int clientRateLimit)
         {
             //set rate limiting
             reportLimitReached = false;
-            _backtraceClient.SetClientReportLimit((uint)rateLimiting);
+            _backtraceClient.SetClientReportLimit((uint)clientRateLimit);
 
             //set expected number of drop and request
             int expectedNumberOfAttempts = 4 * numberOfTasks;
-            int expectedNumberOfDropRequest = expectedNumberOfAttempts - (int)rateLimiting;
+            int expectedNumberOfDropRequest = expectedNumberOfAttempts - (int)clientRateLimit;
             
             if (expectedNumberOfDropRequest < 0)
             {
