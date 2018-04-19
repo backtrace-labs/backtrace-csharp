@@ -15,7 +15,7 @@ namespace Backtrace.Framework45Example
         //Client will be initialized with values stored in default section name "BacktraceCredentials"
         private BacktraceClient backtraceClient = new BacktraceClient(
             new BacktraceCredentials(ApplicationCredentials.Host, ApplicationCredentials.Token),
-            new BacktraceDatabaseSettings() { DatabasePath = @"D:\data\Backtracelogs" },
+            new BacktraceDatabaseSettings(@"D:\data\Backtracelogs"),
             reportPerMin: 0, //unlimited number of reports per secound
             tlsLegacySupport: true
         );
@@ -27,8 +27,6 @@ namespace Backtrace.Framework45Example
 
         public async Task Start()
         {
-            //handle uncaught exception from unsafe code
-            ThrowUnsafeException();
             
             await GenerateRandomStrings();
             await TryClean();
@@ -39,6 +37,9 @@ namespace Backtrace.Framework45Example
             //    var client = new HttpClient();
             //    string getStringTask = await client.GetStringAsync(string.Empty);
             //}));
+
+            //handle uncaught exception from unsafe code
+            ThrowUnsafeException();
         }
 
         private void ThrowUnsafeException()

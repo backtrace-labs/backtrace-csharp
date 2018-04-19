@@ -43,7 +43,7 @@ namespace Backtrace
             uint reportPerMin = 3,
             bool tlsLegacySupport = false)
             : this(BacktraceCredentials.ReadConfigurationSection(sectionName),
-                attributes, new BacktraceDatabase<object>(new BacktraceDatabaseSettings() { DatabasePath = databasePath }),
+                attributes, new BacktraceDatabase<object>(new BacktraceDatabaseSettings(databasePath)),
                 reportPerMin, tlsLegacySupport)
         { }
 
@@ -116,7 +116,7 @@ namespace Backtrace
             uint reportPerMin = 3,
             bool tlsLegacySupport = false)
             : base(backtraceCredentials, attributes,
-                  new BacktraceDatabaseSettings() { DatabasePath = databasePath },
+                  new BacktraceDatabaseSettings(databasePath),
                   reportPerMin, tlsLegacySupport)
         { }
 

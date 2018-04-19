@@ -8,6 +8,7 @@ using System.Net.NetworkInformation;
 using Backtrace.Common;
 using Backtrace.Extensions;
 using System.Reflection;
+using Newtonsoft.Json;
 
 [assembly: InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Model.JsonData
@@ -31,21 +32,21 @@ namespace Backtrace.Model.JsonData
         /// Create instance of Backtrace Attribute
         /// </summary>
         /// <param name="report">Received report</param>
-        /// <param name="scopedAttributes">Client's attributes (report and client)</param>
-        public BacktraceAttributes(BacktraceReportBase<T> report, Dictionary<string, T> scopedAttributes)
+        /// <param name="clientAttributes">Client's attributes (report and client)</param>
+        [JsonConstructor]
+        public BacktraceAttributes(BacktraceReportBase<T> report, Dictionary<string, T> clientAttributes)
         {
-            //Environment attributes override user attributes
-            ConvertAttributes(report, scopedAttributes);
-            SetLibraryAttributes(report.CallingAssembly);            
-            SetDebuggerAttributes(report.CallingAssembly);
+            if(report != null)
+            {
+                ConvertAttributes(report, clientAttributes);
+                SetLibraryAttributes(report.CallingAssembly);
+                SetDebuggerAttributes(report.CallingAssembly);
+                SetExceptionAttributes(report);
+            }
+            //Environment attributes override user attributes            
             SetMachineAttributes();
             SetProcessAttributes();
-            SetExceptionAttributes(report);
-        }
-
-        internal BacktraceAttributes()
-        {
-
+            
         }
 
         /// <summary>
@@ -91,7 +92,6 @@ namespace Backtrace.Model.JsonData
                                 DebuggableAttribute.DebuggingModes.None
                                 ? "Full" : "pdb-only";
             }
-            Attributes["build.debug"] = false;
         }
 
         /// <summary>

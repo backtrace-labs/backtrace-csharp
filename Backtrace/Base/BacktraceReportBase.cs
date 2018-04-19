@@ -265,6 +265,7 @@ namespace Backtrace.Base
             var copy = (BacktraceReportBase<T>)this.MemberwiseClone();
             copy.Exception = this.Exception.InnerException;
             copy.SetCallingAppInformation();
+            copy.Classifier = copy.Exception.GetType().Name;
             return copy;
         }
     }

@@ -1,10 +1,11 @@
 ﻿using Backtrace.Base;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 namespace Backtrace.Model.Database
 {
     /// <summary>
@@ -30,7 +31,7 @@ namespace Backtrace.Model.Database
         /// </summary>
         [JsonProperty(PropertyName = "dataPath")]
         internal string DiagnosticDataPath { get; set; }
-        
+
         /// <summary>
         /// Path to minidump file
         /// </summary>
@@ -75,7 +76,7 @@ namespace Backtrace.Model.Database
             EntryPath = $"_entry-{Id}.json";
         }
 
-        internal BacktraceDatabaseEntry(BacktraceData<T> data, string path)
+        public BacktraceDatabaseEntry(BacktraceData<T> data, string path)
         {
             Id = data.Uuid;
             DiagnosticDataPath = Save(data, "_attachment", path);
@@ -93,7 +94,7 @@ namespace Backtrace.Model.Database
             File.Delete(MiniDumpPath);
         }
 
-        private string Save(object o, string jsonPrefix, string path)
+        internal string Save(object o, string jsonPrefix, string path)
         {
             string json = JsonConvert.SerializeObject(o);
             return Save(json, jsonPrefix, path);

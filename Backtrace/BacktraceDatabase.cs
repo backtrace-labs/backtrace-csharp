@@ -3,6 +3,7 @@ using Backtrace.Common;
 using Backtrace.Interfaces;
 using Backtrace.Model;
 using Backtrace.Model.Database;
+using Backtrace.Services;
 using Backtrace.Types;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -17,7 +18,7 @@ using System.Threading.Tasks;
 #endif
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
-namespace Backtrace.Services
+namespace Backtrace
 {
     /// <summary>
     /// Backtrace Database 
@@ -25,16 +26,11 @@ namespace Backtrace.Services
     public class BacktraceDatabase<T> : IBacktraceDatabase<T>
     {
         /// <summary>
-        /// In memory database
-        /// </summary>
-        Dictionary<uint, List<BacktraceDatabaseEntry<T>>> BatchRetry = new Dictionary<uint, List<BacktraceDatabaseEntry<T>>>();
-        private long _totalEntries = 0;
-
-        /// <summary>
         /// Database settings
         /// </summary>
         public BacktraceDatabaseSettings DatabaseSettings { get; private set; }
 
+        internal IBacktraceDatabaseContext<T> BacktraceDatabaseContext { get; set; }
         /// <summary>
         /// Database path
         /// </summary>
@@ -56,8 +52,6 @@ namespace Backtrace.Services
         /// </summary>
         private readonly bool _enable = true;
 
-        private const string reportPrefix = "attachment_";
-
         /// <summary>
         /// Create disabled instance of BacktraceDatabase
         /// </summary>
@@ -66,6 +60,14 @@ namespace Backtrace.Services
         {
             _enable = false;
         }
+
+        /// <summary>
+        /// Create new Backtrace database instance
+        /// </summary>
+        /// <param name="path">Path to database directory</param>
+        public BacktraceDatabase(string path)
+            : this(new BacktraceDatabaseSettings(path))
+        { }
 
         /// <summary>
         /// Create Backtrace database instance
@@ -84,17 +86,9 @@ namespace Backtrace.Services
             }
 
             DatabaseSettings = databaseSettings;
-            SetupBatch();
+            BacktraceDatabaseContext = new BacktraceDatabaseContext<T>(DatabaseSettings.DatabasePath, DatabaseSettings.TotalRetry);
             RemoveOrphaned();
             LoadReports();
-        }
-
-        private void SetupBatch()
-        {
-            for (uint i = 0; i < DatabaseSettings.TotalRetry; i++)
-            {
-                BatchRetry[i] = new List<BacktraceDatabaseEntry<T>>();
-            }
         }
 
         /// <summary>
@@ -111,19 +105,11 @@ namespace Backtrace.Services
         /// </summary>
         public void Clear()
         {
-            var directoryInfo = new DirectoryInfo(DatabasePath);
-            IEnumerable<FileInfo> files = directoryInfo.GetFiles();
-            IEnumerable<DirectoryInfo> directories = directoryInfo.GetDirectories();
-
-            foreach (FileInfo file in files)
+            if (!_enable)
             {
-                file.Delete();
+                return;
             }
-            foreach (DirectoryInfo dir in directories)
-            {
-                dir.Delete(true);
-            }
-            BatchRetry.Clear();
+            BacktraceDatabaseContext.Clear();
         }
 
         public void Flush()
@@ -136,14 +122,13 @@ namespace Backtrace.Services
             {
                 throw new ArgumentException("BacktraceApi is required if you want to use Flush method");
             }
-            foreach (var batch in BatchRetry)
+            var entry = BacktraceDatabaseContext.FirstOrDefault();
+            while (entry != null)
             {
-                foreach (var databaseEntry in batch.Value)
-                {
-                    var backtraceData = databaseEntry.BacktraceData;
-                    var result = _backtraceApi.Send(backtraceData);
-                    Delete(databaseEntry);
-                }
+                var backtraceData = entry.BacktraceData;
+                _backtraceApi.Send(backtraceData);
+                Delete(entry);
+                entry = BacktraceDatabaseContext.FirstOrDefault();
             }
         }
 #if !NET35
@@ -157,14 +142,13 @@ namespace Backtrace.Services
             {
                 throw new ArgumentException("BacktraceApi is required if you want to use Flush method");
             }
-            foreach (var batch in BatchRetry)
+            var entry = BacktraceDatabaseContext.FirstOrDefault();
+            while (entry != null)
             {
-                foreach (var databaseEntry in batch.Value)
-                {
-                    var backtraceData = databaseEntry.BacktraceData;
-                    await _backtraceApi.SendAsync(backtraceData);
-                    Delete(databaseEntry);
-                }
+                var backtraceData = entry.BacktraceData;
+                await _backtraceApi.SendAsync(backtraceData);
+                Delete(entry);
+                entry = BacktraceDatabaseContext.FirstOrDefault();
             }
         }
 #endif
@@ -203,7 +187,7 @@ namespace Backtrace.Services
             {
                 return null;
             }
-            if (_totalEntries + 1 > DatabaseSettings.MaxEntryNumber && DatabaseSettings.MaxEntryNumber != 0)
+            if (BacktraceDatabaseContext.Count() + 1 > DatabaseSettings.MaxEntryNumber && DatabaseSettings.MaxEntryNumber != 0)
             {
                 throw new ArgumentException("Maximum number of entries available in BacktraceDatabase");
             }
@@ -215,14 +199,7 @@ namespace Backtrace.Services
             }
 
             var data = backtraceReport.ToBacktraceData(attributes);
-            var saveResult = new BacktraceDatabaseEntry<T>(data, DatabasePath);
-            if (saveResult == null)
-            {
-                return null;
-            }
-            BatchRetry[0].Add(saveResult);
-            _totalEntries++;
-            return saveResult;
+            return BacktraceDatabaseContext.Add(data);
         }
 
 
@@ -232,7 +209,7 @@ namespace Backtrace.Services
         /// <returns>All stored reports in BacktraceDatabase</returns>
         public IEnumerable<BacktraceDatabaseEntry<T>> Get()
         {
-            return BatchRetry.SelectMany(n => n.Value);
+            return BacktraceDatabaseContext.Get();
         }
 
         public void Delete(BacktraceDatabaseEntry<T> entry)
@@ -241,28 +218,7 @@ namespace Backtrace.Services
             {
                 return;
             }
-            entry.Delete();
-        }
-
-        /// <summary>
-        /// Dispose BacktraceDatabase
-        /// </summary>
-        public void Dispose()
-        {
-            //dispose database
-            throw new NotImplementedException();
-            RemoveOrphaned();
-        }
-
-        //THIS IS OUT OF SCOPE
-        /// <summary>
-        /// Get a report by using specific filter
-        /// </summary>
-        /// <param name="delegate">Report filter</param>
-        /// <returns>Stored reports that match filter criteria</returns>
-        public IEnumerable<BacktraceReportBase<T>> Get(Func<BacktraceReportBase<T>, IEnumerable<BacktraceReportBase<T>>> @delegate)
-        {
-            throw new NotImplementedException();
+            BacktraceDatabaseContext.Delete(entry);
         }
         /// <summary>
         /// Detect all orphaned minidump files
@@ -275,15 +231,14 @@ namespace Backtrace.Services
         private void LoadReports()
         {
             var directoryInfo = new DirectoryInfo(DatabasePath);
-            IEnumerable<FileInfo> files = directoryInfo.GetFiles($"_entry*.json", SearchOption.TopDirectoryOnly);
+            var files = directoryInfo.GetFiles($"_entry*.json", SearchOption.TopDirectoryOnly);
             foreach (var file in files)
             {
                 using (StreamReader streamReader = file.OpenText())
                 {
                     var json = streamReader.ReadToEnd();
                     var entry = JsonConvert.DeserializeObject<BacktraceDatabaseEntry<T>>(json);
-                    BatchRetry[0].Add(entry);
-                    _totalEntries++;
+                    BacktraceDatabaseContext.Add(entry);
                 }
             }
         }

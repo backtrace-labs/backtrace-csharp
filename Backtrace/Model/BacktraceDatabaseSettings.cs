@@ -10,10 +10,14 @@ namespace Backtrace.Model
     /// </summary>
     public class BacktraceDatabaseSettings
     {
+        public BacktraceDatabaseSettings(string path)
+        {
+            DatabasePath = path;
+        }
         /// <summary>
         /// Directory path where reports and minidumps are stored
         /// </summary>
-        public string DatabasePath { get; set; }
+        public string DatabasePath { get; private set; }
 
         /// <summary>
         /// Maximum number of stored reports in Database. If value is equal to zero, then limit not exists
