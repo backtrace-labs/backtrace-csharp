@@ -9,12 +9,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Backtrace.Interfaces;
+using Backtrace.Types;
 
 namespace Backtrace.Tests.DatabaseTests
 {
     [TestFixture(Author = "Konrad Dysput", Category = "Database")]
     public class DatabaseTests
     {
+        private BacktraceDatabase<object> _database;
+
+        [SetUp]
+        public void Setup()
+        {
+            var mockEntry = new Mock<BacktraceDatabaseEntry<object>>();
+            mockEntry.Setup(n => n.Save(It.IsAny<object>(), It.IsAny<string>(), It.IsAny<string>()));
+            var mockContext = new Mock<IBacktraceDatabaseContext<object>>();
+            //mockContext.Setup(n => n.Add(It.IsAny<BacktraceData<object>>()))
+            //    .Returns(mockEntry.Object);
+
+            string projectDirectory = Environment.CurrentDirectory;
+            _database = new BacktraceDatabase<object>(projectDirectory);
+            _database.BacktraceDatabaseContext = mockContext.Object;
+        }
+
         [Test(Author = "Konrad Dysput", Description = "Test database initialization")]
         public void TestDatabaseInitalizationConditions()
         {
@@ -35,13 +53,27 @@ namespace Backtrace.Tests.DatabaseTests
         public void TestReportFlow()
         {
             var testedReport = (new Exception("test exception")).ToBacktraceReport();
+            var entry = _database.Add(testedReport, new Dictionary<string, object>(), MiniDumpType.None);
+            _database.Delete(entry);
+        }
 
-            var mockEntry = new Mock<BacktraceDatabaseEntry<object>>();
-            mockEntry.Setup(n => n.Save(It.IsAny<object>(), It.IsAny<string>(), It.IsAny<string>()));
-
-            var database = new BacktraceDatabase<object>();
-            var entry = database.Add(testedReport, new Dictionary<string, object>());
-            database.Delete(entry);
+        [Test(Author = "Konrad Dysput", Description = "Test database flush method")]
+        public void TestFlushMethods()
+        {
+            var mockApi = new Mock<IBacktraceApi<object>>();
+            mockApi.Setup(n => n.Send(It.IsAny<BacktraceData<object>>()))
+                .Returns(new BacktraceResult());
+            _database.SetApi(mockApi.Object);
+            
+            var testedReport = (new Exception("test exception")).ToBacktraceReport();
+            for (int i = 0; i < 10; i++)
+            {
+                _database.Add(testedReport, new Dictionary<string, object>(), MiniDumpType.None);
+            }
+            var total = _database.Count();
+            _database.Flush();
+            Assert.AreNotEqual(total, _database.Count());
+            Assert.AreEqual(0 , _database.Count());
         }
 
     }

@@ -88,9 +88,9 @@ namespace Backtrace.Model.JsonData
                     ? "Debug" : "Release";
                 // check for Debug Output "full" or "pdb-only"
                 Attributes["build.output"] = (debuggableAttribute.DebuggingFlags &
-                                DebuggableAttribute.DebuggingModes.Default) !=
-                                DebuggableAttribute.DebuggingModes.None
-                                ? "Full" : "pdb-only";
+                    DebuggableAttribute.DebuggingModes.Default) !=
+                    DebuggableAttribute.DebuggingModes.None
+                    ? "Full" : "pdb-only";
             }
         }
 

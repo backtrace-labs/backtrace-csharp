@@ -191,11 +191,13 @@ namespace Backtrace
             {
                 throw new ArgumentException("Maximum number of entries available in BacktraceDatabase");
             }
-
-            string minidumpPath = GenerateMiniDump(backtraceReport, miniDumpType);
-            if (!string.IsNullOrEmpty(minidumpPath))
+            if (miniDumpType != MiniDumpType.None)
             {
-                backtraceReport.SetMinidumpPath(minidumpPath);
+                string minidumpPath = GenerateMiniDump(backtraceReport, miniDumpType);
+                if (!string.IsNullOrEmpty(minidumpPath))
+                {
+                    backtraceReport.SetMinidumpPath(minidumpPath);
+                }
             }
 
             var data = backtraceReport.ToBacktraceData(attributes);
@@ -219,6 +221,11 @@ namespace Backtrace
                 return;
             }
             BacktraceDatabaseContext.Delete(entry);
+        }
+
+        internal int Count()
+        {
+            return BacktraceDatabaseContext.Count();
         }
         /// <summary>
         /// Detect all orphaned minidump files

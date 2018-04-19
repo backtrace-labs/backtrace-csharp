@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("DynamicProxyGenAssembly2")]
 namespace Backtrace.Interfaces
 {
     internal interface IBacktraceDatabaseContext<T> : IDisposable

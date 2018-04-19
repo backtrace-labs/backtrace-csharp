@@ -94,7 +94,7 @@ namespace Backtrace.Model.Database
             File.Delete(MiniDumpPath);
         }
 
-        internal string Save(object o, string jsonPrefix, string path)
+        internal virtual string Save(object o, string jsonPrefix, string path)
         {
             string json = JsonConvert.SerializeObject(o);
             return Save(json, jsonPrefix, path);

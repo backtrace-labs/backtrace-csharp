@@ -1,12 +1,11 @@
-﻿using Backtrace.Base;
-using Backtrace.Interfaces;
+﻿using Backtrace.Interfaces;
 using Backtrace.Model;
 using Backtrace.Model.Database;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("DynamicProxyGenAssembly2")]
 namespace Backtrace.Services
 {
     /// <summary>
@@ -17,9 +16,9 @@ namespace Backtrace.Services
         /// <summary>
         /// Database cache
         /// </summary>
-        Dictionary<uint, List<BacktraceDatabaseEntry<T>>> BatchRetry = new Dictionary<uint, List<BacktraceDatabaseEntry<T>>>();
+        internal Dictionary<uint, List<BacktraceDatabaseEntry<T>>> BatchRetry = new Dictionary<uint, List<BacktraceDatabaseEntry<T>>>();
 
-        private int _totalEntries = 0;
+        internal int totalEntries = 0;
         /// <summary>
         /// Path to database directory 
         /// </summary>
@@ -57,11 +56,11 @@ namespace Backtrace.Services
         /// </summary>
         /// <param name="backtraceData">Diagnostic data that should be stored in database</param>
         /// <returns>New instance of DatabaseEntry</returns>
-        public BacktraceDatabaseEntry<T> Add(BacktraceData<T> backtraceData)
+        public virtual BacktraceDatabaseEntry<T> Add(BacktraceData<T> backtraceData)
         {
             var entry = new BacktraceDatabaseEntry<T>(backtraceData, _path);
             BatchRetry[0].Add(entry);
-            _totalEntries++;
+            totalEntries++;
             return entry;
         }
 
@@ -79,7 +78,7 @@ namespace Backtrace.Services
         /// Delete existing entry from database
         /// </summary>
         /// <param name="entry">Database entry to delete</param>
-        public void Delete(BacktraceDatabaseEntry<T> entry)
+        public virtual void Delete(BacktraceDatabaseEntry<T> entry)
         {
             foreach (var key in BatchRetry.Keys)
             {
@@ -88,7 +87,7 @@ namespace Backtrace.Services
                     if (value.Id == entry.Id)
                     {
                         BatchRetry[key].Remove(value);
-                        _totalEntries--;
+                        totalEntries--;
                         return;
                     }
                 }
@@ -111,7 +110,7 @@ namespace Backtrace.Services
         /// <returns></returns>
         public int Count()
         {
-            return _totalEntries;
+            return totalEntries;
         }
 
         /// <summary>
@@ -132,7 +131,7 @@ namespace Backtrace.Services
             {
                 entry.Delete();
             }
-            _totalEntries = 0;
+            totalEntries = 0;
         }
 
         /// <summary>
@@ -142,7 +141,7 @@ namespace Backtrace.Services
         public void Add(BacktraceDatabaseEntry<T> backtraceEntry)
         {
             BatchRetry[0].Add(backtraceEntry);
-            _totalEntries++;
+            totalEntries++;
         }
 
         /// <summary>
