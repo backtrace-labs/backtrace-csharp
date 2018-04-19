@@ -124,7 +124,7 @@ namespace Backtrace.Base
             Exception = exception;
             ExceptionTypeReport = Exception != null;
             Classifier = ExceptionTypeReport ? Exception.GetType().Name : string.Empty;
-            CallingAssembly = exception.TargetSite?.DeclaringType?.Assembly;
+            CallingAssembly = exception.GetExceptionSourceAssembly();
             SetCallingAppInformation();
 
         }

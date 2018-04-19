@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Backtrace.Extensions
@@ -21,6 +22,11 @@ namespace Backtrace.Extensions
         public static BacktraceReport ToBacktraceReport(this Exception source)
         {
             return new BacktraceReport(source);
+        }
+
+        public static Assembly GetExceptionSourceAssembly(this Exception source)
+        {
+            return source?.TargetSite?.DeclaringType?.Assembly;
         }
 
         /// <summary>
