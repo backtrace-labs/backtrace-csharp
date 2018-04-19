@@ -2,9 +2,11 @@
 using Backtrace.Interfaces;
 using Backtrace.Model;
 using Backtrace.Model.Database;
+using Backtrace.Services;
 using Backtrace.Types;
 using Moq;
 using NUnit.Framework;
+using RichardSzalay.MockHttp;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -31,10 +33,21 @@ namespace Backtrace.Tests.Events
         public void Setup()
         {
             //prepare mock object
+            var credentials = new BacktraceCredentials("https://validurl.com/", "validToken");
             //mock api
-            var api = new Mock<IBacktraceApi<object>>();
-            api.Setup(n => n.SendAsync(It.IsAny<BacktraceData<object>>())).Returns(Task.FromResult(new BacktraceResult()));
-            api.Setup(n => n.Send(It.IsAny<BacktraceData<object>>())).Returns(new BacktraceResult());
+            var serverUrl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
+
+            var mockHttp = new MockHttpMessageHandler();
+            mockHttp.When(serverUrl)
+                .Respond("application/json", "{'object' : 'aaa'}");
+
+            var api = new BacktraceApi<object>(credentials, 0);
+            api.HttpClient = mockHttp.ToHttpClient();
+            //avoid real submission
+            api.RequestHandler = (string host, string boundaryId, BacktraceData<object> data) =>
+            {
+                return new BacktraceResult();
+            };
 
             //mock database
             var database = new Mock<IBacktraceDatabase<object>>();
@@ -48,10 +61,9 @@ namespace Backtrace.Tests.Events
 
 
             //setup new client
-            var credentials = new BacktraceCredentials("https://validurl.com/", "validToken");
             _backtraceClient = new BacktraceClient(credentials, reportPerMin: 0)
             {
-                _backtraceApi = api.Object,
+                BacktraceApi = api,
                 Database = database.Object
             };
         }

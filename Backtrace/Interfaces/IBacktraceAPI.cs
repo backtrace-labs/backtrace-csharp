@@ -1,7 +1,6 @@
 ﻿using Backtrace.Model;
 using System;
 
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Interfaces
 {
     /// <summary>
@@ -39,5 +38,7 @@ namespace Backtrace.Interfaces
         Func<string, string, BacktraceData<T>, BacktraceResult> RequestHandler { get; set; }
 
         void SetClientRateLimitEvent(Action<BacktraceReport> onClientReportLimitReached);
+
+        void SetClientRateLimit(uint rateLimit);
     }
 }

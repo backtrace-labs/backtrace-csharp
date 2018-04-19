@@ -23,11 +23,11 @@ namespace Backtrace.Base
         {
             get
             {
-                return _backtraceApi.RequestHandler;
+                return BacktraceApi.RequestHandler;
             }
             set
             {
-                _backtraceApi.RequestHandler = value;
+                BacktraceApi.RequestHandler = value;
             }
         }
         /// <summary>
@@ -37,11 +37,11 @@ namespace Backtrace.Base
         {
             get
             {
-                return _backtraceApi.OnServerError;
+                return BacktraceApi.OnServerError;
             }
             set
             {
-                _backtraceApi.OnServerError = value;
+                BacktraceApi.OnServerError = value;
             }
         }
 
@@ -52,11 +52,11 @@ namespace Backtrace.Base
         {
             get
             {
-                return _backtraceApi.OnServerResponse;
+                return BacktraceApi.OnServerResponse;
             }
             set
             {
-                _backtraceApi.OnServerResponse = value;
+                BacktraceApi.OnServerResponse = value;
             }
         }
 
@@ -72,7 +72,7 @@ namespace Backtrace.Base
         {
             set
             {
-                _backtraceApi.SetClientRateLimitEvent(value);
+                BacktraceApi.SetClientRateLimitEvent(value);
             }
         }
 
@@ -99,14 +99,8 @@ namespace Backtrace.Base
         /// <summary>
         /// Instance of BacktraceApi that allows to send data to Backtrace API
         /// </summary>
-        internal IBacktraceApi<T> _backtraceApi;
-
-
-        /// <summary>
-        /// Backtrace report watcher that controls number of request sending per minute
-        /// </summary>
-        internal ReportLimitWatcher<T> _reportWatcher;
-
+        internal IBacktraceApi<T> BacktraceApi;
+        
         /// <summary>
         /// Initialize new client instance with BacktraceCredentials
         /// </summary>
@@ -141,10 +135,9 @@ namespace Backtrace.Base
             bool tlsLegacySupport = false)
         {
             Attributes = attributes ?? new Dictionary<string, T>();
-            _backtraceApi = new BacktraceApi<T>(backtraceCredentials, reportPerMin, tlsLegacySupport);
+            BacktraceApi = new BacktraceApi<T>(backtraceCredentials, reportPerMin, tlsLegacySupport);
             Database = database ?? new BacktraceDatabase<T>();
-            Database.SetApi(_backtraceApi);
-            Database.Flush();
+            Database.SetApi(BacktraceApi);
         }
 
         /// <summary>
@@ -153,9 +146,8 @@ namespace Backtrace.Base
         /// <param name="reportPerMin">Number of reports sending per one minute. If value is equal to zero, there is no request sending to API. Value have to be greater than or equal to 0</param>
         public void SetClientReportLimit(uint reportPerMin)
         {
-            _reportWatcher.SetClientReportLimit(reportPerMin);
+            BacktraceApi.SetClientRateLimit(reportPerMin);
         }
-
 
         /// <summary>
         /// Send a report to Backtrace API
@@ -168,7 +160,7 @@ namespace Backtrace.Base
             var data = report.ToBacktraceData(Attributes);
             //valid user custom events
             data = BeforeSend?.Invoke(data) ?? data;
-            var result = _backtraceApi.Send(data);
+            var result = BacktraceApi.Send(data);
             if (result.Status == BacktraceResultStatus.Ok)
             {
                 Database.Delete(entry);
@@ -206,7 +198,7 @@ namespace Backtrace.Base
             var data = report.ToBacktraceData(Attributes);
             //valid user custom events
             data = BeforeSend?.Invoke(data) ?? data;
-            var result = await _backtraceApi.SendAsync(data);
+            var result = await BacktraceApi.SendAsync(data);
             if (result.Status == BacktraceResultStatus.Ok)
             {
                 Database.Delete(entry);
@@ -248,6 +240,7 @@ namespace Backtrace.Base
             SendAsync(new BacktraceReportBase<T>(e.Exception)).Wait();
             OnUnhandledApplicationException?.Invoke(e.Exception);
         }
+
         //public virtual void HandleUnobservedTaskExceptions()
         //{
         //    TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;

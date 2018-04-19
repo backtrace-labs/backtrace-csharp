@@ -39,18 +39,18 @@ namespace Backtrace.Tests.Events
 
             mockHttp.When(invalidUrl)
                 .Respond("application/json", "{'message': 'invalid data'}");
+            var api = new BacktraceApi<object>(credentials,0);
+            api.HttpClient = mockHttp.ToHttpClient();
 
-            var api = new Mock<BacktraceApi<object>>(credentials);
-            api.Object.HttpClient = mockHttp.ToHttpClient();
+            var apiWithInvalidUrl = new BacktraceApi<object>(invalidCredentials, 100, false);
+            apiWithInvalidUrl.HttpClient = mockHttp.ToHttpClient();
 
-            var apiWithInvalidUrl = new Mock<BacktraceApi<object>>(invalidCredentials);
-            api.Object.HttpClient = mockHttp.ToHttpClient();
 
             //mock database
             var database = new Mock<IBacktraceDatabase<object>>();
-            database.Setup(n => 
-                n.Add(It.IsAny<BacktraceReportBase<object>>(), 
-                    It.IsAny<Dictionary<string,object>>(), 
+            database.Setup(n =>
+                n.Add(It.IsAny<BacktraceReportBase<object>>(),
+                    It.IsAny<Dictionary<string, object>>(),
                     It.IsAny<MiniDumpType>()));
 
             database.Setup(n =>
@@ -59,12 +59,12 @@ namespace Backtrace.Tests.Events
             //setup new client
             _backtraceClient = new BacktraceClient(credentials, reportPerMin: 0)
             {
-                _backtraceApi = api.Object,
+                BacktraceApi = api,
                 Database = database.Object
             };
             _clientWithInvalidParameters = new BacktraceClient(invalidCredentials, reportPerMin: 0)
             {
-                _backtraceApi = apiWithInvalidUrl.Object,
+                BacktraceApi = apiWithInvalidUrl,
                 Database = database.Object
             };
         }

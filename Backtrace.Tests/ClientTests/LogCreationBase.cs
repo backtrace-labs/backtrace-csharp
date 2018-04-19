@@ -22,7 +22,7 @@ namespace Backtrace.Tests.ClientTests
             var credentials = new BacktraceCredentials(@"https://validurl.com/", "validToken");
             _backtraceClient = new BacktraceClient(credentials)
             {
-                _backtraceApi = api.Object
+                BacktraceApi = api.Object
             };
 
             //set one scoped attribute

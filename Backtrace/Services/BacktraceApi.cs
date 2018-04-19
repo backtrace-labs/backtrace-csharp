@@ -79,7 +79,7 @@ namespace Backtrace.Services
             return await SendAsync(Guid.NewGuid(), json, data.Attachments, data.Report as BacktraceReport);
         }
 
-        private async Task<BacktraceResult> SendAsync(Guid requestId, string json, List<string> attachments, BacktraceReport report)
+        internal async Task<BacktraceResult> SendAsync(Guid requestId, string json, List<string> attachments, BacktraceReport report)
         {
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
             string boundary = FormDataHelper.GetBoundary(requestId);
@@ -152,14 +152,23 @@ namespace Backtrace.Services
             {
                 return BacktraceResult.OnLimitReached(data.Report as BacktraceReport);
             }
+            // execute user custom request handler
+            if (RequestHandler != null)
+            {
+                return RequestHandler?.Invoke(_serverurl, FormDataHelper.GetContentTypeWithBoundary(Guid.NewGuid()), data);
+            }
 
-            Guid requestId = Guid.NewGuid();
+            //set submission data
             string json = JsonConvert.SerializeObject(data);
             var report = data.Report as BacktraceReport;
+            return Send(Guid.NewGuid(), json, report.AttachmentPaths, report);
+        }
 
-            var formData = FormDataHelper.GetFormData(json, data.Attachments, requestId);
+        private BacktraceResult Send(Guid requestId, string json, List<string> attachments, BacktraceReport report)
+        {
+            var formData = FormDataHelper.GetFormData(json, attachments, requestId);
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
-            HttpWebRequest request = WebRequest.Create(_serverurl) as HttpWebRequest;
+            var request = WebRequest.Create(_serverurl) as HttpWebRequest;
 
             //Set up the request properties.
             request.Method = "POST";
@@ -229,7 +238,7 @@ namespace Backtrace.Services
             }
         }
 
-        
+
 
         ~BacktraceApi()
         {
@@ -240,6 +249,11 @@ namespace Backtrace.Services
         public void SetClientRateLimitEvent(Action<BacktraceReport> onClientReportLimitReached)
         {
             reportLimitWatcher.OnClientReportLimitReached = onClientReportLimitReached;
+        }
+
+        public void SetClientRateLimit(uint rateLimit)
+        {
+            reportLimitWatcher.SetClientReportLimit(rateLimit);
         }
     }
 }
