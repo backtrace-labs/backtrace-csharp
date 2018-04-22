@@ -100,7 +100,7 @@ namespace Backtrace.Base
         /// Instance of BacktraceApi that allows to send data to Backtrace API
         /// </summary>
         internal IBacktraceApi<T> BacktraceApi;
-        
+
         /// <summary>
         /// Initialize new client instance with BacktraceCredentials
         /// </summary>
@@ -155,12 +155,13 @@ namespace Backtrace.Base
         /// <param name="report">Report to send</param>
         public virtual BacktraceResult Send(BacktraceReportBase<T> report)
         {
-            var entry = Database.Add(report, Attributes);
+            var entry = Database.Add(report, Attributes, MiniDumpType);
             //create a JSON payload instance
-            var data = report.ToBacktraceData(Attributes);
+            var data = entry?.BacktraceData ?? report.ToBacktraceData(Attributes);
             //valid user custom events
             data = BeforeSend?.Invoke(data) ?? data;
             var result = BacktraceApi.Send(data);
+            entry?.Dispose();
             if (result.Status == BacktraceResultStatus.Ok)
             {
                 Database.Delete(entry);
@@ -193,12 +194,13 @@ namespace Backtrace.Base
         /// <param name="report">Report to send</param>
         public virtual async Task<BacktraceResult> SendAsync(BacktraceReportBase<T> report)
         {
-            var entry = Database.Add(report, Attributes);
+            var entry = Database.Add(report, Attributes, MiniDumpType);
             //create a JSON payload instance
-            var data = report.ToBacktraceData(Attributes);
+            var data = entry?.BacktraceData ?? report.ToBacktraceData(Attributes);
             //valid user custom events
             data = BeforeSend?.Invoke(data) ?? data;
             var result = await BacktraceApi.SendAsync(data);
+            entry?.Dispose();
             if (result.Status == BacktraceResultStatus.Ok)
             {
                 Database.Delete(entry);

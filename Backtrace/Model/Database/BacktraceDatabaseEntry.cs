@@ -12,13 +12,19 @@ namespace Backtrace.Model.Database
     /// Single entry in BacktraceDatabase
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class BacktraceDatabaseEntry<T>
+    public class BacktraceDatabaseEntry<T> : IDisposable
     {
         /// <summary>
         /// Entry Id
         /// </summary>
         [JsonProperty]
         public Guid Id { get; set; } = Guid.NewGuid();
+
+        /// <summary>
+        /// Check if current entry is in use
+        /// </summary>
+        [JsonIgnore]
+        internal bool InUse { get; set; } = false;
 
         /// <summary>
         /// Path to json stored all information about current entry
@@ -39,16 +45,25 @@ namespace Backtrace.Model.Database
         internal string MiniDumpPath { get; set; }
 
         /// <summary>
-        /// Path to minidump file
+        /// Path to Backtrace Report json
         /// </summary>
         [JsonProperty(PropertyName = "reportPath")]
         internal string ReportPath { get; set; }
 
+        private BacktraceData<T> _entry;
         [JsonIgnore]
         public BacktraceData<T> BacktraceData
         {
             get
             {
+                if (_entry != null)
+                {
+                    return _entry;
+                }
+                if(!File.Exists(DiagnosticDataPath) || !File.Exists(ReportPath))
+                {
+                    return null;
+                }
                 //read json files stored in BacktraceDatabase
                 using (var dataReader = new StreamReader(DiagnosticDataPath))
                 using (var reportReader = new StreamReader(ReportPath))
@@ -79,6 +94,7 @@ namespace Backtrace.Model.Database
         public BacktraceDatabaseEntry(BacktraceData<T> data, string path)
         {
             Id = data.Uuid;
+            _entry = data;
             DiagnosticDataPath = Save(data, "_attachment", path);
             ReportPath = Save(data.Report, "_report", path);
             MiniDumpPath = data.Report.MinidumpFile;
@@ -88,10 +104,32 @@ namespace Backtrace.Model.Database
 
         internal void Delete()
         {
-            File.Delete(DiagnosticDataPath);
-            File.Delete(EntryPath);
-            File.Delete(ReportPath);
-            File.Delete(MiniDumpPath);
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            System.Diagnostics.Trace.WriteLine($"Attempting to delete minidump file {Id}");
+            Delete(MiniDumpPath);
+            Delete(ReportPath);
+            Delete(DiagnosticDataPath);
+            Delete(EntryPath);
+            
+        }
+        private void Delete(string path)
+        {
+            try
+            {
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+            }
+            catch (System.IO.IOException e)
+            {
+                System.Diagnostics.Trace.WriteLine($"File {path} is in use. Message {e.Message}");
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Trace.WriteLine($"Cannot delete file: {path}. Message {e.Message}");
+            }
         }
 
         internal virtual string Save(object o, string jsonPrefix, string path)
@@ -117,6 +155,21 @@ namespace Backtrace.Model.Database
                 return string.Empty;
             }
             return filePath;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                InUse = false;
+                _entry = null;
+            }
         }
     }
 }

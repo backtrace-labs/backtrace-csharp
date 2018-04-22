@@ -16,7 +16,7 @@ namespace Backtrace.Interfaces
     /// Backtrace Database Interface
     /// Before start: Be sure that used directory is empty!
     /// </summary>
-    public interface IBacktraceDatabase<T>
+    public interface IBacktraceDatabase<T> : IDisposable
     {
         /// <summary>
         /// Send all reports stored in BacktraceDatabase and clean database

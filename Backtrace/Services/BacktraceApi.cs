@@ -116,6 +116,11 @@ namespace Backtrace.Services
                     OnServerError?.Invoke(exception);
                     return BacktraceResult.OnError(report, exception);
                 }
+                //finally
+                //{
+                //    request.Dispose();
+                //    content.Dispose();
+                //}
             }
         }
 #endif

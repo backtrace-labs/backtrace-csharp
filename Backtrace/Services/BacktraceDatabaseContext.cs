@@ -16,13 +16,18 @@ namespace Backtrace.Services
         /// <summary>
         /// Database cache
         /// </summary>
-        internal Dictionary<uint, List<BacktraceDatabaseEntry<T>>> BatchRetry = new Dictionary<uint, List<BacktraceDatabaseEntry<T>>>();
+        internal Dictionary<int, List<BacktraceDatabaseEntry<T>>> BatchRetry = new Dictionary<int, List<BacktraceDatabaseEntry<T>>>();
 
         internal int totalEntries = 0;
         /// <summary>
         /// Path to database directory 
         /// </summary>
         private readonly string _path;
+
+        /// <summary>
+        /// Maximum number of retries
+        /// </summary>
+        private readonly int _retryNumber;
 
         /// <summary>
         /// Initialize new instance of Backtrace Database Context
@@ -32,20 +37,20 @@ namespace Backtrace.Services
         public BacktraceDatabaseContext(string databasePath, uint retryNumber)
         {
             _path = databasePath;
-            SetupBatch(retryNumber);
+            _retryNumber = checked((int)retryNumber);
+            SetupBatch();
         }
 
         /// <summary>
-        /// SetupBatch
+        /// Setup cache 
         /// </summary>
-        /// <param name="retryNumber">Retry number</param>
-        private void SetupBatch(uint retryNumber)
+        private void SetupBatch()
         {
-            if (retryNumber == 0)
+            if (_retryNumber == 0)
             {
-                throw new ArgumentException($"{nameof(retryNumber)} have to be greater than 0!");
+                throw new ArgumentException($"{nameof(_retryNumber)} have to be greater than 0!");
             }
-            for (uint i = 0; i < retryNumber; i++)
+            for (int i = 0; i < _retryNumber; i++)
             {
                 BatchRetry[i] = new List<BacktraceDatabaseEntry<T>>();
             }
@@ -61,6 +66,7 @@ namespace Backtrace.Services
             var entry = new BacktraceDatabaseEntry<T>(backtraceData, _path);
             BatchRetry[0].Add(entry);
             totalEntries++;
+            entry.InUse = true;
             return entry;
         }
 
@@ -80,14 +86,73 @@ namespace Backtrace.Services
         /// <param name="entry">Database entry to delete</param>
         public virtual void Delete(BacktraceDatabaseEntry<T> entry)
         {
+            if(entry == null)
+            {
+                return;
+            }
             foreach (var key in BatchRetry.Keys)
             {
                 foreach (var value in BatchRetry[key])
                 {
                     if (value.Id == entry.Id)
                     {
+                        value.Delete();
                         BatchRetry[key].Remove(value);
                         totalEntries--;
+                        return;
+                    }
+                }
+            }
+            return;
+        }
+
+        /// <summary>
+        /// Increment retry time for current entry
+        /// </summary>
+        /// <param name="entry">Database entry to move move in memory cache</param>
+        public void MoveNext()
+        {
+            for (int kIndex = BatchRetry.Keys.Count - 1; kIndex != -1 ; kIndex--)
+            {
+                for (int rIndex = BatchRetry[kIndex].Count - 1; rIndex != -1; rIndex--)
+                {
+                    var value = BatchRetry[kIndex][rIndex];
+                    if (kIndex + 1 < _retryNumber)
+                    {
+                        BatchRetry[kIndex + 1].Add(value);
+                    }
+                    else
+                    {
+                        value.Delete();
+                        totalEntries--;
+                    }
+                    BatchRetry[kIndex].Remove(value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Increment retry time for current entry
+        /// </summary>
+        /// <param name="entry">Database entry to move move in memory cache</param>
+        public virtual void MoveNext(BacktraceDatabaseEntry<T> entry)
+        {
+            foreach (var key in BatchRetry.Keys)
+            {
+                foreach (var value in BatchRetry[key])
+                {
+                    if (value.Id == entry.Id)
+                    {
+                        if (key + 1 <= _retryNumber)
+                        {
+                            BatchRetry[key + 1].Add(value);
+                        }
+                        else
+                        {
+                            value.Delete();
+                            totalEntries--;
+                        }
+                        BatchRetry[key].Remove(value);
                         return;
                     }
                 }
@@ -101,7 +166,7 @@ namespace Backtrace.Services
         /// <returns>all existing database entries</returns>
         public IEnumerable<BacktraceDatabaseEntry<T>> Get()
         {
-            return BatchRetry.SelectMany(n => n.Value);
+            return BatchRetry.SelectMany(n => n.Value).Select(n => { n.InUse = true; return n; });
         }
 
         /// <summary>
@@ -150,14 +215,17 @@ namespace Backtrace.Services
         /// <returns></returns>
         public BacktraceDatabaseEntry<T> FirstOrDefault()
         {
-            for (uint i = 0; i < BatchRetry.Count; i++)
+            for (int i = 0; i < BatchRetry.Count; i++)
             {
-                if (BatchRetry[i].Any())
+                if (BatchRetry[i].Any(n => !n.InUse))
                 {
-                    return BatchRetry[i].First();
+                    var entry = BatchRetry[i].First(n => !n.InUse);
+                    entry.InUse = true;
+                    return entry;
                 }
             }
             return null;
         }
+
     }
 }
