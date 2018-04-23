@@ -163,12 +163,12 @@ namespace Backtrace
         /// <returns>All stored reports in BacktraceDatabase</returns>
         public IEnumerable<BacktraceDatabaseEntry<T>> Get()
         {
-            return BacktraceDatabaseContext.Get();
+            return BacktraceDatabaseContext?.Get() ?? new List<BacktraceDatabaseEntry<T>>();
         }
 
         public void Delete(BacktraceDatabaseEntry<T> entry)
         {
-            BacktraceDatabaseContext.Delete(entry);
+            BacktraceDatabaseContext?.Delete(entry);
         }
 
         /// <summary>

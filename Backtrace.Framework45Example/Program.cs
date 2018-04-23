@@ -1,9 +1,9 @@
 ﻿using Backtrace.Framework45Example.Model;
 using Backtrace.Model;
+using Backtrace.Model.Database;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Backtrace.Framework45Example
@@ -15,7 +15,6 @@ namespace Backtrace.Framework45Example
         //Client will be initialized with values stored in default section name "BacktraceCredentials"
         private BacktraceClient backtraceClient = new BacktraceClient(
             new BacktraceCredentials(ApplicationCredentials.Host, ApplicationCredentials.Token),
-            new BacktraceDatabaseSettings(@"D:\data\Backtracelogs"),
             reportPerMin: 0, //unlimited number of reports per secound
             tlsLegacySupport: true
         );
@@ -27,7 +26,6 @@ namespace Backtrace.Framework45Example
 
         public async Task Start()
         {
-            
             await GenerateRandomStrings();
             await TryClean();
 
@@ -95,8 +93,8 @@ namespace Backtrace.Framework45Example
                     continue;
                 }
             }
-            var response = await backtraceClient.SendAsync($"{DateTime.Now}: Tree generated");
-            Console.WriteLine($"Tree generated! Backtrace object id for last message: {response.Object}");
+            //var response = await backtraceClient.SendAsync($"{DateTime.Now}: Tree generated");
+            //Console.WriteLine($"Tree generated! Backtrace object id for last message: {response.Object}");
         }
 
         private async Task TryClean()
@@ -133,7 +131,7 @@ namespace Backtrace.Framework45Example
                     await backtraceClient.SendAsync(argumentException);
                 }
             }
-            await backtraceClient.SendAsync($"{DateTime.Now}: Tree clean");
+            //await backtraceClient.SendAsync($"{DateTime.Now}: Tree clean");
 
         }
 
@@ -175,6 +173,7 @@ namespace Backtrace.Framework45Example
                    }
                    return data;
                };
+            backtraceClient.MiniDumpType = Types.MiniDumpType.ValidTypeFlags;
             //backtraceClient.HandleUnobservedTaskExceptions();
         }
             

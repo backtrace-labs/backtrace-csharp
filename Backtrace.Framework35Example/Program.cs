@@ -3,8 +3,7 @@ using Backtrace;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
+using Backtrace.Model.Database;
 
 namespace Backtrace.Framework35Example
 {

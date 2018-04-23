@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using Backtrace.Services;
 using Backtrace.Types;
+using Backtrace.Model.Database;
 #if !NET35
 using System.Threading.Tasks;
 #endif

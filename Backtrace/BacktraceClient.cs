@@ -1,10 +1,9 @@
 ﻿using Backtrace.Base;
 using Backtrace.Interfaces;
 using Backtrace.Model;
-using Backtrace.Services;
+using Backtrace.Model.Database;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 #if !NET35
 using System.Threading.Tasks;
 #endif

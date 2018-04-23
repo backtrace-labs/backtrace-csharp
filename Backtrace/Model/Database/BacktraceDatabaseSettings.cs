@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Backtrace.Model
+namespace Backtrace.Model.Database
 {
     /// <summary>
     /// Backtrace library database settings
