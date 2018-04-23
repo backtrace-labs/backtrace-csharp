@@ -9,9 +9,6 @@ using NUnit.Framework;
 using RichardSzalay.MockHttp;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Backtrace.Tests.IntegrationTests
@@ -20,10 +17,16 @@ namespace Backtrace.Tests.IntegrationTests
     /// Runs Integration Tests
     /// </summary>
     [TestFixture(Author = "Arthur Tu", Category = "Submission tests", Description = "Test rate limiting with diffrent threads")]
-    public class ClientRateLimitingTests
+    public class ClientReportLimitingTests
     {
+        /// <summary>
+        /// Backtrace client
+        /// </summary>
         private BacktraceClient _backtraceClient;
-        private bool reportLimitReached = false;
+        /// <summary>
+        /// Information about client report limit
+        /// </summary>
+        private bool clientReportLimitReached = false;
 
         /// <summary>
         /// Prepare basic setup of Backtrace client
@@ -77,7 +80,7 @@ namespace Backtrace.Tests.IntegrationTests
             //to check if client report limit reached use OnClientReportLimitReached 
             _backtraceClient.OnClientReportLimitReached = (BacktraceReport report) =>
             {
-                reportLimitReached = true;
+                clientReportLimitReached = true;
             };
         }
 
@@ -131,7 +134,7 @@ namespace Backtrace.Tests.IntegrationTests
 
             //set rate limiting to unlimite
             _backtraceClient.SetClientReportLimit(0);
-            reportLimitReached = false;
+            clientReportLimitReached = false;
             _backtraceClient.AfterSend = (BacktraceResult res) =>
             {
                 totalSend++;
@@ -146,7 +149,7 @@ namespace Backtrace.Tests.IntegrationTests
             Task.WaitAll(taskList);
 
             Assert.AreEqual(expectedNumberOfReports, totalSend);
-            Assert.IsFalse(reportLimitReached);
+            Assert.IsFalse(clientReportLimitReached);
         }
 
         /// <summary>
@@ -162,7 +165,7 @@ namespace Backtrace.Tests.IntegrationTests
         public void ThreadedWithReportRateLimit(int numberOfTasks, int clientRateLimit)
         {
             //set rate limiting
-            reportLimitReached = false;
+            clientReportLimitReached = false;
             _backtraceClient.SetClientReportLimit((uint)clientRateLimit);
 
             //set expected number of drop and request
@@ -183,7 +186,7 @@ namespace Backtrace.Tests.IntegrationTests
             _backtraceClient.OnClientReportLimitReached = (BacktraceReport report) =>
             {
                 totalDrop++;
-                reportLimitReached = true;
+                clientReportLimitReached = true;
             };
             _backtraceClient.AfterSend = (BacktraceResult res) =>
             {
@@ -208,7 +211,7 @@ namespace Backtrace.Tests.IntegrationTests
             //check if expected number of drops are equal to total dropped packages from rate limit client
             Assert.AreEqual(totalDrop, expectedNumberOfDropRequest);
             //check if limit reached or if any report was dropped
-            Assert.IsTrue(reportLimitReached || totalDrop == 0);
+            Assert.IsTrue(clientReportLimitReached || totalDrop == 0);
         }
     }
 }

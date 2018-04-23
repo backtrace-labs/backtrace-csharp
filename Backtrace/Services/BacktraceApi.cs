@@ -41,7 +41,7 @@ namespace Backtrace.Services
         /// <summary>
         /// Url to server
         /// </summary>
-        private readonly string _serverurl;
+        private string _serverurl;
 
         /// <summary>
         /// Create a new instance of Backtrace API
@@ -242,8 +242,6 @@ namespace Backtrace.Services
                 _disposed = true;
             }
         }
-
-
 
         ~BacktraceApi()
         {

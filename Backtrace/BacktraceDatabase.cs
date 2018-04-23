@@ -32,13 +32,7 @@ namespace Backtrace
         /// <summary>
         /// Database path
         /// </summary>
-        private string DatabasePath
-        {
-            get
-            {
-                return DatabaseSettings.DatabasePath;
-            }
-        }
+        private string DatabasePath => DatabaseSettings.DatabasePath;
 
         /// <summary>
         /// Backtrace Api instance. Use BacktraceApi to send data to Backtrace server
@@ -108,7 +102,6 @@ namespace Backtrace
 
         }
 
-
         /// <summary>
         /// Set BacktraceApi instance
         /// </summary>
@@ -123,11 +116,7 @@ namespace Backtrace
         /// </summary>
         public void Clear()
         {
-            if (!_enable)
-            {
-                return;
-            }
-            BacktraceDatabaseContext.Clear();
+            BacktraceDatabaseContext?.Clear();
         }
 
         /// <summary>
@@ -161,10 +150,7 @@ namespace Backtrace
         /// Get all stored reports in BacktraceDatabase
         /// </summary>
         /// <returns>All stored reports in BacktraceDatabase</returns>
-        public IEnumerable<BacktraceDatabaseEntry<T>> Get()
-        {
-            return BacktraceDatabaseContext?.Get() ?? new List<BacktraceDatabaseEntry<T>>();
-        }
+        public IEnumerable<BacktraceDatabaseEntry<T>> Get() => BacktraceDatabaseContext?.Get() ?? new List<BacktraceDatabaseEntry<T>>();
 
         public void Delete(BacktraceDatabaseEntry<T> entry)
         {
@@ -176,18 +162,18 @@ namespace Backtrace
         /// </summary>
         public void Flush()
         {
-            if (!_enable)
-            {
-                return;
-            }
             if (_backtraceApi == null)
             {
                 throw new ArgumentException("BacktraceApi is required if you want to use Flush method");
             }
-            var entry = BacktraceDatabaseContext.FirstOrDefault();
+            var entry = BacktraceDatabaseContext?.FirstOrDefault();
             while (entry != null)
             {
                 var backtraceData = entry.BacktraceData;
+                if (backtraceData == null)
+                {
+                    Delete(entry);
+                }
                 var result = _backtraceApi.Send(backtraceData);
                 Delete(entry);
                 entry = BacktraceDatabaseContext.FirstOrDefault();
@@ -199,18 +185,18 @@ namespace Backtrace
         /// </summary>
         public async Task FlushAsync()
         {
-            if (!_enable)
-            {
-                return;
-            }
             if (_backtraceApi == null)
             {
                 throw new ArgumentException("BacktraceApi is required if you want to use Flush method");
             }
-            var entry = BacktraceDatabaseContext.FirstOrDefault();
+            var entry = BacktraceDatabaseContext?.FirstOrDefault();
             while (entry != null)
             {
                 var backtraceData = entry.BacktraceData;
+                if (backtraceData == null)
+                {
+                    Delete(entry);
+                }
                 await _backtraceApi.SendAsync(backtraceData);
                 Delete(entry);
                 entry = BacktraceDatabaseContext.FirstOrDefault();
@@ -219,54 +205,60 @@ namespace Backtrace
 
         private async void OnTimedEventAsync(object source, ElapsedEventArgs e)
         {
-            if (BacktraceDatabaseContext.Count() == 0)
-            {
-                return;
-            }
-
+            if (!BacktraceDatabaseContext.Any()) return;
             _timer.Stop();
+            //read first entry (keep in mind LIFO and FIFO settings) from memory database
             var entry = BacktraceDatabaseContext.FirstOrDefault();
             while (entry != null)
             {
                 var backtraceData = entry.BacktraceData;
+                //meanwhile someone delete data from a disk
+                if (backtraceData == null)
+                {
+                    Delete(entry);
+                }
+                //send entry from database to API
                 var result = await _backtraceApi.SendAsync(backtraceData);
                 if (result.Status == BacktraceResultStatus.Ok)
                 {
                     Delete(entry);
-                    entry = BacktraceDatabaseContext.FirstOrDefault();
                 }
                 else
                 {
                     BacktraceDatabaseContext.MoveNext();
                     break;
                 }
+                entry = BacktraceDatabaseContext.FirstOrDefault();
             }
             _timer.Start();
         }
 #endif
         private void OnTimedEvent(object source, ElapsedEventArgs e)
         {
-            if (BacktraceDatabaseContext.Count() == 0)
-            {
-                return;
-            }
+            if (!BacktraceDatabaseContext.Any()) return;
             _timer.Stop();
+            //read first entry (keep in mind LIFO and FIFO settings) from memory database
             var entry = BacktraceDatabaseContext.FirstOrDefault();
             while (entry != null)
             {
                 var backtraceData = entry.BacktraceData;
+                //meanwhile someone delete data from a disk
+                if (backtraceData == null)
+                {
+                    Delete(entry);
+                }
+                //send entry from database to API
                 var result = _backtraceApi.Send(backtraceData);
                 if (result.Status == BacktraceResultStatus.Ok)
                 {
                     Delete(entry);
-                    entry = BacktraceDatabaseContext.FirstOrDefault();
                 }
                 else
                 {
                     BacktraceDatabaseContext.MoveNext();
-                    entry.Dispose();
-                    return;
+                    break;
                 }
+                entry = BacktraceDatabaseContext.FirstOrDefault();
             }
             _timer.Start();
         }
@@ -296,12 +288,11 @@ namespace Backtrace
                 : string.Empty;
         }
 
-
-
-        internal int Count()
-        {
-            return BacktraceDatabaseContext.Count();
-        }
+        /// <summary>
+        /// Get total number of entries in database
+        /// </summary>
+        /// <returns>Total number of entries</returns>
+        internal int Count() => BacktraceDatabaseContext.Count();
 
         /// <summary>
         /// Detect all orp  haned minidump files
@@ -311,21 +302,26 @@ namespace Backtrace
             //throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Load all reports stored in path passed by user
+        /// </summary>
         private void LoadReports()
         {
             var directoryInfo = new DirectoryInfo(DatabasePath);
-            var files = directoryInfo.GetFiles($"_entry*.json", SearchOption.TopDirectoryOnly);
+            var files = directoryInfo.GetFiles($"*-entry.json", SearchOption.TopDirectoryOnly);
             foreach (var file in files)
             {
-                using (StreamReader streamReader = file.OpenText())
-                {
-                    var json = streamReader.ReadToEnd();
-                    var entry = JsonConvert.DeserializeObject<BacktraceDatabaseEntry<T>>(json);
-                    BacktraceDatabaseContext.Add(entry);
-                }
+                var entry = BacktraceDatabaseEntry<T>.ReadFromFile(file);
+                BacktraceDatabaseContext.Add(entry);
             }
         }
 
+        #region dispose
+        private bool _disposed = false; // To detect redundant calls
+
+        /// <summary>
+        /// Dispose
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
@@ -334,11 +330,23 @@ namespace Backtrace
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
+            if (!_disposed)
             {
-                _backtraceApi?.Dispose();
-                _timer?.Dispose();
+                if (disposing)
+                {
+#if !NET35
+                    _backtraceApi?.Dispose();
+                    _timer?.Dispose();
+#endif
+                }
+                _disposed = true;
             }
         }
+
+        ~BacktraceDatabase()
+        {
+            Dispose(false);
+        }
+        #endregion
     }
 }

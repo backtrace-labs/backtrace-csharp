@@ -4,6 +4,7 @@ using Backtrace.Model.Database;
 using Backtrace.Types;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("DynamicProxyGenAssembly2")]
@@ -19,7 +20,11 @@ namespace Backtrace.Services
         /// </summary>
         internal Dictionary<int, List<BacktraceDatabaseEntry<T>>> BatchRetry = new Dictionary<int, List<BacktraceDatabaseEntry<T>>>();
 
+        /// <summary>
+        /// Total entries in BacktraceDatabase
+        /// </summary>
         internal int totalEntries = 0;
+
         /// <summary>
         /// Path to database directory 
         /// </summary>
@@ -30,6 +35,9 @@ namespace Backtrace.Services
         /// </summary>
         private readonly int _retryNumber;
 
+        /// <summary>
+        /// Entry order
+        /// </summary>
         public RetryOrder _retryOrder { get; }
 
         /// <summary>
@@ -83,6 +91,14 @@ namespace Backtrace.Services
         public bool Any(BacktraceDatabaseEntry<T> entry)
         {
             return BatchRetry.SelectMany(n => n.Value).Any(n => n.Id == entry.Id);
+        }
+
+        /// <summary>
+        /// Check if any entry exists
+        /// </summary>
+        public bool Any()
+        {
+            return totalEntries != 0;
         }
 
         /// <summary>
@@ -210,6 +226,11 @@ namespace Backtrace.Services
         /// <param name="backtraceEntry">Database entry</param>
         public void Add(BacktraceDatabaseEntry<T> backtraceEntry)
         {
+            if (!backtraceEntry.Valid())
+            {
+                Trace.WriteLine("Found invalid entry without necessary files.");
+                return;
+            }
             BatchRetry[0].Add(backtraceEntry);
             totalEntries++;
         }

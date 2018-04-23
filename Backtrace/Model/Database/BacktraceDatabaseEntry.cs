@@ -1,6 +1,7 @@
 ﻿using Backtrace.Base;
 using Newtonsoft.Json;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -50,7 +51,11 @@ namespace Backtrace.Model.Database
         [JsonProperty(PropertyName = "reportPath")]
         internal string ReportPath { get; set; }
 
+        /// <summary>
+        /// Stored entry
+        /// </summary>
         private BacktraceData<T> _entry;
+
         [JsonIgnore]
         public BacktraceData<T> BacktraceData
         {
@@ -60,7 +65,7 @@ namespace Backtrace.Model.Database
                 {
                     return _entry;
                 }
-                if(!File.Exists(DiagnosticDataPath) || !File.Exists(ReportPath))
+                if(!Valid())
                 {
                     return null;
                 }
@@ -88,25 +93,31 @@ namespace Backtrace.Model.Database
         [JsonConstructor]
         internal BacktraceDatabaseEntry()
         {
-            EntryPath = $"_entry-{Id}.json";
+            EntryPath = $"{Id}-entry.json";
         }
 
         public BacktraceDatabaseEntry(BacktraceData<T> data, string path)
         {
             Id = data.Uuid;
             _entry = data;
-            DiagnosticDataPath = Save(data, "_attachment", path);
-            ReportPath = Save(data.Report, "_report", path);
+            DiagnosticDataPath = Save(data, "attachment", path);
+            ReportPath = Save(data.Report, "report", path);
             MiniDumpPath = data.Report.MinidumpFile;
-            EntryPath = Path.Combine(path, $"_entry-{Id}.json");
-            Save(this, "_entry", path);
+            EntryPath = Path.Combine(path, $"{Id}-entry.json");
+            Save(this, "entry", path);
+        }
+
+        /// <summary>
+        /// Check if all necessary files declared on entry exists
+        /// </summary>
+        /// <returns>True if entry is valid</returns>
+        public bool Valid()
+        {
+            return File.Exists(DiagnosticDataPath) && File.Exists(ReportPath);
         }
 
         internal void Delete()
         {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            System.Diagnostics.Trace.WriteLine($"Attempting to delete minidump file {Id}");
             Delete(MiniDumpPath);
             Delete(ReportPath);
             Delete(DiagnosticDataPath);
@@ -122,13 +133,13 @@ namespace Backtrace.Model.Database
                     File.Delete(path);
                 }
             }
-            catch (System.IO.IOException e)
+            catch (IOException e)
             {
-                System.Diagnostics.Trace.WriteLine($"File {path} is in use. Message {e.Message}");
+                Trace.WriteLine($"File {path} is in use. Message: {e.Message}");
             }
             catch (Exception e)
             {
-                System.Diagnostics.Trace.WriteLine($"Cannot delete file: {path}. Message {e.Message}");
+                Trace.WriteLine($"Cannot delete file: {path}. Message: {e.Message}");
             }
         }
 
@@ -138,17 +149,30 @@ namespace Backtrace.Model.Database
             return Save(json, jsonPrefix, path);
         }
 
+        internal static BacktraceDatabaseEntry<T> ReadFromFile(FileInfo file)
+        {
+            using (StreamReader streamReader = file.OpenText())
+            {
+                var json = streamReader.ReadToEnd();
+                var entry = JsonConvert.DeserializeObject<BacktraceDatabaseEntry<T>>(json);
+                return entry;
+            }
+        }
+
         private string Save(string json, string jsonPrefix, string path)
         {
             byte[] file = Encoding.UTF8.GetBytes(json);
-            string filename = $"{jsonPrefix}-{Id}.json";
+            string filename = $"{Id}-{jsonPrefix}.json";
+            string tempPath = Path.Combine(path, $"temp_{filename}");
             string filePath = Path.Combine(path, filename);
             try
             {
-                using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                using (var fs = new FileStream(tempPath, FileMode.Create, FileAccess.Write))
                 {
                     fs.Write(file, 0, file.Length);
                 }
+                //rename temp file - we are sure our report exists
+                File.Move(tempPath, filePath);
             }
             catch (Exception)
             {

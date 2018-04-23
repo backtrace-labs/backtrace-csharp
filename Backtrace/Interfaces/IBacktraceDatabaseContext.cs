@@ -48,8 +48,12 @@ namespace Backtrace.Interfaces
         /// Check if any similar entry exists
         /// </summary>
         /// <param name="n">Compared entry</param>
-        /// <returns>Database entry</returns>
         bool Any(BacktraceDatabaseEntry<T> n);
+
+        /// <summary>
+        /// Check if any similar entry exists
+        /// </summary>
+        bool Any();
 
         /// <summary>
         /// Get total count of entries
