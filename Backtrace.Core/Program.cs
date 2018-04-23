@@ -1,6 +1,7 @@
 ﻿using Backtrace.Core.Model;
 using Backtrace.Interfaces;
 using Backtrace.Model;
+using Backtrace.Model.Database;
 using Backtrace.Services;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,7 @@ namespace Backtrace.Core
         //Client will be initialized with values stored in default section name "BacktraceCredentials"
         private BacktraceClient backtraceClient = new BacktraceClient(
             new BacktraceCredentials(ApplicationCredentials.Host, ApplicationCredentials.Token),
+            new BacktraceDatabaseSettings(@"D:\data\Backtracelogs"),
             reportPerMin: 0, //unlimited number of reports per secound
             tlsLegacySupport: true
         );

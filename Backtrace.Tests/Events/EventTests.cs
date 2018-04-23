@@ -41,12 +41,14 @@ namespace Backtrace.Tests.Events
             mockHttp.When(serverUrl)
                 .Respond("application/json", "{'object' : 'aaa'}");
 
-            var api = new BacktraceApi<object>(credentials, 0);
-            api.HttpClient = mockHttp.ToHttpClient();
-            //avoid real submission
-            api.RequestHandler = (string host, string boundaryId, BacktraceData<object> data) =>
+            var api = new BacktraceApi<object>(credentials, 0)
             {
-                return new BacktraceResult();
+                HttpClient = mockHttp.ToHttpClient(),
+                //avoid real submission
+                RequestHandler = (string host, string boundaryId, BacktraceData<object> data) =>
+                {
+                    return new BacktraceResult();
+                }
             };
 
             //mock database

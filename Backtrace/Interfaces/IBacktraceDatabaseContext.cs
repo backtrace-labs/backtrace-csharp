@@ -28,6 +28,12 @@ namespace Backtrace.Interfaces
         BacktraceDatabaseEntry<T> FirstOrDefault();
 
         /// <summary>
+        /// Get last entry or null
+        /// </summary>
+        /// <returns>Last existing entry in database store</returns>
+        BacktraceDatabaseEntry<T> LastOrDefault();
+
+        /// <summary>
         /// Get all repots stored in Database
         /// </summary>
         IEnumerable<BacktraceDatabaseEntry<T>> Get();

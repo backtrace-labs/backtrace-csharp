@@ -15,6 +15,7 @@ namespace Backtrace.Framework45Example
         //Client will be initialized with values stored in default section name "BacktraceCredentials"
         private BacktraceClient backtraceClient = new BacktraceClient(
             new BacktraceCredentials(ApplicationCredentials.Host, ApplicationCredentials.Token),
+            new BacktraceDatabaseSettings(@"D:\data\Backtracelogs"),
             reportPerMin: 0, //unlimited number of reports per secound
             tlsLegacySupport: true
         );
@@ -176,7 +177,7 @@ namespace Backtrace.Framework45Example
             backtraceClient.MiniDumpType = Types.MiniDumpType.ValidTypeFlags;
             //backtraceClient.HandleUnobservedTaskExceptions();
         }
-            
+
         static void Main(string[] args)
         {
             Program program = new Program();

@@ -39,11 +39,15 @@ namespace Backtrace.Tests.Events
 
             mockHttp.When(invalidUrl)
                 .Respond("application/json", "{'message': 'invalid data'}");
-            var api = new BacktraceApi<object>(credentials,0);
-            api.HttpClient = mockHttp.ToHttpClient();
+            var api = new BacktraceApi<object>(credentials, 0)
+            {
+                HttpClient = mockHttp.ToHttpClient()
+            };
 
-            var apiWithInvalidUrl = new BacktraceApi<object>(invalidCredentials, 100, false);
-            apiWithInvalidUrl.HttpClient = mockHttp.ToHttpClient();
+            var apiWithInvalidUrl = new BacktraceApi<object>(invalidCredentials, 100, false)
+            {
+                HttpClient = mockHttp.ToHttpClient()
+            };
 
 
             //mock database

@@ -1,6 +1,7 @@
 ﻿using Backtrace.Interfaces;
 using Backtrace.Model;
 using Backtrace.Model.Database;
+using Backtrace.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,15 +30,19 @@ namespace Backtrace.Services
         /// </summary>
         private readonly int _retryNumber;
 
+        public RetryOrder _retryOrder { get; }
+
         /// <summary>
         /// Initialize new instance of Backtrace Database Context
         /// </summary>
-        /// <param name="databasePath">Path to database directory</param>
+        /// <param name="path">Path to database directory</param>
         /// <param name="retryNumber">Total number of retries</param>
-        public BacktraceDatabaseContext(string databasePath, uint retryNumber)
+        /// <param name="retryOrder">Entry order</param>
+        public BacktraceDatabaseContext(string path, uint retryNumber, RetryOrder retryOrder)
         {
-            _path = databasePath;
+            _path = path;
             _retryNumber = checked((int)retryNumber);
+            _retryOrder = retryOrder;
             SetupBatch();
         }
 
@@ -86,7 +91,7 @@ namespace Backtrace.Services
         /// <param name="entry">Database entry to delete</param>
         public virtual void Delete(BacktraceDatabaseEntry<T> entry)
         {
-            if(entry == null)
+            if (entry == null)
             {
                 return;
             }
@@ -112,7 +117,7 @@ namespace Backtrace.Services
         /// <param name="entry">Database entry to move move in memory cache</param>
         public void MoveNext()
         {
-            for (int kIndex = BatchRetry.Keys.Count - 1; kIndex != -1 ; kIndex--)
+            for (int kIndex = BatchRetry.Keys.Count - 1; kIndex != -1; kIndex--)
             {
                 for (int rIndex = BatchRetry[kIndex].Count - 1; rIndex != -1; rIndex--)
                 {
@@ -210,16 +215,56 @@ namespace Backtrace.Services
         }
 
         /// <summary>
-        /// Get first exising database entry
+        /// Get last exising database entry. Method returns entry based on order in Database
         /// </summary>
-        /// <returns></returns>
+        /// <returns>First Backtrace database entry</returns>
+        public BacktraceDatabaseEntry<T> LastOrDefault()
+        {
+            return _retryOrder == RetryOrder.Queue
+                    ? GetLastEntry()
+                    : GetFirstEntry();
+        }
+
+        /// <summary>
+        /// Get first exising database entry. Method returns entry based on order in Database
+        /// </summary>
+        /// <returns>First Backtrace database entry</returns>
         public BacktraceDatabaseEntry<T> FirstOrDefault()
+        {
+            return _retryOrder == RetryOrder.Queue
+                    ? GetFirstEntry()
+                    : GetLastEntry();
+        }
+
+        /// <summary>
+        /// Get first entry in in-cache BacktraceDatabase
+        /// </summary>
+        /// <returns>First database entry</returns>
+        private BacktraceDatabaseEntry<T> GetFirstEntry()
         {
             for (int i = 0; i < BatchRetry.Count; i++)
             {
                 if (BatchRetry[i].Any(n => !n.InUse))
                 {
                     var entry = BatchRetry[i].First(n => !n.InUse);
+                    entry.InUse = true;
+                    return entry;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Get last entry in in-cache BacktraceDatabase
+        /// </summary>
+        /// <returns>Last database entry</returns>
+        private BacktraceDatabaseEntry<T> GetLastEntry()
+        {
+            for (int i = BatchRetry.Count; i >= 0; i--)
+            {
+                if (BatchRetry[i].Any(n => !n.InUse))
+                {
+                    var entry = BatchRetry[i].Last(n => !n.InUse);
                     entry.InUse = true;
                     return entry;
                 }

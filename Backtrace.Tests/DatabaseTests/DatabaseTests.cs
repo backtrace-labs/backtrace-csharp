@@ -29,8 +29,10 @@ namespace Backtrace.Tests.DatabaseTests
             //    .Returns(mockEntry.Object);
 
             string projectDirectory = Environment.CurrentDirectory;
-            _database = new BacktraceDatabase<object>(projectDirectory);
-            _database.BacktraceDatabaseContext = mockContext.Object;
+            _database = new BacktraceDatabase<object>(projectDirectory)
+            {
+                BacktraceDatabaseContext = mockContext.Object
+            };
         }
 
         [Test(Author = "Konrad Dysput", Description = "Test database initialization")]

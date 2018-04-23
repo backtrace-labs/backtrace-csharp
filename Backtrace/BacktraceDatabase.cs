@@ -87,7 +87,7 @@ namespace Backtrace
             DatabaseSettings = databaseSettings;
             var directory = new DirectoryInfo(DatabasePath);
 
-            BacktraceDatabaseContext = new BacktraceDatabaseContext<T>(DatabasePath, DatabaseSettings.TotalRetry);
+            BacktraceDatabaseContext = new BacktraceDatabaseContext<T>(DatabasePath, DatabaseSettings.TotalRetry, DatabaseSettings.RetryOrder);
             RemoveOrphaned();
             LoadReports();
             SetupTimer();
