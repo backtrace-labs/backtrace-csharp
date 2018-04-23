@@ -27,7 +27,7 @@ namespace Backtrace.Framework45Example
 
         public async Task Start()
         {
-            //await backtraceClient.Database.FlushAsync();
+            await backtraceClient.Database.FlushAsync();
             await GenerateRandomStrings();
             await TryClean();
 

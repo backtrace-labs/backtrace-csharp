@@ -17,7 +17,7 @@ namespace Backtrace.Tests.IntegrationTests
     /// Runs Integration Tests
     /// </summary>
     [TestFixture(Author = "Arthur Tu", Category = "Submission tests", Description = "Test rate limiting with diffrent threads")]
-    public class ClientReportLimitingTests
+    public class ClientReportLimitTests
     {
         /// <summary>
         /// Backtrace client

@@ -264,7 +264,7 @@ namespace Backtrace.Base
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var exception = e.ExceptionObject as Exception;
-            var result = SendAsync(new BacktraceReportBase<T>(exception)).Result;
+            Task.WaitAll(SendAsync(new BacktraceReportBase<T>(exception)));
             OnUnhandledApplicationException?.Invoke(exception);
         }
 #endif
