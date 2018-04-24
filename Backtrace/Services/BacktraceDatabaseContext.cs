@@ -77,9 +77,9 @@ namespace Backtrace.Services
         public virtual BacktraceDatabaseEntry<T> Add(BacktraceData<T> backtraceData)
         {
             var entry = new BacktraceDatabaseEntry<T>(backtraceData, _path);
-            BatchRetry[0].Add(entry);
             totalEntries++;
             entry.InUse = true;
+            BatchRetry[0].Add(entry);
             return entry;
         }
 
@@ -243,7 +243,7 @@ namespace Backtrace.Services
         /// <returns>First Backtrace database entry</returns>
         public BacktraceDatabaseEntry<T> LastOrDefault()
         {
-            return _retryOrder == RetryOrder.Queue
+            return _retryOrder == RetryOrder.Stack
                     ? GetLastEntry()
                     : GetFirstEntry();
         }
@@ -254,7 +254,7 @@ namespace Backtrace.Services
         /// <returns>First Backtrace database entry</returns>
         public BacktraceDatabaseEntry<T> FirstOrDefault()
         {
-            return _retryOrder == RetryOrder.Queue
+            return _retryOrder == RetryOrder.Stack
                     ? GetFirstEntry()
                     : GetLastEntry();
         }
@@ -283,7 +283,7 @@ namespace Backtrace.Services
         /// <returns>Last database entry</returns>
         private BacktraceDatabaseEntry<T> GetLastEntry()
         {
-            for (int i = BatchRetry.Count; i >= 0; i--)
+            for (int i = BatchRetry.Count -1 ; i >= 0; i--)
             {
                 if (BatchRetry[i].Any(n => !n.InUse))
                 {

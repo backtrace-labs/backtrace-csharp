@@ -166,7 +166,7 @@ namespace Backtrace.Services
             //set submission data
             string json = JsonConvert.SerializeObject(data);
             var report = data.Report as BacktraceReport;
-            return Send(Guid.NewGuid(), json, report.AttachmentPaths, report);
+            return Send(Guid.NewGuid(), json, report?.AttachmentPaths ?? new List<string>(), report);
         }
 
         private BacktraceResult Send(Guid requestId, string json, List<string> attachments, BacktraceReport report)
