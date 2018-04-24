@@ -25,7 +25,7 @@ namespace Backtrace.Model.Database
         /// Check if current entry is in use
         /// </summary>
         [JsonIgnore]
-        internal bool InUse { get; set; } = false;
+        internal bool Locked { get; set; } = false;
 
         /// <summary>
         /// Path to json stored all information about current entry
@@ -191,7 +191,7 @@ namespace Backtrace.Model.Database
         {
             if (disposing)
             {
-                InUse = false;
+                Locked = false;
                 _entry = null;
             }
         }

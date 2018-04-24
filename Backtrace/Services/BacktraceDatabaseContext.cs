@@ -78,7 +78,7 @@ namespace Backtrace.Services
         {
             var entry = new BacktraceDatabaseEntry<T>(backtraceData, _path);
             totalEntries++;
-            entry.InUse = true;
+            entry.Locked = true;
             BatchRetry[0].Add(entry);
             return entry;
         }
@@ -130,14 +130,13 @@ namespace Backtrace.Services
         /// <summary>
         /// Increment retry time for current entry
         /// </summary>
-        /// <param name="entry">Database entry to move move in memory cache</param>
-        public void MoveNext()
+        public void IncrementBatchRetry()
         {
-            RemoveLast();
-            MoveRest();
+            RemoveMaxRetries();
+            IncrementBatches();
         }
 
-        private void MoveRest()
+        private void IncrementBatches()
         {
             for (int i = BatchRetry.Keys.Count - 2; i >= 0; i--)
             {
@@ -147,8 +146,10 @@ namespace Backtrace.Services
             }
         }
 
-        private void RemoveLast()
+        private void RemoveMaxRetries()
         {
+            //TODO
+            // dictionary order  - change it to number
             var currentBatch = BatchRetry.Last();
             var total = currentBatch.Value.Count - 1;
             for (int i = 0; i < total; i++)
@@ -267,10 +268,10 @@ namespace Backtrace.Services
         {
             for (int i = 0; i < BatchRetry.Count; i++)
             {
-                if (BatchRetry[i].Any(n => !n.InUse))
+                if (BatchRetry[i].Any(n => !n.Locked))
                 {
-                    var entry = BatchRetry[i].First(n => !n.InUse);
-                    entry.InUse = true;
+                    var entry = BatchRetry[i].First(n => !n.Locked);
+                    entry.Locked = true;
                     return entry;
                 }
             }
@@ -285,10 +286,10 @@ namespace Backtrace.Services
         {
             for (int i = BatchRetry.Count -1 ; i >= 0; i--)
             {
-                if (BatchRetry[i].Any(n => !n.InUse))
+                if (BatchRetry[i].Any(n => !n.Locked))
                 {
-                    var entry = BatchRetry[i].Last(n => !n.InUse);
-                    entry.InUse = true;
+                    var entry = BatchRetry[i].Last(n => !n.Locked);
+                    entry.Locked = true;
                     return entry;
                 }
             }

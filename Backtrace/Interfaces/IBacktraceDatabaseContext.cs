@@ -75,7 +75,7 @@ namespace Backtrace.Interfaces
         /// <summary>
         /// Increment retry time for all entries
         /// </summary>
-        void MoveNext();
+        void IncrementBatchRetry();
 
 
         /// <summary>
