@@ -194,7 +194,7 @@ namespace Backtrace.Services
         /// <returns>all existing database entries</returns>
         public IEnumerable<BacktraceDatabaseEntry<T>> Get()
         {
-            return BatchRetry.SelectMany(n => n.Value).Select(n => { n.InUse = true; return n; });
+            return BatchRetry.SelectMany(n => n.Value);
         }
 
         /// <summary>

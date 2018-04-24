@@ -304,7 +304,7 @@ namespace Backtrace
         /// </summary>
         private void RemoveOrphaned()
         {
-            var entryIds = BacktraceDatabaseContext.Get().Select(n => n.Id);
+            var entryIds = BacktraceDatabaseContext.Get().Select(n => n.Id.ToString());
             var directoryInfo = new DirectoryInfo(DatabasePath);
             var files = directoryInfo.GetFiles();
             var guidRegex = new Regex(@"^[{(]?[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}[)}]?$", RegexOptions.IgnoreCase);
@@ -312,22 +312,9 @@ namespace Backtrace
             {
                 var name = file.Name.LastIndexOf('-');
                 var stringGuid = file.Name.Substring(0, name);
-                if(!guidRegex.IsMatch(stringGuid))
-                {
-                    file.Delete();
-                    continue;
-                }
-                try
-                {
-                    //we support .NET 3.5 so we have to make sure we can use all API available for .NET 3.5 
-                    var id = new Guid(stringGuid);
-                    if (!entryIds.Contains(id))
-                    { 
-                        file.Delete();
-                    }
-                }
-                catch
-                {
+                //we support .NET 3.5 so we have to make sure we can use all API available for .NET 3.5 
+                if (!entryIds.Contains(stringGuid))
+                { 
                     file.Delete();
                 }
             }
