@@ -133,22 +133,29 @@ namespace Backtrace.Services
         /// <param name="entry">Database entry to move move in memory cache</param>
         public void MoveNext()
         {
-            for (int kIndex = BatchRetry.Keys.Count - 1; kIndex != -1; kIndex--)
+            RemoveLast();
+            MoveRest();
+        }
+
+        private void MoveRest()
+        {
+            for (int i = BatchRetry.Keys.Count - 2; i >= 0; i--)
             {
-                for (int rIndex = BatchRetry[kIndex].Count - 1; rIndex != -1; rIndex--)
-                {
-                    var value = BatchRetry[kIndex][rIndex];
-                    if (kIndex + 1 < _retryNumber)
-                    {
-                        BatchRetry[kIndex + 1].Add(value);
-                    }
-                    else
-                    {
-                        value.Delete();
-                        totalEntries--;
-                    }
-                    BatchRetry[kIndex].Remove(value);
-                }
+                var temp = BatchRetry[i];
+                BatchRetry[i] = new List<BacktraceDatabaseEntry<T>>();
+                BatchRetry[i + 1] = temp;
+            }
+        }
+
+        private void RemoveLast()
+        {
+            var currentBatch = BatchRetry.Last();
+            var total = currentBatch.Value.Count - 1;
+            for (int i = 0; i < total; i++)
+            {
+                var value = currentBatch.Value[i];
+                value.Delete();
+                totalEntries--;
             }
         }
 
@@ -226,11 +233,6 @@ namespace Backtrace.Services
         /// <param name="backtraceEntry">Database entry</param>
         public void Add(BacktraceDatabaseEntry<T> backtraceEntry)
         {
-            if (!backtraceEntry.Valid())
-            {
-                Trace.WriteLine("Found invalid entry without necessary files.");
-                return;
-            }
             BatchRetry[0].Add(backtraceEntry);
             totalEntries++;
         }

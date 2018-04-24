@@ -205,7 +205,7 @@ namespace Backtrace
 
         private async void OnTimedEventAsync(object source, ElapsedEventArgs e)
         {
-            if (!BacktraceDatabaseContext.Any()) return;
+            if (!BacktraceDatabaseContext.Any() || !_timer.Enabled) return;
             _timer.Stop();
             //read first entry (keep in mind LIFO and FIFO settings) from memory database
             var entry = BacktraceDatabaseContext.FirstOrDefault();
@@ -217,16 +217,19 @@ namespace Backtrace
                 {
                     Delete(entry);
                 }
-                //send entry from database to API
-                var result = await _backtraceApi.SendAsync(backtraceData);
-                if (result.Status == BacktraceResultStatus.Ok)
-                {
-                    Delete(entry);
-                }
                 else
                 {
-                    BacktraceDatabaseContext.MoveNext();
-                    break;
+                    //send entry from database to API
+                    var result = await _backtraceApi.SendAsync(backtraceData);
+                    if (result.Status == BacktraceResultStatus.Ok)
+                    {
+                        Delete(entry);
+                    }
+                    else
+                    {
+                        BacktraceDatabaseContext.MoveNext();
+                        break;
+                    }
                 }
                 entry = BacktraceDatabaseContext.FirstOrDefault();
             }
@@ -312,6 +315,11 @@ namespace Backtrace
             foreach (var file in files)
             {
                 var entry = BacktraceDatabaseEntry<T>.ReadFromFile(file);
+                if (!entry.Valid())
+                {
+                    entry.Delete();
+                    continue;
+                }
                 BacktraceDatabaseContext.Add(entry);
             }
         }

@@ -42,7 +42,7 @@ namespace Backtrace.Model.Database
         /// <summary>
         /// How much secounds library should wait before next retry.
         /// </summary>
-        public uint RetryTime { get; set; } = 2;
+        public uint RetryTime { get; set; } = 5;
 
         /// <summary>
         /// Total number of retries
