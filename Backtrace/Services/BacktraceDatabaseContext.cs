@@ -138,7 +138,7 @@ namespace Backtrace.Services
 
         private void IncrementBatches()
         {
-            for (int i = BatchRetry.Keys.Count - 2; i >= 0; i--)
+            for (int i = _retryNumber - 2; i >= 0; i--)
             {
                 var temp = BatchRetry[i];
                 BatchRetry[i] = new List<BacktraceDatabaseEntry<T>>();
@@ -148,45 +148,14 @@ namespace Backtrace.Services
 
         private void RemoveMaxRetries()
         {
-            //TODO
-            // dictionary order  - change it to number
-            var currentBatch = BatchRetry.Last();
-            var total = currentBatch.Value.Count - 1;
+            var currentBatch = BatchRetry[_retryNumber - 1];
+            var total = currentBatch.Count - 1;
             for (int i = 0; i < total; i++)
             {
-                var value = currentBatch.Value[i];
+                var value = currentBatch[i];
                 value.Delete();
                 totalEntries--;
             }
-        }
-
-        /// <summary>
-        /// Increment retry time for current entry
-        /// </summary>
-        /// <param name="entry">Database entry to move move in memory cache</param>
-        public virtual void MoveNext(BacktraceDatabaseEntry<T> entry)
-        {
-            foreach (var key in BatchRetry.Keys)
-            {
-                foreach (var value in BatchRetry[key])
-                {
-                    if (value.Id == entry.Id)
-                    {
-                        if (key + 1 <= _retryNumber)
-                        {
-                            BatchRetry[key + 1].Add(value);
-                        }
-                        else
-                        {
-                            value.Delete();
-                            totalEntries--;
-                        }
-                        BatchRetry[key].Remove(value);
-                        return;
-                    }
-                }
-            }
-            return;
         }
 
         /// <summary>
@@ -202,16 +171,13 @@ namespace Backtrace.Services
         /// Get total number of entries in database
         /// </summary>
         /// <returns></returns>
-        public int Count()
-        {
-            return totalEntries;
-        }
-
+        public int Count() => totalEntries;
         /// <summary>
         /// Dispose
         /// </summary>
         public void Dispose()
         {
+            totalEntries = 0;
             BatchRetry.Clear();
         }
 
@@ -226,6 +192,7 @@ namespace Backtrace.Services
                 entry.Delete();
             }
             totalEntries = 0;
+            BatchRetry.Clear();
         }
 
         /// <summary>
@@ -267,8 +234,12 @@ namespace Backtrace.Services
         /// <returns>First database entry</returns>
         private BacktraceDatabaseEntry<T> GetFirstEntry()
         {
-            for (int i = 0; i < BatchRetry.Count; i++)
+            //get all batches (from the beginning)
+            for (int i = 0; i < _retryNumber - 1; i++)
             {
+                //if batch has any entry that is not used
+                //set lock to true 
+                //and return file
                 if (BatchRetry[i].Any(n => !n.Locked))
                 {
                     var entry = BatchRetry[i].First(n => !n.Locked);
@@ -285,7 +256,7 @@ namespace Backtrace.Services
         /// <returns>Last database entry</returns>
         private BacktraceDatabaseEntry<T> GetLastEntry()
         {
-            for (int i = BatchRetry.Count -1 ; i >= 0; i--)
+            for (int i = _retryNumber - 1; i >= 0; i--)
             {
                 if (BatchRetry[i].Any(n => !n.Locked))
                 {

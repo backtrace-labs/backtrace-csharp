@@ -49,6 +49,6 @@ namespace Backtrace.Model.Database
         /// </summary>
         public uint TotalRetry { get; set; } = 3;
 
-        public RetryOrder RetryOrder { get; set; } = RetryOrder.Queue;
+        public RetryOrder RetryOrder { get; set; } = RetryOrder.Stack;
     }
 }

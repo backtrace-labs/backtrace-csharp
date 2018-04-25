@@ -67,12 +67,6 @@ namespace Backtrace.Interfaces
         void Clear();
 
         /// <summary>
-        /// Increment retry time for current entry
-        /// </summary>
-        /// <param name="entry">Database entry to move move in memory cache</param>
-        void MoveNext(BacktraceDatabaseEntry<T> entry);
-
-        /// <summary>
         /// Increment retry time for all entries
         /// </summary>
         void IncrementBatchRetry();
