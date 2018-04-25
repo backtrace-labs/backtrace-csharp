@@ -116,7 +116,7 @@ namespace Backtrace.Model.Database
             return File.Exists(DiagnosticDataPath) && File.Exists(ReportPath);
         }
 
-        internal void Delete()
+        internal virtual void Delete()
         {
             Delete(MiniDumpPath);
             Delete(ReportPath);

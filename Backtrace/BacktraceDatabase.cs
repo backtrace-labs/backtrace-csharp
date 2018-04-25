@@ -12,6 +12,7 @@ using System.IO;
 using System.Timers;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 #if !NET35
 using System.Threading.Tasks;
 #endif
@@ -51,7 +52,7 @@ namespace Backtrace
         /// <summary>
         /// Determine if BacktraceDatabase is enable and library can store reports
         /// </summary>
-        private readonly bool _enable = true;
+        private bool _enable = false;
 
         private readonly Timer _timer = new Timer();
 
@@ -60,9 +61,7 @@ namespace Backtrace
         /// </summary>
         /// <param name="databaseSettings"></param>
         public BacktraceDatabase()
-        {
-            _enable = false;
-        }
+        { }
 
         /// <summary>
         /// Create new Backtrace database instance
@@ -80,7 +79,6 @@ namespace Backtrace
         {
             if (databaseSettings == null || string.IsNullOrEmpty(databaseSettings.DatabasePath))
             {
-                _enable = false;
                 return;
             }
             if (!Directory.Exists(databaseSettings.DatabasePath))
@@ -90,9 +88,26 @@ namespace Backtrace
             DatabaseSettings = databaseSettings;
             BacktraceDatabaseContext = new BacktraceDatabaseContext<T>(DatabasePath, DatabaseSettings.TotalRetry, DatabaseSettings.RetryOrder);
             BacktraceDatabaseFileContext = new BacktraceDatabaseFileContext<T>(DatabasePath);
+        }
+
+        /// <summary>
+        /// Start database tasks
+        /// </summary>
+        public void Start()
+        {
+            if (BacktraceDatabaseContext?.Any() == true)
+            {
+                Trace.WriteLine("You already start BacktraceDatabase.");
+                return;
+            }
+            // load reports from hard drive
             LoadReports();
+            // remove orphaned files
             RemoveOrphaned();
+            // setup database timer events
             SetupTimer();
+            //Enable database
+            _enable = true;
         }
 
         private void SetupTimer()

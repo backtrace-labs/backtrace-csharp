@@ -138,6 +138,7 @@ namespace Backtrace.Base
             Attributes = attributes ?? new Dictionary<string, T>();
             BacktraceApi = new BacktraceApi<T>(backtraceCredentials, reportPerMin, tlsLegacySupport);
             Database = database ?? new BacktraceDatabase<T>();
+            Database.Start();
             Database.SetApi(BacktraceApi);
         }
 

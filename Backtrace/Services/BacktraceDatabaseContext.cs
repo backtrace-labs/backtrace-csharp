@@ -240,7 +240,7 @@ namespace Backtrace.Services
                 //if batch has any entry that is not used
                 //set lock to true 
                 //and return file
-                if (BatchRetry[i].Any(n => !n.Locked))
+                if (BatchRetry.ContainsKey(i) && BatchRetry[i].Any(n => !n.Locked))
                 {
                     var entry = BatchRetry[i].First(n => !n.Locked);
                     entry.Locked = true;

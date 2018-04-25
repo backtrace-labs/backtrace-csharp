@@ -49,6 +49,10 @@ namespace Backtrace.Services
         /// <param name="credentials">API credentials</param>
         public BacktraceApi(BacktraceCredentials credentials, uint reportPerMin = 3, bool tlsLegacySupport = false)
         {
+            if(credentials == null)
+            {
+                throw new ArgumentException($"{nameof(BacktraceCredentials)} cannot be null");
+            }
             _serverurl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
             SetTlsLegacy(tlsLegacySupport);
             reportLimitWatcher = new ReportLimitWatcher<T>(reportPerMin);

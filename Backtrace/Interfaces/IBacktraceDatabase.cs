@@ -19,6 +19,11 @@ namespace Backtrace.Interfaces
     public interface IBacktraceDatabase<T> : IDisposable
     {
         /// <summary>
+        /// Start all database tasks - data storage, timers, file loading
+        /// </summary>
+        void Start();
+
+        /// <summary>
         /// Send all reports stored in BacktraceDatabase and clean database
         /// </summary>
         void Flush();
