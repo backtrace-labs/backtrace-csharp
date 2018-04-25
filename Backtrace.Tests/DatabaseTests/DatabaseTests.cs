@@ -25,8 +25,7 @@ namespace Backtrace.Tests.DatabaseTests
             var mockEntry = new Mock<BacktraceDatabaseEntry<object>>();
             mockEntry.Setup(n => n.Save(It.IsAny<object>(), It.IsAny<string>(), It.IsAny<string>()));
             var mockContext = new Mock<IBacktraceDatabaseContext<object>>();
-            //mockContext.Setup(n => n.Add(It.IsAny<BacktraceData<object>>()))
-            //    .Returns(mockEntry.Object);
+            var mockFileContext = new Mock<IBacktraceDatabaseFileContext<object>>();
 
             string projectDirectory = Environment.CurrentDirectory;
             _database = new BacktraceDatabase<object>(projectDirectory)

@@ -24,8 +24,15 @@ namespace Backtrace
     /// </summary>
     public class BacktraceDatabase<T> : IBacktraceDatabase<T>
     {
+        /// <summary>
+        /// Database context - in memory cache and entry operations
+        /// </summary>
         internal IBacktraceDatabaseContext<T> BacktraceDatabaseContext { get; set; }
 
+        /// <summary>
+        /// File context - file collection operations
+        /// </summary>
+        internal IBacktraceDatabaseFileContext<T> BacktraceDatabaseFileContext { get; set; }
         /// <summary>
         /// Database settings
         /// </summary>
@@ -81,9 +88,8 @@ namespace Backtrace
                 throw new ArgumentException("Databse path does not exists");
             }
             DatabaseSettings = databaseSettings;
-            var directory = new DirectoryInfo(DatabasePath);
-
             BacktraceDatabaseContext = new BacktraceDatabaseContext<T>(DatabasePath, DatabaseSettings.TotalRetry, DatabaseSettings.RetryOrder);
+            BacktraceDatabaseFileContext = new BacktraceDatabaseFileContext<T>(DatabasePath);
             LoadReports();
             RemoveOrphaned();
             SetupTimer();
@@ -154,10 +160,7 @@ namespace Backtrace
         /// <returns>All stored reports in BacktraceDatabase</returns>
         public IEnumerable<BacktraceDatabaseEntry<T>> Get() => BacktraceDatabaseContext?.Get() ?? new List<BacktraceDatabaseEntry<T>>();
 
-        public void Delete(BacktraceDatabaseEntry<T> entry)
-        {
-            BacktraceDatabaseContext?.Delete(entry);
-        }
+        public void Delete(BacktraceDatabaseEntry<T> entry) => BacktraceDatabaseContext?.Delete(entry);
 
         /// <summary>
         /// Send and delete all entries from database
@@ -304,19 +307,8 @@ namespace Backtrace
         /// </summary>
         private void RemoveOrphaned()
         {
-            var entryIds = BacktraceDatabaseContext.Get().Select(n => n.Id.ToString());
-            var directoryInfo = new DirectoryInfo(DatabasePath);
-            var files = directoryInfo.GetFiles();
-           
-            foreach (var file in files)
-            {
-                var name = file.Name.LastIndexOf('-');
-                var stringGuid = file.Name.Substring(0, name);
-                if (!entryIds.Contains(stringGuid))
-                { 
-                    file.Delete();
-                }
-            }
+            var entries = BacktraceDatabaseContext.Get();
+            BacktraceDatabaseFileContext.RemoveOrphaned(entries);
         }
 
         /// <summary>
@@ -324,8 +316,7 @@ namespace Backtrace
         /// </summary>
         private void LoadReports()
         {
-            var directoryInfo = new DirectoryInfo(DatabasePath);
-            var files = directoryInfo.GetFiles($"*-entry.json", SearchOption.TopDirectoryOnly);
+            var files = BacktraceDatabaseFileContext.GetEntries();
             foreach (var file in files)
             {
                 var entry = BacktraceDatabaseEntry<T>.ReadFromFile(file);

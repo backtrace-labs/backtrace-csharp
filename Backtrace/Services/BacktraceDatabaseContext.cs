@@ -234,6 +234,7 @@ namespace Backtrace.Services
         /// <param name="backtraceEntry">Database entry</param>
         public void Add(BacktraceDatabaseEntry<T> backtraceEntry)
         {
+            if (backtraceEntry == null) throw new NullReferenceException(nameof(backtraceEntry));
             BatchRetry[0].Add(backtraceEntry);
             totalEntries++;
         }
