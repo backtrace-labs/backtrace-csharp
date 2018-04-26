@@ -26,6 +26,11 @@ namespace Backtrace
     public class BacktraceDatabase<T> : IBacktraceDatabase<T>
     {
         /// <summary>
+        /// Backtrace Api instance. Use BacktraceApi to send data to Backtrace server
+        /// </summary>
+        public IBacktraceApi<T> BacktraceApi { get; set; }
+
+        /// <summary>
         /// Database context - in memory cache and entry operations
         /// </summary>
         internal IBacktraceDatabaseContext<T> BacktraceDatabaseContext { get; set; }
@@ -34,6 +39,7 @@ namespace Backtrace
         /// File context - file collection operations
         /// </summary>
         internal IBacktraceDatabaseFileContext<T> BacktraceDatabaseFileContext { get; set; }
+
         /// <summary>
         /// Database settings
         /// </summary>
@@ -43,11 +49,6 @@ namespace Backtrace
         /// Database path
         /// </summary>
         private string DatabasePath => DatabaseSettings.DatabasePath;
-
-        /// <summary>
-        /// Backtrace Api instance. Use BacktraceApi to send data to Backtrace server
-        /// </summary>
-        private IBacktraceApi<T> _backtraceApi;
 
         /// <summary>
         /// Determine if BacktraceDatabase is enable and library can store reports
@@ -131,7 +132,7 @@ namespace Backtrace
         /// <param name="backtraceApi">BacktraceApi instance</param>
         public void SetApi(IBacktraceApi<T> backtraceApi)
         {
-            _backtraceApi = backtraceApi;
+            BacktraceApi = backtraceApi;
         }
 
         /// <summary>
@@ -182,7 +183,7 @@ namespace Backtrace
         /// </summary>
         public void Flush()
         {
-            if (_backtraceApi == null)
+            if (BacktraceApi == null)
             {
                 throw new ArgumentException("BacktraceApi is required if you want to use Flush method");
             }
@@ -190,13 +191,12 @@ namespace Backtrace
             while (entry != null)
             {
                 var backtraceData = entry.BacktraceData;
-                if (backtraceData == null)
-                {
-                    Delete(entry);
-                }
-                var result = _backtraceApi.Send(backtraceData);
                 Delete(entry);
                 entry = BacktraceDatabaseContext.FirstOrDefault();
+                if (backtraceData != null)
+                {
+                    BacktraceApi.Send(backtraceData);
+                }
             }
         }
 #if !NET35
@@ -205,7 +205,7 @@ namespace Backtrace
         /// </summary>
         public async Task FlushAsync()
         {
-            if (_backtraceApi == null)
+            if (BacktraceApi == null)
             {
                 throw new ArgumentException("BacktraceApi is required if you want to use Flush method");
             }
@@ -213,13 +213,12 @@ namespace Backtrace
             while (entry != null)
             {
                 var backtraceData = entry.BacktraceData;
-                if (backtraceData == null)
-                {
-                    Delete(entry);
-                }
-                await _backtraceApi.SendAsync(backtraceData);
                 Delete(entry);
                 entry = BacktraceDatabaseContext.FirstOrDefault();
+                if (backtraceData != null)
+                {
+                    await BacktraceApi.SendAsync(backtraceData);
+                }
             }
         }
 
@@ -240,7 +239,7 @@ namespace Backtrace
                 else
                 {
                     //send entry from database to API
-                    var result = await _backtraceApi.SendAsync(backtraceData);
+                    var result = await BacktraceApi.SendAsync(backtraceData);
                     if (result.Status == BacktraceResultStatus.Ok)
                     {
                         Delete(entry);
@@ -271,7 +270,7 @@ namespace Backtrace
                     Delete(entry);
                 }
                 //send entry from database to API
-                var result = _backtraceApi.Send(backtraceData);
+                var result = BacktraceApi.Send(backtraceData);
                 if (result.Status == BacktraceResultStatus.Ok)
                 {
                     Delete(entry);
@@ -363,7 +362,7 @@ namespace Backtrace
                 if (disposing)
                 {
 #if !NET35
-                    _backtraceApi?.Dispose();
+                    BacktraceApi?.Dispose();
                     _timer?.Dispose();
 #endif
                 }

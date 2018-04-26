@@ -76,11 +76,22 @@ namespace Backtrace.Services
         /// <returns>New instance of DatabaseEntry</returns>
         public virtual BacktraceDatabaseEntry<T> Add(BacktraceData<T> backtraceData)
         {
+            if (backtraceData == null) throw new NullReferenceException(nameof(BacktraceData<T>));
             var entry = new BacktraceDatabaseEntry<T>(backtraceData, _path);
+            return Add(entry);
+        }
+
+        /// <summary>
+        /// Add existing entry to database
+        /// </summary>
+        /// <param name="backtraceEntry">Database entry</param>
+        public BacktraceDatabaseEntry<T> Add(BacktraceDatabaseEntry<T> backtraceEntry)
+        {
+            if (backtraceEntry == null) throw new NullReferenceException(nameof(BacktraceDatabaseEntry<T>));
+            backtraceEntry.Locked = true;
+            BatchRetry[0].Add(backtraceEntry);
             totalEntries++;
-            entry.Locked = true;
-            BatchRetry[0].Add(entry);
-            return entry;
+            return backtraceEntry;
         }
 
         /// <summary>
@@ -172,10 +183,11 @@ namespace Backtrace.Services
         /// </summary>
         /// <returns></returns>
         public int Count() => totalEntries;
+
         /// <summary>
         /// Dispose
         /// </summary>
-        public void Dispose()
+        public virtual void Dispose()
         {
             totalEntries = 0;
             BatchRetry.Clear();
@@ -194,18 +206,7 @@ namespace Backtrace.Services
             totalEntries = 0;
             BatchRetry.Clear();
         }
-
-        /// <summary>
-        /// Add existing entry to database
-        /// </summary>
-        /// <param name="backtraceEntry">Database entry</param>
-        public void Add(BacktraceDatabaseEntry<T> backtraceEntry)
-        {
-            if (backtraceEntry == null) throw new NullReferenceException(nameof(backtraceEntry));
-            BatchRetry[0].Add(backtraceEntry);
-            totalEntries++;
-        }
-
+        
         /// <summary>
         /// Get last exising database entry. Method returns entry based on order in Database
         /// </summary>

@@ -1,4 +1,5 @@
 ﻿using Backtrace.Interfaces;
+using Backtrace.Model;
 using Moq;
 using NUnit.Framework;
 using System;

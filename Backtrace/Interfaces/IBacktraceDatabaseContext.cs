@@ -13,13 +13,14 @@ namespace Backtrace.Interfaces
         /// <summary>
         /// Add new report to Database
         /// </summary>
+        /// <param name="backtraceData">Diagnostic data</param>
         BacktraceDatabaseEntry<T> Add(BacktraceData<T> backtraceData);
 
         /// <summary>
         /// Add new data to database
         /// </summary>
-        /// <param name="backtraceData">Diagnostic data</param>
-        void Add(BacktraceDatabaseEntry<T> backtraceData);
+        /// <param name="backtraceDatabaseEntry">Database entry</param>
+        BacktraceDatabaseEntry<T> Add(BacktraceDatabaseEntry<T> backtraceDatabaseEntry);
 
         /// <summary>
         /// Get first entry or null

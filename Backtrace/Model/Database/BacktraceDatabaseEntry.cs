@@ -57,7 +57,7 @@ namespace Backtrace.Model.Database
         private BacktraceData<T> _entry;
 
         [JsonIgnore]
-        public BacktraceData<T> BacktraceData
+        public virtual BacktraceData<T> BacktraceData
         {
             get
             {
