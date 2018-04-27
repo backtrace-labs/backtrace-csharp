@@ -1,7 +1,7 @@
 ﻿# Backtrace C# Release Notes
 
 ## Version 1.1.4 - 27.04.2018
-- Fix: JSON serialization bug where casing of some fields is changed after serialization.
+- Fix: A bug where casing of some fields is changed after JSON serialization.
 
 ## Version 1.1.3 - 13.04.2018
 - Improved `async Task` sample applications
