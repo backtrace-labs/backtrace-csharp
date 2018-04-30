@@ -17,32 +17,10 @@ namespace Backtrace.Tests.DatabaseTests
     [TestFixture(Author = "Konrad Dysput", Category = "Database.Setup")]
     public class DatabaseSetupTests
     {
-        private BacktraceDatabase<object> _database;
+        /// <summary>
+        /// Current project directory
+        /// </summary>
         private readonly string _projectDirectory = Environment.CurrentDirectory;
-
-        [SetUp]
-        public void Setup()
-        {
-            //mock single entry
-            var mockEntry = new Mock<BacktraceDatabaseEntry<object>>();
-            mockEntry.Setup(n => n.Save(It.IsAny<object>(), It.IsAny<string>(), It.IsAny<string>()));
-
-            //mock database context
-            var mockContext = new Mock<IBacktraceDatabaseContext<object>>();
-
-            //mock physical files operations
-            var mockFileContext = new Mock<IBacktraceDatabaseFileContext<object>>();
-            mockFileContext.Setup(n => n.RemoveOrphaned(It.IsAny<IEnumerable<BacktraceDatabaseEntry<object>>>()));
-
-            //initialize new database object
-            _database = new BacktraceDatabase<object>(_projectDirectory)
-            {
-                BacktraceDatabaseContext = mockContext.Object,
-                BacktraceDatabaseFileContext = mockFileContext.Object
-            };
-            //start database
-            _database.Start();
-        }
 
         [Test(Author = "Konrad Dysput", Description = "Test database initialization")]
         public void TestDatabaseInitalizationConditions()
