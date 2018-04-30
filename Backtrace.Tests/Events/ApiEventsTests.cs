@@ -9,8 +9,6 @@ using NUnit.Framework;
 using RichardSzalay.MockHttp;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Backtrace.Tests.Events
@@ -112,8 +110,5 @@ namespace Backtrace.Tests.Events
             Assert.IsTrue(responseEventTrigger);
             Assert.AreEqual(totalResponses, 4);
         }
-
-
-
     }
 }

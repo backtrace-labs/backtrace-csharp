@@ -23,7 +23,7 @@ namespace Backtrace.Services
         /// <summary>
         /// Total entries in BacktraceDatabase
         /// </summary>
-        internal int totalEntries = 0;
+        internal int TotalEntries = 0;
 
         /// <summary>
         /// Path to database directory 
@@ -38,7 +38,7 @@ namespace Backtrace.Services
         /// <summary>
         /// Entry order
         /// </summary>
-        public RetryOrder _retryOrder { get; }
+        internal RetryOrder RetryOrder { get; set; }
 
         /// <summary>
         /// Initialize new instance of Backtrace Database Context
@@ -50,7 +50,7 @@ namespace Backtrace.Services
         {
             _path = path;
             _retryNumber = checked((int)retryNumber);
-            _retryOrder = retryOrder;
+            RetryOrder = retryOrder;
             SetupBatch();
         }
 
@@ -90,7 +90,7 @@ namespace Backtrace.Services
             if (backtraceEntry == null) throw new NullReferenceException(nameof(BacktraceDatabaseEntry<T>));
             backtraceEntry.Locked = true;
             BatchRetry[0].Add(backtraceEntry);
-            totalEntries++;
+            TotalEntries++;
             return backtraceEntry;
         }
 
@@ -109,7 +109,7 @@ namespace Backtrace.Services
         /// </summary>
         public bool Any()
         {
-            return totalEntries != 0;
+            return TotalEntries != 0;
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace Backtrace.Services
                     {
                         value.Delete();
                         BatchRetry[key].Remove(value);
-                        totalEntries--;
+                        TotalEntries--;
                         return;
                     }
                 }
@@ -165,7 +165,7 @@ namespace Backtrace.Services
             {
                 var value = currentBatch[i];
                 value.Delete();
-                totalEntries--;
+                TotalEntries--;
             }
         }
 
@@ -182,14 +182,14 @@ namespace Backtrace.Services
         /// Get total number of entries in database
         /// </summary>
         /// <returns></returns>
-        public int Count() => totalEntries;
+        public int Count() => TotalEntries;
 
         /// <summary>
         /// Dispose
         /// </summary>
         public virtual void Dispose()
         {
-            totalEntries = 0;
+            TotalEntries = 0;
             BatchRetry.Clear();
         }
 
@@ -203,17 +203,21 @@ namespace Backtrace.Services
             {
                 entry.Delete();
             }
-            totalEntries = 0;
-            BatchRetry.Clear();
+            TotalEntries = 0;
+            //clear all existing batches
+            foreach (var batch in BatchRetry)
+            {
+                batch.Value.Clear();
+            }
         }
-        
+
         /// <summary>
         /// Get last exising database entry. Method returns entry based on order in Database
         /// </summary>
         /// <returns>First Backtrace database entry</returns>
         public BacktraceDatabaseEntry<T> LastOrDefault()
         {
-            return _retryOrder == RetryOrder.Stack
+            return RetryOrder == RetryOrder.Stack
                     ? GetLastEntry()
                     : GetFirstEntry();
         }
@@ -224,7 +228,7 @@ namespace Backtrace.Services
         /// <returns>First Backtrace database entry</returns>
         public BacktraceDatabaseEntry<T> FirstOrDefault()
         {
-            return _retryOrder == RetryOrder.Stack
+            return RetryOrder == RetryOrder.Queue
                     ? GetFirstEntry()
                     : GetLastEntry();
         }

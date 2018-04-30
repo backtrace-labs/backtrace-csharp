@@ -48,7 +48,7 @@ namespace Backtrace.Tests.DatabaseTests
             {
                 _database.BacktraceDatabaseContext.Add(GetEntry());
             }
-          ((MockBacktraceDatabaseContext)_database.BacktraceDatabaseContext).DisposeUsedFiles();
+            DisposeEntries();
 
             Assert.AreEqual(expectedNumberOfEntries, _database.Count());
             await _database.FlushAsync();

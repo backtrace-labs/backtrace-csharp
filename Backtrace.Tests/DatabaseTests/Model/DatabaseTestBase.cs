@@ -2,6 +2,7 @@
 using Backtrace.Interfaces;
 using Backtrace.Model;
 using Backtrace.Model.Database;
+using Backtrace.Services;
 using Backtrace.Types;
 using Moq;
 using NUnit.Framework;
@@ -50,6 +51,19 @@ namespace Backtrace.Tests.DatabaseTests.Model
                 BacktraceDatabaseFileContext = mockFileContext.Object,
                 BacktraceApi = mockApi.Object
             };
+        }
+
+        /// <summary>
+        /// Dispose all entries in memory cache. Use this method only for testing purpose!
+        /// </summary>
+        protected void DisposeEntries()
+        {
+            ((MockBacktraceDatabaseContext)_database.BacktraceDatabaseContext).DisposeUsedFiles();
+        }
+
+        protected void ChangeRetryOrder(RetryOrder @newOrder)
+        {
+            ((BacktraceDatabaseContext<object>)_database.BacktraceDatabaseContext).RetryOrder = newOrder;
         }
 
         /// <summary>
