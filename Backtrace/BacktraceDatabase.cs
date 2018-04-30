@@ -96,6 +96,11 @@ namespace Backtrace
         /// </summary>
         public void Start()
         {
+            //database not exists
+            if (DatabaseSettings == null)
+            {
+                return;
+            }
             if (BacktraceDatabaseContext?.Any() == true)
             {
                 Trace.WriteLine("You already start BacktraceDatabase.");

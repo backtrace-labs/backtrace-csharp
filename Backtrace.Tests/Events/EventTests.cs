@@ -63,10 +63,9 @@ namespace Backtrace.Tests.Events
 
 
             //setup new client
-            _backtraceClient = new BacktraceClient(credentials, reportPerMin: 0)
+            _backtraceClient = new BacktraceClient(credentials, database: database.Object, reportPerMin: 0)
             {
-                BacktraceApi = api,
-                Database = database.Object
+                BacktraceApi = api
             };
         }
 

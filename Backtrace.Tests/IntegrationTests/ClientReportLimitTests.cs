@@ -58,10 +58,9 @@ namespace Backtrace.Tests.IntegrationTests
             };
 
             //setup new client
-            _backtraceClient = new BacktraceClient(credentials)
+            _backtraceClient = new BacktraceClient(credentials, database: database.Object)
             {
-                BacktraceApi = api,
-                Database = database.Object
+                BacktraceApi = api
             };
 
             //Add new scoped attributes
@@ -171,7 +170,7 @@ namespace Backtrace.Tests.IntegrationTests
             //set expected number of drop and request
             int expectedNumberOfAttempts = 4 * numberOfTasks;
             int expectedNumberOfDropRequest = expectedNumberOfAttempts - (int)clientRateLimit;
-            
+
             if (expectedNumberOfDropRequest < 0)
             {
                 expectedNumberOfDropRequest = 0;
@@ -190,7 +189,7 @@ namespace Backtrace.Tests.IntegrationTests
             };
             _backtraceClient.AfterSend = (BacktraceResult res) =>
             {
-                if(res.Status == BacktraceResultStatus.LimitReached)
+                if (res.Status == BacktraceResultStatus.LimitReached)
                 {
                     totalNumberOfDropsOnEvents++;
                 }

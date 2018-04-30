@@ -61,12 +61,12 @@ namespace Backtrace.Tests.Events
                n.Delete(It.IsAny<BacktraceDatabaseEntry<object>>()));
 
             //setup new client
-            _backtraceClient = new BacktraceClient(credentials, reportPerMin: 0)
+            _backtraceClient = new BacktraceClient(credentials, database: database.Object, reportPerMin: 0)
             {
                 BacktraceApi = api,
                 Database = database.Object
             };
-            _clientWithInvalidParameters = new BacktraceClient(invalidCredentials, reportPerMin: 0)
+            _clientWithInvalidParameters = new BacktraceClient(invalidCredentials, database: database.Object, reportPerMin: 0)
             {
                 BacktraceApi = apiWithInvalidUrl,
                 Database = database.Object

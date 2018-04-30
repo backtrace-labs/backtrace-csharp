@@ -48,15 +48,23 @@ namespace Backtrace.Tests.DatabaseTests
         public void TestDatabaseInitalizationConditions()
         {
             //initialize disabled database
-            Assert.DoesNotThrow(() => new BacktraceDatabase<object>());
-            Assert.DoesNotThrow(() => new BacktraceDatabase<object>(new BacktraceDatabaseSettings(string.Empty)));
+            Assert.DoesNotThrow(() =>
+            {
+                var database = new BacktraceDatabase<object>();
+                database.Start();
+            });
+            Assert.DoesNotThrow(() =>
+            {
+                var database = new BacktraceDatabase<object>(new BacktraceDatabaseSettings(string.Empty));
+                database.Start();
+            });
 
             //initialize database with invalid arguments
             Assert.Throws<ArgumentException>(() => new BacktraceDatabase<object>(new BacktraceDatabaseSettings("not existing directory")));
             Assert.Throws<ArgumentException>(() => new BacktraceDatabase<object>(new BacktraceDatabaseSettings(_projectDirectory) { TotalRetry = 0 }));
 
             //initialize database with valid settings
-            Assert.DoesNotThrow(() => new BacktraceDatabase<object>(new BacktraceDatabaseSettings(_projectDirectory)));
+            Assert.DoesNotThrow(() =>new BacktraceDatabase<object>(new BacktraceDatabaseSettings(_projectDirectory)));
         }
 
         [Test(Author ="Konrad Dysput",Description ="Test not started database")]
@@ -83,25 +91,6 @@ namespace Backtrace.Tests.DatabaseTests
             database.SetApi(new BacktraceApi<object>(new BacktraceCredentials("https://www.backtrace.io","123123")));
             Assert.DoesNotThrow(() => database.Flush());
             Assert.DoesNotThrowAsync(() => database.FlushAsync());
-        }
-
-        [Test(Author = "Konrad Dysput", Description = "Test database flush method")]
-        public void TestFlushMethods()
-        {
-            var mockApi = new Mock<IBacktraceApi<object>>();
-            mockApi.Setup(n => n.Send(It.IsAny<BacktraceData<object>>()))
-                .Returns(new BacktraceResult());
-            _database.SetApi(mockApi.Object);
-
-            var testedReport = (new Exception("test exception")).ToBacktraceReport();
-            for (int i = 0; i < 10; i++)
-            {
-                _database.Add(testedReport, new Dictionary<string, object>(), MiniDumpType.None);
-            }
-            var total = _database.Count();
-            _database.Flush();
-            Assert.AreNotEqual(total, _database.Count());
-            Assert.AreEqual(0, _database.Count());
         }
 
     }
