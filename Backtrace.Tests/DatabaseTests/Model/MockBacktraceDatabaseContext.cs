@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Backtrace.Tests.DatabaseTests
+namespace Backtrace.Tests.DatabaseTests.Model
 {
     /// <summary>
     /// Class created for testing purpose
