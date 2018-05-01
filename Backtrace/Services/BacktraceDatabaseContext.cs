@@ -78,6 +78,7 @@ namespace Backtrace.Services
         {
             if (backtraceData == null) throw new NullReferenceException(nameof(BacktraceData<T>));
             var entry = new BacktraceDatabaseEntry<T>(backtraceData, _path);
+            entry.Save();
             return Add(entry);
         }
 

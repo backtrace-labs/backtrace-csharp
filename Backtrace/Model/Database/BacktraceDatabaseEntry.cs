@@ -1,4 +1,5 @@
 ﻿using Backtrace.Base;
+using Backtrace.Interfaces.Database;
 using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
@@ -54,7 +55,20 @@ namespace Backtrace.Model.Database
         /// <summary>
         /// Stored entry
         /// </summary>
+        [JsonIgnore]
         private BacktraceData<T> _entry;
+
+        /// <summary>
+        /// Path to database directory
+        /// </summary>
+        [JsonIgnore]
+        private readonly string _path;
+
+        /// <summary>
+        /// Entry writer
+        /// </summary>
+        [JsonIgnore]
+        internal IBacktraceDatabaseEntryWriter _entryWriter;
 
         [JsonIgnore]
         public virtual BacktraceData<T> BacktraceData
@@ -100,11 +114,17 @@ namespace Backtrace.Model.Database
         {
             Id = data.Uuid;
             _entry = data;
-            DiagnosticDataPath = Save(data, "attachment", path);
-            ReportPath = Save(data.Report, "report", path);
-            MiniDumpPath = data.Report.MinidumpFile;
-            EntryPath = Path.Combine(path, $"{Id}-entry.json");
-            Save(this, "entry", path);
+            _path = path;
+            _entryWriter = new BacktraceDatabaseEntryWriter(path);           
+        }
+
+        public void Save()
+        {
+            DiagnosticDataPath = _entryWriter.Write(_entry, $"{Id}-attachment");
+            ReportPath = _entryWriter.Write(_entry.Report, $"{Id}-report");
+            MiniDumpPath = _entry.Report.MinidumpFile;
+            EntryPath = Path.Combine(_path, $"{Id}-entry.json");
+            _entryWriter.Write(this, $"{Id}-entry");
         }
 
         /// <summary>
@@ -143,12 +163,6 @@ namespace Backtrace.Model.Database
             }
         }
 
-        internal virtual string Save(object o, string jsonPrefix, string path)
-        {
-            string json = JsonConvert.SerializeObject(o);
-            return Save(json, jsonPrefix, path);
-        }
-
         internal static BacktraceDatabaseEntry<T> ReadFromFile(FileInfo file)
         {
             using (StreamReader streamReader = file.OpenText())
@@ -157,28 +171,6 @@ namespace Backtrace.Model.Database
                 var entry = JsonConvert.DeserializeObject<BacktraceDatabaseEntry<T>>(json);
                 return entry;
             }
-        }
-
-        private string Save(string json, string jsonPrefix, string path)
-        {
-            byte[] file = Encoding.UTF8.GetBytes(json);
-            string filename = $"{Id}-{jsonPrefix}.json";
-            string tempPath = Path.Combine(path, $"temp_{filename}");
-            string filePath = Path.Combine(path, filename);
-            try
-            {
-                using (var fs = new FileStream(tempPath, FileMode.Create, FileAccess.Write))
-                {
-                    fs.Write(file, 0, file.Length);
-                }
-                //rename temp file - we are sure our report exists
-                File.Move(tempPath, filePath);
-            }
-            catch (Exception)
-            {
-                return string.Empty;
-            }
-            return filePath;
         }
 
         public void Dispose()

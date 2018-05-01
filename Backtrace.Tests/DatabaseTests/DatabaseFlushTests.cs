@@ -21,7 +21,7 @@ namespace Backtrace.Tests.DatabaseTests
     /// </summary>
     [TestFixture(Author = "Konrad Dysput", Category = "Database.Flush")]
     public class DatabaseFlushTests : DatabaseTestBase
-    {]
+    {
         [TestCase(1)]
         [TestCase(20)]
         [Test(Author = "Konrad Dysput", Description = "Test database flush method")]
