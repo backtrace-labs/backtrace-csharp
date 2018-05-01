@@ -1,6 +1,7 @@
 ﻿using Backtrace.Interfaces;
 using Backtrace.Model.Database;
 using Backtrace.Tests.DatabaseTests.Model;
+using Backtrace.Types;
 using Moq;
 using NUnit.Framework;
 using System;
@@ -35,7 +36,7 @@ namespace Backtrace.Tests.DatabaseTests
         public void TestFifoOrder()
         {
             _database.Clear();
-            ChangeRetryOrder(Types.RetryOrder.Queue);
+            ChangeRetryOrder(RetryOrder.Queue);
             //mock two entries
             var firstEntry = GetEntry();
             var secoundEntry = GetEntry();
@@ -51,13 +52,36 @@ namespace Backtrace.Tests.DatabaseTests
             DisposeEntries();
             Assert.AreEqual(_database.BacktraceDatabaseContext.FirstOrDefault().Id, firstEntry.Id);
             Assert.AreEqual(_database.BacktraceDatabaseContext.FirstOrDefault().Id, secoundEntry.Id);
+        }
+
+        [TestCase(1)]
+        [TestCase(5)]
+        [TestCase(15)]
+        [Test(Author = "Konrad Dysput", Description = "Test FIFO list retry order")]
+        public void TestFifoListOrder(int totalNumberOfEntries)
+        {
+            _database.Clear();
+            ChangeRetryOrder(RetryOrder.Queue);
+            var entries = new List<BacktraceDatabaseEntry<object>>();
+            for (int i = 0; i < totalNumberOfEntries; i++)
+            {
+                var entry = GetEntry();
+                entries.Add(entry);
+                _database.BacktraceDatabaseContext.Add(entry);
+            }
+            DisposeEntries();
+            foreach (var entry in entries)
+            {
+                var firstEntryId = _database.BacktraceDatabaseContext.FirstOrDefault().Id;
+                Assert.AreEqual(firstEntryId, entry.Id);
+            }
         }
 
         [Test(Author = "Konrad Dysput", Description = "Test LIFO retry order")]
         public void TestLifoOrder()
         {
             _database.Clear();
-            ChangeRetryOrder(Types.RetryOrder.Stack);
+            ChangeRetryOrder(RetryOrder.Stack);
             for (int i = 0; i < 10; i++)
             {
                 _database.BacktraceDatabaseContext.Add(GetEntry());
@@ -73,8 +97,32 @@ namespace Backtrace.Tests.DatabaseTests
             DisposeEntries();
             Assert.AreEqual(_database.BacktraceDatabaseContext.FirstOrDefault().Id, secoundEntry.Id);
             Assert.AreEqual(_database.BacktraceDatabaseContext.FirstOrDefault().Id, firstEntry.Id);
-
         }
+
+        [TestCase(1)]
+        [TestCase(5)]
+        [TestCase(15)]
+        [Test(Author = "Konrad Dysput", Description = "Test LIFO list retry order")]
+        public void TestLifoListOrder(int totalNumberOfEntries)
+        {
+            _database.Clear();
+            ChangeRetryOrder(RetryOrder.Stack);
+            var entries = new List<BacktraceDatabaseEntry<object>>();
+            for (int i = 0; i < totalNumberOfEntries; i++)
+            {
+                var entry = GetEntry();
+                entries.Add(entry);
+                _database.BacktraceDatabaseContext.Add(entry);
+            }
+            DisposeEntries();
+            for (int retryIndex = entries.Count - 1; retryIndex >= 0; retryIndex--)
+            {
+                var entry = entries[retryIndex];
+                var firstEntryId = _database.BacktraceDatabaseContext.FirstOrDefault().Id;
+                Assert.AreEqual(firstEntryId, entry.Id);
+            }
+        }
+
 
     }
 }
