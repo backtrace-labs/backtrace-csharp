@@ -42,11 +42,11 @@ namespace Backtrace.Tests.DatabaseTests
             Assert.Throws<ArgumentException>(() => new BacktraceDatabase<object>(new BacktraceDatabaseSettings(_projectDirectory) { TotalRetry = 0 }));
 
             //initialize database with valid settings
-            Assert.DoesNotThrow(() =>new BacktraceDatabase<object>(new BacktraceDatabaseSettings(_projectDirectory)));
+            Assert.DoesNotThrow(() => new BacktraceDatabase<object>(new BacktraceDatabaseSettings(_projectDirectory)));
         }
 
-        [Test(Author ="Konrad Dysput",Description ="Test not started database")]
-        public void TestNotStartedDatabase()
+        [Test(Author = "Konrad Dysput", Description = "Test uninitialized database")]
+        public void TestUninitializedDatabase()
         {
             var database = new BacktraceDatabase<object>(new BacktraceDatabaseSettings(_projectDirectory));
             var report = (new Exception("test excetpion")).ToBacktraceReport();
@@ -66,7 +66,7 @@ namespace Backtrace.Tests.DatabaseTests
             Assert.ThrowsAsync<ArgumentException>(() => database.FlushAsync());
 
             //mock api
-            database.SetApi(new BacktraceApi<object>(new BacktraceCredentials("https://www.backtrace.io","123123")));
+            database.SetApi(new BacktraceApi<object>(new BacktraceCredentials("https://www.backtrace.io", "123123")));
             Assert.DoesNotThrow(() => database.Flush());
             Assert.DoesNotThrowAsync(() => database.FlushAsync());
         }

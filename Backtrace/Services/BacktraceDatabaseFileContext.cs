@@ -60,8 +60,19 @@ namespace Backtrace.Services
         public void RemoveOrphaned(IEnumerable<BacktraceDatabaseEntry<T>> existingEntries)
         {
             IEnumerable<string> entryStringIds = existingEntries.Select(n => n.Id.ToString());
-            foreach (var file in GetAll())
+            var files = GetAll();
+            for (int fileIndex = 0; fileIndex < files.Count(); fileIndex++)
             {
+                var file = files.ElementAt(fileIndex);
+                //check if file should be stored in database
+                //database only store data in json and files in dmp extension
+                if(file.Extension != ".dmp" || file.Extension != ".json")
+                {
+                    file.Delete();
+                    continue;
+                }
+                //get id from file name
+                //substring from position 0 to position from character '-' contains id
                 var name = file.Name.LastIndexOf('-');
                 // if file is invalid entry because our regex don't match
                 // we remove invalid file

@@ -48,7 +48,6 @@ namespace Backtrace.Tests.DatabaseTests
             {
                 _database.BacktraceDatabaseContext.Add(GetEntry());
             }
-
             DisposeEntries();
             Assert.AreEqual(_database.BacktraceDatabaseContext.FirstOrDefault().Id, firstEntry.Id);
             Assert.AreEqual(_database.BacktraceDatabaseContext.FirstOrDefault().Id, secoundEntry.Id);
