@@ -135,6 +135,7 @@ namespace Backtrace.Services
         /// </summary>
         /// <param name="data">Diagnostic data</param>
         /// <returns>Server response</returns>
+        [Obsolete("Send is obsolete, please use SendAsync instead if possible.")]
         public BacktraceResult Send(BacktraceData<T> data)
         {
             Guid requestId = Guid.NewGuid();
@@ -143,6 +144,7 @@ namespace Backtrace.Services
 
             var formData = FormDataHelper.GetFormData(json, data.Attachments, requestId);
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
+#if NET35
             HttpWebRequest request = WebRequest.Create(_serverurl) as HttpWebRequest;
 
             //Set up the request properties.
@@ -163,6 +165,45 @@ namespace Backtrace.Services
                 OnServerError?.Invoke(exception);
                 return BacktraceResult.OnError(report, exception);
             }
+#endif
+#if !NET35
+            string boundary = FormDataHelper.GetBoundary(requestId);
+            using (var request = new HttpRequestMessage(HttpMethod.Post, _serverurl))
+            using (var content = new MultipartFormDataContent(boundary))
+            {
+                content.AddJson("upload_file.json", json);
+                content.AddFiles(data.Attachments);
+
+                //// clear and add content type with boundary tag
+                content.Headers.Remove("Content-Type");
+                content.Headers.TryAddWithoutValidation("Content-Type", contentType);
+                request.Content = content;
+
+                try
+                {
+                    using (var response = HttpClient.SendAsync(request))
+                    {
+                        var responseResult = response.Result;
+                        var fullResponse = responseResult.Content.ReadAsStringAsync().Result;
+                        if (responseResult.StatusCode != HttpStatusCode.OK)
+                        {
+                            var err = new WebException(responseResult.ReasonPhrase);
+                            OnServerError?.Invoke(err);
+                            return BacktraceResult.OnError(report, err);
+                        }
+                        var result = JsonConvert.DeserializeObject<BacktraceResult>(fullResponse);
+                        result.BacktraceReport = report;
+                        OnServerResponse?.Invoke(result);
+                        return result;
+                    }
+                }
+                catch (Exception exception)
+                {
+                    OnServerError?.Invoke(exception);
+                    return BacktraceResult.OnError(report, exception);
+                }
+            }
+#endif
         }
 
         /// <summary>
@@ -181,7 +222,7 @@ namespace Backtrace.Services
                 return response;
             }
         }
-        #endregion
+#endregion
         /// <summary>
         /// Get serialization settings
         /// </summary>
@@ -191,7 +232,7 @@ namespace Backtrace.Services
             NullValueHandling = NullValueHandling.Ignore,
             DefaultValueHandling = DefaultValueHandling.Ignore
         };
-        #region dispose
+#region dispose
         private bool _disposed = false; // To detect redundant calls
         public void Dispose()
         {
@@ -217,6 +258,6 @@ namespace Backtrace.Services
         {
             Dispose(false);
         }
-        #endregion
+#endregion
     }
 }
