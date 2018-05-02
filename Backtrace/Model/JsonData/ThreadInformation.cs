@@ -53,7 +53,7 @@ namespace Backtrace.Model.JsonData
         /// <param name="currentThread">Is current thread flag</param>
         public ThreadInformation(Thread thread, IEnumerable<DiagnosticStack> stack, bool currentThread = false)
             : this(
-                 threadName: thread.GenerateValidThreadName(),
+                 threadName: thread.GenerateValidThreadName().ToLower(),
                  fault: currentThread, //faulting thread = current thread
                  stack: stack)
         { }

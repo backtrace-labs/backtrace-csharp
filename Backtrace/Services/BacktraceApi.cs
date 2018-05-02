@@ -148,6 +148,7 @@ namespace Backtrace.Services
         /// </summary>
         /// <param name="data">Diagnostic data</param>
         /// <returns>Server response</returns>
+        [Obsolete("Send is obsolete, please use SendAsync instead if possible.")]
         public BacktraceResult Send(BacktraceData<T> data)
         {
             //check rate limiting
@@ -192,6 +193,9 @@ namespace Backtrace.Services
                 OnServerError?.Invoke(exception);
                 return BacktraceResult.OnError(report, exception);
             }
+#else
+            return Task.Run(() => SendAsync(data)).Result;
+#endif
         }
 
         /// <summary>
@@ -210,7 +214,7 @@ namespace Backtrace.Services
                 return response;
             }
         }
-        #endregion
+#endregion
         /// <summary>
         /// Get serialization settings
         /// </summary>
@@ -220,7 +224,7 @@ namespace Backtrace.Services
             NullValueHandling = NullValueHandling.Ignore,
             DefaultValueHandling = DefaultValueHandling.Ignore
         };
-        #region dispose
+#region dispose
         private bool _disposed = false; // To detect redundant calls
         public void Dispose()
         {
