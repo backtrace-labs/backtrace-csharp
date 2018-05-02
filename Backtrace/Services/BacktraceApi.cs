@@ -138,13 +138,14 @@ namespace Backtrace.Services
         [Obsolete("Send is obsolete, please use SendAsync instead if possible.")]
         public BacktraceResult Send(BacktraceData<T> data)
         {
+
+#if NET35
             Guid requestId = Guid.NewGuid();
             string json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
             var report = data.Report as BacktraceReport;
 
             var formData = FormDataHelper.GetFormData(json, data.Attachments, requestId);
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
-#if NET35
             HttpWebRequest request = WebRequest.Create(_serverurl) as HttpWebRequest;
 
             //Set up the request properties.
@@ -165,44 +166,8 @@ namespace Backtrace.Services
                 OnServerError?.Invoke(exception);
                 return BacktraceResult.OnError(report, exception);
             }
-#endif
-#if !NET35
-            string boundary = FormDataHelper.GetBoundary(requestId);
-            using (var request = new HttpRequestMessage(HttpMethod.Post, _serverurl))
-            using (var content = new MultipartFormDataContent(boundary))
-            {
-                content.AddJson("upload_file.json", json);
-                content.AddFiles(data.Attachments);
-
-                //// clear and add content type with boundary tag
-                content.Headers.Remove("Content-Type");
-                content.Headers.TryAddWithoutValidation("Content-Type", contentType);
-                request.Content = content;
-
-                try
-                {
-                    using (var response = HttpClient.SendAsync(request))
-                    {
-                        var responseResult = response.Result;
-                        var fullResponse = responseResult.Content.ReadAsStringAsync().Result;
-                        if (responseResult.StatusCode != HttpStatusCode.OK)
-                        {
-                            var err = new WebException(responseResult.ReasonPhrase);
-                            OnServerError?.Invoke(err);
-                            return BacktraceResult.OnError(report, err);
-                        }
-                        var result = JsonConvert.DeserializeObject<BacktraceResult>(fullResponse);
-                        result.BacktraceReport = report;
-                        OnServerResponse?.Invoke(result);
-                        return result;
-                    }
-                }
-                catch (Exception exception)
-                {
-                    OnServerError?.Invoke(exception);
-                    return BacktraceResult.OnError(report, exception);
-                }
-            }
+#else
+            return Task.Run(() => SendAsync(data)).Result;
 #endif
         }
 
