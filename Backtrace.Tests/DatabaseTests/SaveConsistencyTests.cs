@@ -1,4 +1,5 @@
-﻿using Backtrace.Tests.DatabaseTests.Model;
+﻿using Backtrace.Model.Database;
+using Backtrace.Tests.DatabaseTests.Model;
 using Moq;
 using NUnit.Framework;
 using System;
@@ -12,15 +13,41 @@ namespace Backtrace.Tests.DatabaseTests
     [TestFixture(Author = "Konrad Dysput", Category = "Database.Consistency")]
     public class SaveConsistencyTests : DatabaseTestBase
     {
-        public override void Setup()
+        protected bool writeFail = true;
+        private bool ShouldFail()
         {
-            base.Setup();
-            //mock exception for saving entry json
-            _entryWriter.Setup(n => n.SaveTemporaryFile(It.Is<string>(m => m.EndsWith("entry.json")), It.IsAny<byte[]>()))
-                .Throws<UnauthorizedAccessException>();
-
-            //mock saving other files
-            _entryWriter.Setup(n => n.SaveTemporaryFile(It.Is<string>(m => !m.EndsWith("entry.json")), It.IsAny<byte[]>()));
+            return writeFail;
         }
+
+        [TestCase(0, 5)]
+        [TestCase(5, 10)]
+        [TestCase(10, 5)]
+        [TestCase(50, 5)]
+        [TestCase(100, 10)]
+        public void TestWriteConsistency(int successRate, int numberOfEntries)
+        {
+            int totalFails = 0;
+            Random random = new Random();
+            var entries = new List<BacktraceDatabaseEntry<object>>();
+            for (int i = 0; i < numberOfEntries; i++)
+            {
+                var percentage = random.Next(0, 100);
+                writeFail = percentage < successRate;
+                var entry = GetEntry();
+                ((MockBacktraceDatabaseWriter)entry.EntryWriter).writeFail = writeFail;
+                var result = entry.Save();
+                if (result)
+                {
+                    entries.Add(entry);
+                }
+                else
+                {
+                    totalFails++;
+                }
+            }
+            Assert.AreEqual(totalFails, numberOfEntries - entries.Count);
+        }
+
+
     }
 }

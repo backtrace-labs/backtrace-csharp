@@ -10,5 +10,7 @@ namespace Backtrace.Interfaces.Database
         string Write(object data, string prefix);
         string Write(byte[] data, string prefix);
         void SaveTemporaryFile(string path, byte[] file);
+        string ToJsonFile(object data);
+        void SaveValidReport(string sourcePath, string destinationPath);
     }
 }

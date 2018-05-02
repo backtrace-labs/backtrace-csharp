@@ -11,7 +11,7 @@ namespace Backtrace.Model.Database
     /// <summary>
     /// Database entry writer
     /// </summary>
-    internal class BacktraceDatabaseEntryWriter: IBacktraceDatabaseEntryWriter
+    internal class BacktraceDatabaseEntryWriter : IBacktraceDatabaseEntryWriter
     {
         /// <summary>
         /// Path to destination directory
@@ -27,9 +27,9 @@ namespace Backtrace.Model.Database
             _destinationPath = path;
         }
 
-        public virtual string Write(object data, string prefix)
+        public string Write(object data, string prefix)
         {
-            string json = JsonConvert.SerializeObject(data);
+            var json = ToJsonFile(data);
             byte[] file = Encoding.UTF8.GetBytes(json);
             return Write(file, prefix);
         }
@@ -38,17 +38,29 @@ namespace Backtrace.Model.Database
         {
             string filename = $"{prefix}.json";
             string tempFilePath = Path.Combine(_destinationPath, $"temp_{filename}");
-            try
-            {
-                SaveTemporaryFile(tempFilePath, data);
-                string destFilePath = Path.Combine(_destinationPath, filename);
-                File.Move(tempFilePath, destFilePath);
-                return destFilePath;
-            }
-            catch
+            SaveTemporaryFile(tempFilePath, data);
+            string destFilePath = Path.Combine(_destinationPath, filename);
+            SaveValidReport(tempFilePath, destFilePath);
+            return destFilePath;
+        }
+
+        public virtual string ToJsonFile(object data)
+        {
+            if (data == null)
             {
                 return string.Empty;
             }
+            return JsonConvert.SerializeObject(data);
+        }
+
+        /// <summary>
+        /// Save valid diagnostic data from temporary file
+        /// </summary>
+        /// <param name="sourcePath">Temporary file path</param>
+        /// <param name="destinationPath">destination path</param>
+        public virtual void SaveValidReport(string sourcePath, string destinationPath)
+        {
+            File.Move(sourcePath, destinationPath);
         }
 
         /// <summary>

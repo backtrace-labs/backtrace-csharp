@@ -56,28 +56,28 @@ namespace Backtrace.Model.Database
         /// Stored entry
         /// </summary>
         [JsonIgnore]
-        private BacktraceData<T> _entry;
+        internal virtual BacktraceData<T> Entry { get; set; }
 
         /// <summary>
         /// Path to database directory
         /// </summary>
         [JsonIgnore]
-        private readonly string _path;
+        private readonly string _path = string.Empty;
 
         /// <summary>
         /// Entry writer
         /// </summary>
         [JsonIgnore]
-        internal IBacktraceDatabaseEntryWriter _entryWriter;
+        internal IBacktraceDatabaseEntryWriter EntryWriter;
 
         [JsonIgnore]
         public virtual BacktraceData<T> BacktraceData
         {
             get
             {
-                if (_entry != null)
+                if (Entry != null)
                 {
-                    return _entry;
+                    return Entry;
                 }
                 if(!Valid())
                 {
@@ -113,18 +113,32 @@ namespace Backtrace.Model.Database
         public BacktraceDatabaseEntry(BacktraceData<T> data, string path)
         {
             Id = data.Uuid;
-            _entry = data;
+            Entry = data;
             _path = path;
-            _entryWriter = new BacktraceDatabaseEntryWriter(path);           
+            EntryWriter = new BacktraceDatabaseEntryWriter(path);           
         }
 
-        public void Save()
+        public bool Save()
         {
-            DiagnosticDataPath = _entryWriter.Write(_entry, $"{Id}-attachment");
-            ReportPath = _entryWriter.Write(_entry.Report, $"{Id}-report");
-            MiniDumpPath = _entry.Report.MinidumpFile;
-            EntryPath = Path.Combine(_path, $"{Id}-entry.json");
-            _entryWriter.Write(this, $"{Id}-entry");
+            try
+            {
+                DiagnosticDataPath = EntryWriter.Write(Entry, $"{Id}-attachment");
+                ReportPath = EntryWriter.Write(Entry.Report, $"{Id}-report");
+                MiniDumpPath = Entry.Report?.MinidumpFile ?? string.Empty;
+                EntryPath = Path.Combine(_path, $"{Id}-entry.json");
+                EntryWriter.Write(this, $"{Id}-entry");
+                return true;
+            }
+            catch (IOException)
+            {
+                Trace.WriteLine($"Received {nameof(IOException)} while saving data to database");
+                return false;
+            }
+            catch (Exception)
+            {
+                Trace.WriteLine($"Received {nameof(Exception)} while saving data to database");
+                return false;
+            }
         }
 
         /// <summary>
@@ -184,7 +198,7 @@ namespace Backtrace.Model.Database
             if (disposing)
             {
                 Locked = false;
-                _entry = null;
+                Entry = null;
             }
         }
     }

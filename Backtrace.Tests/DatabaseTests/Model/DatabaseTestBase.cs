@@ -29,7 +29,7 @@ namespace Backtrace.Tests.DatabaseTests.Model
         /// <summary>
         /// Entry writer
         /// </summary>
-        internal Mock<IBacktraceDatabaseEntryWriter> _entryWriter;
+        internal IBacktraceDatabaseEntryWriter _entryWriter;
 
         [SetUp]
         public virtual void Setup()
@@ -50,8 +50,6 @@ namespace Backtrace.Tests.DatabaseTests.Model
             //mock cache
             var mockCacheContext = new Mock<IBacktraceDatabaseContext<object>>();
             mockFileContext.Setup(n => n.RemoveOrphaned(It.IsAny<IEnumerable<BacktraceDatabaseEntry<object>>>()));
-
-            _entryWriter = new Mock<IBacktraceDatabaseEntryWriter>();
 
             _database = new BacktraceDatabase<object>(projectPath)
             {
@@ -85,7 +83,10 @@ namespace Backtrace.Tests.DatabaseTests.Model
             mockEntry.Setup(n => n.Delete());
             mockEntry.Setup(n => n.BacktraceData)
                 .Returns(new BacktraceData<object>(It.IsAny<BacktraceReportBase<object>>(), It.IsAny<Dictionary<string, object>>()));
-            mockEntry.Object._entryWriter = _entryWriter.Object;
+            var entry = new BacktraceData<object>(null, new Dictionary<string, object>());
+            mockEntry.SetupProperty(n => n.Entry, entry);
+
+            mockEntry.Object.EntryWriter = new MockBacktraceDatabaseWriter();
             return mockEntry.Object;
         }
     }
