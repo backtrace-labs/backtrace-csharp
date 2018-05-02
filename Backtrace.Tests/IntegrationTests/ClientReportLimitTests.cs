@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Backtrace.Tests.IntegrationTests
 {
-    [TestFixture(Author = "Arthur Tu", Category = "Submission tests", Description = "Test rate limiting with diffrent threads")]
+    [TestFixture(Author = "Arthur Tu", Category = "IntegrationTests.ClientRateLimit", Description = "Test rate limiting with diffrent threads")]
     public class ClientReportLimitTests
     {
         /// <summary>

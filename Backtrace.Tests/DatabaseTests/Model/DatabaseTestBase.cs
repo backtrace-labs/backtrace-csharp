@@ -25,12 +25,7 @@ namespace Backtrace.Tests.DatabaseTests.Model
         /// Database
         /// </summary>
         protected BacktraceDatabase<object> _database;
-
-        /// <summary>
-        /// Entry writer
-        /// </summary>
-        internal IBacktraceDatabaseEntryWriter _entryWriter;
-
+        
         [SetUp]
         public virtual void Setup()
         {

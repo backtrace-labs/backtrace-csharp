@@ -5,13 +5,10 @@ using Backtrace.Model;
 using Backtrace.Model.Database;
 using Backtrace.Services;
 using Backtrace.Types;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Timers;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Diagnostics;
 #if !NET35
 using System.Threading.Tasks;
@@ -111,7 +108,10 @@ namespace Backtrace
             // remove orphaned files
             RemoveOrphaned();
             // setup database timer events
-            SetupTimer();
+            if (DatabaseSettings.RetryBehavior == RetryBehavior.ByInterval)
+            {
+                SetupTimer();
+            }
             //Enable database
             _enable = true;
         }

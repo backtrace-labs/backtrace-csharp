@@ -212,9 +212,7 @@ namespace Backtrace
         {
             OnReportStart?.Invoke(backtraceReport);
             var result = await base.SendAsync(backtraceReport);
-            AfterSend?.Invoke(result);
-
-           
+            AfterSend?.Invoke(result);           
             return result;
         }
 

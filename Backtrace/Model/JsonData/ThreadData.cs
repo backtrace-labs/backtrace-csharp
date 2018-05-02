@@ -66,7 +66,7 @@ namespace Backtrace.Model.JsonData
             try
             {
                 currentThreads = Process.GetCurrentProcess().Threads;
-                if(currentThreads == null)
+                if (currentThreads == null)
                 {
                     return;
                 }
@@ -99,11 +99,20 @@ namespace Backtrace.Model.JsonData
             var mainThreadId = Thread.CurrentThread.ManagedThreadId;
             using (DataTarget target = DataTarget.AttachToProcess(Process.GetCurrentProcess().Id, 5000, AttachFlag.Passive))
             {
-                if(target.ClrVersions == null || !target.ClrVersions.Any())
+                if (target.ClrVersions == null || !target.ClrVersions.Any())
                 {
                     return;
                 }
-                ClrRuntime runtime = target.ClrVersions.First().CreateRuntime();
+                ClrRuntime runtime = null;
+                try
+                {
+                    runtime = target.ClrVersions.First().CreateRuntime();
+                }
+                catch (ClrDiagnosticsException)
+                {
+                    //we cannot create runtime for current applications state
+                    return;
+                }
                 foreach (ClrThread thread in runtime.Threads)
                 {
                     if (thread.ManagedThreadId == mainThreadId)

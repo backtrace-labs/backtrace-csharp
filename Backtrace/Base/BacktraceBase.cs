@@ -97,10 +97,22 @@ namespace Backtrace.Base
         /// </summary>
         public IBacktraceDatabase<T> Database;
 
+        private IBacktraceApi<T> _backtraceApi;
         /// <summary>
         /// Instance of BacktraceApi that allows to send data to Backtrace API
         /// </summary>
-        internal IBacktraceApi<T> BacktraceApi;
+        internal IBacktraceApi<T> BacktraceApi
+        {
+            get
+            {
+                return _backtraceApi;
+            }
+            set
+            {
+                _backtraceApi = value;
+                Database?.SetApi(_backtraceApi);
+            }
+        }
 
         /// <summary>
         /// Initialize new client instance with BacktraceCredentials
