@@ -49,7 +49,7 @@ namespace Backtrace.Services
         /// <param name="credentials">API credentials</param>
         public BacktraceApi(BacktraceCredentials credentials, uint reportPerMin = 3, bool tlsLegacySupport = false)
         {
-            if(credentials == null)
+            if (credentials == null)
             {
                 throw new ArgumentException($"{nameof(BacktraceCredentials)} cannot be null");
             }
@@ -162,11 +162,14 @@ namespace Backtrace.Services
             {
                 return RequestHandler?.Invoke(_serverurl, FormDataHelper.GetContentTypeWithBoundary(Guid.NewGuid()), data);
             }
-
+#if NET35
             //set submission data
             string json = JsonConvert.SerializeObject(data);
             var report = data.Report as BacktraceReport;
             return Send(Guid.NewGuid(), json, report?.AttachmentPaths ?? new List<string>(), report);
+#else
+            return Task.Run(() => SendAsync(data)).Result;
+#endif
         }
 
         private BacktraceResult Send(Guid requestId, string json, List<string> attachments, BacktraceReport report)
@@ -193,9 +196,6 @@ namespace Backtrace.Services
                 OnServerError?.Invoke(exception);
                 return BacktraceResult.OnError(report, exception);
             }
-#else
-            return Task.Run(() => SendAsync(data)).Result;
-#endif
         }
 
         /// <summary>
@@ -214,7 +214,7 @@ namespace Backtrace.Services
                 return response;
             }
         }
-#endregion
+        #endregion
         /// <summary>
         /// Get serialization settings
         /// </summary>
@@ -224,7 +224,7 @@ namespace Backtrace.Services
             NullValueHandling = NullValueHandling.Ignore,
             DefaultValueHandling = DefaultValueHandling.Ignore
         };
-#region dispose
+        #region dispose
         private bool _disposed = false; // To detect redundant calls
         public void Dispose()
         {
