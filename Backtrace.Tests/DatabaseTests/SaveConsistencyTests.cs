@@ -13,12 +13,6 @@ namespace Backtrace.Tests.DatabaseTests
     [TestFixture(Author = "Konrad Dysput", Category = "Database.Consistency")]
     public class SaveConsistencyTests : DatabaseTestBase
     {
-        protected bool writeFail = true;
-        private bool ShouldFail()
-        {
-            return writeFail;
-        }
-
         [TestCase(0, 5)]
         [TestCase(5, 10)]
         [TestCase(10, 5)]
@@ -32,7 +26,7 @@ namespace Backtrace.Tests.DatabaseTests
             for (int i = 0; i < numberOfEntries; i++)
             {
                 var percentage = random.Next(0, 100);
-                writeFail = percentage < successRate;
+                bool writeFail = percentage < successRate;
                 var entry = GetEntry();
                 ((MockBacktraceDatabaseWriter)entry.EntryWriter).writeFail = writeFail;
                 var result = entry.Save();
