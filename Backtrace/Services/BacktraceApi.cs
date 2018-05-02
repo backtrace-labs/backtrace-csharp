@@ -151,6 +151,9 @@ namespace Backtrace.Services
         [Obsolete("Send is obsolete, please use SendAsync instead if possible.")]
         public BacktraceResult Send(BacktraceData<T> data)
         {
+#if !NET35
+            return Task.Run(() => SendAsync(data)).Result;
+#endif
             //check rate limiting
             bool watcherValidation = reportLimitWatcher.WatchReport(data.Report);
             if (!watcherValidation)
@@ -162,14 +165,10 @@ namespace Backtrace.Services
             {
                 return RequestHandler?.Invoke(_serverurl, FormDataHelper.GetContentTypeWithBoundary(Guid.NewGuid()), data);
             }
-#if NET35
             //set submission data
             string json = JsonConvert.SerializeObject(data);
             var report = data.Report as BacktraceReport;
             return Send(Guid.NewGuid(), json, report?.AttachmentPaths ?? new List<string>(), report);
-#else
-            return Task.Run(() => SendAsync(data)).Result;
-#endif
         }
 
         private BacktraceResult Send(Guid requestId, string json, List<string> attachments, BacktraceReport report)
@@ -214,7 +213,7 @@ namespace Backtrace.Services
                 return response;
             }
         }
-        #endregion
+#endregion
         /// <summary>
         /// Get serialization settings
         /// </summary>
@@ -224,7 +223,7 @@ namespace Backtrace.Services
             NullValueHandling = NullValueHandling.Ignore,
             DefaultValueHandling = DefaultValueHandling.Ignore
         };
-        #region dispose
+#region dispose
         private bool _disposed = false; // To detect redundant calls
         public void Dispose()
         {
@@ -250,7 +249,7 @@ namespace Backtrace.Services
         {
             Dispose(false);
         }
-        #endregion
+#endregion
 
         public void SetClientRateLimitEvent(Action<BacktraceReport> onClientReportLimitReached)
         {
