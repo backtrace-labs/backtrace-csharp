@@ -14,8 +14,8 @@ namespace Backtrace.Framework45Example
         //initialize new BacktraceClient with custom configuration section readed from file App.config
         //Client will be initialized with values stored in default section name "BacktraceCredentials"
         private BacktraceClient backtraceClient = new BacktraceClient(
-            new BacktraceCredentials(ApplicationCredentials.Host, ApplicationCredentials.Token),
-            new BacktraceDatabaseSettings(@"D:\data\Backtracelogs"),
+            new BacktraceCredentials(ApplicationSettings.Host, ApplicationSettings.Token),
+            new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath),
             reportPerMin: 0, //unlimited number of reports per secound
             tlsLegacySupport: true
         );
