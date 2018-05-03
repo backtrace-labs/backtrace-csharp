@@ -108,7 +108,8 @@ namespace Backtrace
             // remove orphaned files
             RemoveOrphaned();
             // setup database timer events
-            if (DatabaseSettings.RetryBehavior == RetryBehavior.ByInterval)
+            if (DatabaseSettings.RetryBehavior == RetryBehavior.ByInterval
+                || !DatabaseSettings.AutoSendMode)
             {
                 SetupTimer();
             }
