@@ -110,7 +110,6 @@ namespace Backtrace.Tests.IntegrationTests
 
         private void DivideByZeroMethod()
         {
-
             int x = 0;
             var result = 5 / x;
         }

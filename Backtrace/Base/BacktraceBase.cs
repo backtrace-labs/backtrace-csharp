@@ -169,6 +169,7 @@ namespace Backtrace.Base
         /// Send a report to Backtrace API
         /// </summary>
         /// <param name="report">Report to send</param>
+        [Obsolete("Send is obsolete, please use SendAsync instead if possible.")]
         public virtual BacktraceResult Send(BacktraceReportBase<T> report)
         {
             var entry = Database.Add(report, Attributes, MiniDumpType);

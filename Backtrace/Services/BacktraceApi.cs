@@ -148,7 +148,6 @@ namespace Backtrace.Services
         /// </summary>
         /// <param name="data">Diagnostic data</param>
         /// <returns>Server response</returns>
-        [Obsolete("Send is obsolete, please use SendAsync instead if possible.")]
         public BacktraceResult Send(BacktraceData<T> data)
         {
 #if !NET35
