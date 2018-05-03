@@ -155,39 +155,33 @@ var backtraceClient = new BacktraceClient(credentials);
 Additionally and optionally, `BacktraceClient` constructor also accepts the following parameters: **custom attributes**, **database directory path**, **databaseSettings**, **backtraceDatabase*, **tls legacy support** and **maximum number of error reports per minute**.
 
 ```csharp
-var backtraceClient = new BacktraceClient(
-    sectionName: "BacktraceCredentials",
-    attributes: new Dictionary<string, object>() { { "Attribute", "value" } },
-    databaseSettings: new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath),
-    reportPerMin: 0
-);
+var configuration = new BacktraceClientConfiguration(credentials, "databaseDirectory");
+var backtraceClient = new BacktraceClient(configuration);
+
 ```
+
+`BacktraceClient` constructor also accepts the following parameters: **custom attributes**, **database directory path**, **databaseSettings**, **backtraceDatabase*, **tls legacy support** and **maximum number of error reports per minute**.
+
+
 #### TLS/SSL Support
 
 For .NET Standard 2.0 and .NET Framework 4.6+, TLS 1.2 support is built-in.
 
 For .NET Framework 4.5 (and below) as well as .NET Standard 2.0 (and below), TLS 1.2 support may not be available, but you can use still enable lower TLS/SSL support by supplying `tlsLegacySupport` parameter to `BacktraceClient` constructor, like so:
-```
-var backtraceClient = new BacktraceClient(
-    sectionName: "BacktraceCredentials",
-    attributes: new Dictionary<string, object>() { { "Attribute", "value" } },
-    databaseSettings: new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath),
-    reportPerMin: 0,
-    tlsLegacySupport: true
-);
-```
-
-`BacktraceClient` accepts configuration object called `BacktraceClientConfiguration`. You can use this class to set all your client options and initialize new `BacktraceClient` 
-
 ```csharp
-var configuration = new BacktraceClientConfiguration(credentials, new BacktraceDatabaseSettings("path to database"));
-var backtraceClient = new BacktraceClient(options);
+
+var configuration = new BacktraceClientConfiguration(credentials, "databaseDirectory")
+{
+    TlsLegacySupport = true,
+    ReportPerMin = 0
+};
+var backtraceClient = new BacktraceClient(configuration);
 
 ```
 
 
-Note:
-- `databaseDirectory` parameter is optional. BacktraceClient will use this directory to save additional information relating to program execution. If a `databaseDirectory` path is supplied, the Backtrace library will generate and attach a minidump to each error report automatically. If you don't pass valid path to database directory, `BacktraceDatabase` will be disable.
+Notes:
+- `databaseDirectory` parameter is optional. If a `databaseDirectory` path is supplied, the Backtrace library will generate and attach a minidump to each error report automatically. Otherwise, `BacktraceDatabase` will be disabled.
 - You can initialize `BacktraceClient` with `BacktraceDatabaseSettings` or you can pass your own implementation of offline database. 
 - If parameter `reportPerMin` is equal to 0, there is no limit on the number of error reports per minute. When an error is submitted when the `reportPerMin` cap is reached, `BacktraceClient.Send` method will return false.
 
