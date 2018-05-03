@@ -152,7 +152,7 @@ var credentials = new BacktraceCredentials("backtrace_endpoint_url", "token");
 var backtraceClient = new BacktraceClient(credentials);
 ```
 
-Additionally and optionally, `BacktraceClient` constructor also accepts the following parameters: **custom attributes**, **database directory path** and **maximum number of error reports per minute**.
+Additionally and optionally, `BacktraceClient` constructor also accepts the following parameters: **custom attributes**, **database directory path**, **tls legacy support** and **maximum number of error reports per minute**.
 
 ```csharp
 var backtraceClient = new BacktraceClient(
@@ -162,7 +162,6 @@ var backtraceClient = new BacktraceClient(
     reportPerMin: 0
 );
 ```
-
 #### TLS/SSL Support
 
 For .NET Standard 2.0 and .NET Framework 4.6+, TLS 1.2 support is built-in.
@@ -178,8 +177,18 @@ var backtraceClient = new BacktraceClient(
 );
 ```
 
+`BacktraceClient` accepts configuration object called `BacktraceClientConfiguration`. You can use this class to set all your client options and initialize new `BacktraceClient` 
+
+```csharp
+var configuration = new BacktraceClientConfiguration(credentials, "path to database");
+var backtraceClient = new BacktraceClient(options);
+
+```
+
+
 Note:
-- `databaseDirectory` parameter is optional. Make sure the directory designated is empty. BacktraceClient will use this directory to save additional information relating to program execution. If a `databaseDirectory` path is supplied, the Backtrace library will generate and attach a minidump to each error report automatically.
+- `databaseDirectory` parameter is optional. BacktraceClient will use this directory to save additional information relating to program execution. If a `databaseDirectory` path is supplied, the Backtrace library will generate and attach a minidump to each error report automatically. If you don't pass valid path to database directory, `BacktraceDatabase` will be disable.
+- You can initialize `BacktraceClient` with `BacktraceDatabaseSettings` or you can pass your own implementation of offline database. 
 - If parameter `reportPerMin` is equal to 0, there is no limit on the number of error reports per minute. When an error is submitted when the `reportPerMin` cap is reached, `BacktraceClient.Send` method will return false.
 
 
@@ -206,6 +215,9 @@ catch (Exception exception)
     var result = backtraceClient.Send(backtraceReport);
 }
 ```
+Note:
+- if you initialize `BacktraceClient` with `BacktraceDatabase` and your application is offline or you pass invalid credentials to `BacktraceClient`, reports will be stored in database directory path,
+- for .NET 4.5> we recommend to use `SendAsync` method
 
 #### Asynchronous Send Support
 
@@ -238,7 +250,14 @@ try
 }
 catch (Exception exception)
 {
+  //use extension method
+  var report = exception.ToBacktraceReport();
+  backtraceClient.Send(report);
+  
+  //pass exception to Send method
   backtraceClient.Send(exception);
+  
+  //pass your custom message to Send method
   await backtraceClient.SendAsync("Message");
 }
 ```
@@ -269,6 +288,7 @@ backtraceClient.BeforeSend =
 `BacktraceClient` currently supports the following events:
 - `BeforeSend`
 - `AfterSend`
+- `RequestHandler`
 - `OnReportStart`
 - `OnClientReportLimitReached`
 - `OnUnhandledApplicationException`
@@ -309,10 +329,18 @@ You can extend `BacktraceReportBase` and `BacktraceBase` to create your own Back
 **`BacktraceResult`** is a class that holds response and result from a `Send` or `SendAsync` call. The class contains a `Status` property that indicates whether the call was completed (`OK`), the call returned with an error (`ServerError`), or the call was aborted because client reporting limit was reached (`LimitReached`). Additionally, the class has a `Message` property that contains details about the status. Note that the `Send` call may produce an error report on an inner exception, in this case you can find an additional `BacktraceResult` object in the `InnerExceptionResult` property.
 
 ## BacktraceDatabase  <a name="architecture-BacktraceDatabase"></a>
-**`BacktraceDatabase`** is a class stores data in your local harddrive. An `BacktraceDatabase` instance is instantiated when the `BacktraceClient` constructor is called. If `databaseDirectory` isn't set in the `BacktraceClient` constructor call, `BacktraceDatabase` won't generate minidump files. Before start - make sure that the directory designed in **BacktraceClient.databaseDirectory** is **empty**. 
+**`BacktraceDatabase`** is a class stores data in your local hard drive. You can intiailize new `BacktraceDatabase` or you can let `BacktraceClient` create new database object when constructor is called. `BacktraceClient` use `BacktraceDatabase` `Start` method by default in  constructor. That means when you pass `BacktraceDatabase` object to client, we will prepare database to work with our API. If `databaseDirectory` isn't set in the `BacktraceClient`  constructor call or `BacktraceDatabaseSettings` object, `BacktraceDatabase` won't generate minidump files and store data. 
+
+`BacktraceDatabase` use timer to periodically send reports stored in memory cache database - `BacktraceDatabaseContext`. If single report fails to send, `BacktraceDatabase` increase retry time variable for all reports in `BacktraceDatabaseContext`. `BacktraceDatabase` generate temporary file for each `Send` or `SendAsync` method invoke. If `BacktraceDatabase` correctly save file on hard drive, we rename file to valid name. 
+
+`BacktraceDatabase` remove all orphaned files from database directory path. Make sure you prepare valid database directory before you start using `BacktraceClient` with `BacktraceDatabase` feature!
+
+If you retrieve `BacktraceDatabaseEntry` from `BacktraceDatabaseContext`, context will mark entry as a locked. In this case `FirstOrDefault` or `LastOrDefault` method will return first or last not locked entry. `BacktraceDatabaseContext` allows you to use FIFO or LIFO data storage.
+
+If you want to clear your database or remove all reports after send method you can use `Clear`, `Flush` and `FlushAsync` methods.
 
 ## ReportWatcher  <a name="architecture-ReportWatcher"></a>
-**`ReportWatcher`** is a class that validate send requests to the Backtrace endpoint. If `reportPerMin` is set in the `BacktraceClient` constructor call, `ReportWatcher` will drop error reports that go over the limit.
+**`ReportWatcher`** is a class that validate send requests to the Backtrace endpoint. If `reportPerMin` is set in the `BacktraceClient` constructor call, `ReportWatcher` will drop error reports that go over the limit. `BacktraceClient` check rate limit before `BacktraceApi` generate diagnostic json. 
 
 
 # Good to know <a name="good-to-know"></a>

@@ -58,8 +58,9 @@ namespace Backtrace.Interfaces
         void Delete(BacktraceDatabaseEntry<T> entry);
 
         /// <summary>
-        /// Get all repots stored in Database
+        /// Get database settings
         /// </summary>
-        //IEnumerable<BacktraceReportBase<T>> Get(Func<BacktraceReportBase<T>,IEnumerable<BacktraceReportBase<T>) filter);
+        /// <returns></returns>
+        BacktraceDatabaseSettings GetSettings();
     }
 }

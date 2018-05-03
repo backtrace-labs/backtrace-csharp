@@ -107,7 +107,7 @@ namespace Backtrace
         /// Initializing Backtrace client instance with BacktraceCredentials
         /// </summary>
         /// <param name="setup">Backtrace client configuration</param>
-        public BacktraceClient(BacktraceClientSetup setup)
+        public BacktraceClient(BacktraceClientConfiguration setup)
             : base(setup.Credentials, setup.ClientAttributes,
                   setup.DatabaseSettings, setup.ReportPerMin, setup.TlsLegacySupport)
         { }
