@@ -15,8 +15,8 @@ namespace Backtrace.Framework35Example
             //Client will be initialized with values stored in default section name "BacktraceCredentials"
             BacktraceClient backtraceClientWithSectionCredentials = new BacktraceClient();
 
-            var credentials = new BacktraceCredentials(ApplicationCredentials.Host, ApplicationCredentials.Token);
-            var backtraceClient = new BacktraceClient(credentials, new BacktraceDatabaseSettings(@"D:\data\Backtracelogs"), tlsLegacySupport: true);
+            var credentials = new BacktraceCredentials(ApplicationSettings.Host, ApplicationSettings.Token);
+            var backtraceClient = new BacktraceClient(credentials, new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath), tlsLegacySupport: true);
 
             //Add new scoped attributes
             backtraceClient.Attributes["ClientAttributeNumber"] = 1;

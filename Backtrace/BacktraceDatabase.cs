@@ -141,6 +141,16 @@ namespace Backtrace
         }
 
         /// <summary>
+        /// Get settings 
+        /// </summary>
+        /// <returns>Current database settings</returns>
+        public BacktraceDatabaseSettings GetSettings()
+        {
+            return DatabaseSettings;
+        }
+
+
+        /// <summary>
         /// Delete all existing files and directories in current database directory
         /// </summary>
         public void Clear()
