@@ -51,7 +51,9 @@ namespace Backtrace.Services
         /// <returns>All existing physical entries</returns>
         public IEnumerable<FileInfo> GetEntries()
         {
-            return _databaseDirectoryInfo.GetFiles(EntryFilterRegex, SearchOption.TopDirectoryOnly);
+            return _databaseDirectoryInfo
+                .GetFiles(EntryFilterRegex, SearchOption.TopDirectoryOnly)
+                .OrderBy(n => n.CreationTime);
         }
 
         /// <summary>
