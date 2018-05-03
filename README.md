@@ -152,13 +152,13 @@ var credentials = new BacktraceCredentials("backtrace_endpoint_url", "token");
 var backtraceClient = new BacktraceClient(credentials);
 ```
 
-Additionally and optionally, `BacktraceClient` constructor also accepts the following parameters: **custom attributes**, **database directory path**, **tls legacy support** and **maximum number of error reports per minute**.
+Additionally and optionally, `BacktraceClient` constructor also accepts the following parameters: **custom attributes**, **database directory path**, **databaseSettings**, **backtraceDatabase*, **tls legacy support** and **maximum number of error reports per minute**.
 
 ```csharp
 var backtraceClient = new BacktraceClient(
     sectionName: "BacktraceCredentials",
     attributes: new Dictionary<string, object>() { { "Attribute", "value" } },
-    databaseDirectory: "pathToDatabaseDirectory",
+    databaseSettings: new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath),
     reportPerMin: 0
 );
 ```
@@ -171,7 +171,7 @@ For .NET Framework 4.5 (and below) as well as .NET Standard 2.0 (and below), TLS
 var backtraceClient = new BacktraceClient(
     sectionName: "BacktraceCredentials",
     attributes: new Dictionary<string, object>() { { "Attribute", "value" } },
-    databaseDirectory: "pathToDatabaseDirectory",
+    databaseSettings: new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath),
     reportPerMin: 0,
     tlsLegacySupport: true
 );
@@ -180,7 +180,7 @@ var backtraceClient = new BacktraceClient(
 `BacktraceClient` accepts configuration object called `BacktraceClientConfiguration`. You can use this class to set all your client options and initialize new `BacktraceClient` 
 
 ```csharp
-var configuration = new BacktraceClientConfiguration(credentials, "path to database");
+var configuration = new BacktraceClientConfiguration(credentials, new BacktraceDatabaseSettings("path to database"));
 var backtraceClient = new BacktraceClient(options);
 
 ```
