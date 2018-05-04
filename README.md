@@ -157,7 +157,7 @@ For more advanced usage of `BacktraceClient`, you can supply `BacktraceClientCon
 ```csharp
 var configuration = new BacktraceClientConfiguration(credentials){
     ClientAttributes = new Dictionary<string, object>() { 
-        { "strinAttribute", "attribute" } },
+        { "stringAttribute", "attribute_value" } },
     ReportPerMin = 3,
 }
 var backtraceClient = new BacktraceClient(configuration);
