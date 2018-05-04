@@ -152,32 +152,33 @@ var credentials = new BacktraceCredentials("backtrace_endpoint_url", "token");
 var backtraceClient = new BacktraceClient(credentials);
 ```
 
-If you want to use more advanced usage of `BacktraceClient`, you can supply `BacktraceClientConfiguration` as a parameter. See following example:
+For more advanced usage of `BacktraceClient`, you can supply `BacktraceClientConfiguration` as a parameter. See the following example:
 
 ```csharp
 var configuration = new BacktraceClientConfiguration(credentials){
     ClientAttributes = new Dictionary<string, object>() { 
-        { "strinAttribute", "attribute" } },
+        { "attribute_name", "attribute_value" } },
     ReportPerMin = 3,
 }
 var backtraceClient = new BacktraceClient(configuration);
 ```
-For more information on `BacktraceClientConfiguration` parameters pleas see  <a name="architecture">architecture section.</a>
+For more information on `BacktraceClientConfiguration` parameters please see <a href="#architecture-BacktraceClient">Architecture</a> section.
 
 
 Notes:
-- If parameter `reportPerMin` is equal to 0, there is no limit on the number of error reports per minute. When an error is submitted when the `reportPerMin` cap is reached, `BacktraceClient.Send` method will return false.
+- If parameter `reportPerMin` is equal to 0, there is no limit on the number of error reports per minute. When the `reportPerMin` cap is reached, `BacktraceClient.Send` method will return false.
 #### TLS/SSL Support
 
 For .NET Standard 2.0 and .NET Framework 4.6+, TLS 1.2 support is built-in.
 
-For .NET Framework 4.5 (and below) as well as .NET Standard 2.0 (and below), TLS 1.2 support may not be available, but you can use still enable lower TLS/SSL support by adding the following code **BEFORE** `BacktraceClient` initialization.
+For .NET Framework 4.5 (and below) as well as .NET Standard 2.0 (and below), TLS 1.2 support may not be available, but you can use still enable lower TLS/SSL support by adding the following code **before** `BacktraceClient` initialization.
 
 ```csharp
- ServicePointManager.SecurityProtocol =
+ServicePointManager.SecurityProtocol =
                      SecurityProtocolType.Tls
                     | (SecurityProtocolType)0x00000300
                     | (SecurityProtocolType)0x00000C00;
+
 ServicePointManager.ServerCertificateValidationCallback 
     += (sender, certificate, chain, errors) => true;
 ```
@@ -185,10 +186,9 @@ ServicePointManager.ServerCertificateValidationCallback
 
 #### Database initialization
 
-`BacktraceClient` allows you to customize the initialization of `BacktraceDatabase` for local storage of error reports by suppling `BacktraceDatabaseSettings` object as a parameter.
+`BacktraceClient` allows you to customize the initialization of `BacktraceDatabase` for local storage of error reports by supplying a `BacktraceDatabaseSettings` parameter, as follows:
 
 ```csharp
-
 var dbSettings = new BacktraceDatabaseSettings("databaseDirectory"){
     MaxEntryNumber = 100,
     MaxDatabaseSize = 1000,
@@ -201,7 +201,7 @@ var backtraceClient = new BacktraceClient(configuration, database);
 ```
 
 Notes:
-- `databaseDirectory` parameter is optional. If a `databaseDirectory` directory is supplied, the Backtrace library will generate and attach a minidump to each error report automatically. Otherwise, `BacktraceDatabase` will be disabled.
+- If a valid `databaseDirectory` directory is supplied, the Backtrace library will generate and attach a minidump to each error report automatically. Otherwise, `BacktraceDatabase` will be disabled.
 
 
 ## Sending an error report <a name="documentation-sending-report"></a>
@@ -327,9 +327,9 @@ You can extend `BacktraceReportBase` and `BacktraceBase` to create your own Back
 **`BacktraceClient`** is a class that allows you to instantiate a client instance that interacts with `BacktraceApi`. This class sets up connection to the Backtrace endpoint and manages error reporting behavior (for example, saving minidump files on your local hard drive and limiting the number of error reports per minute). `BacktraceClient` extends `BacktraceBase` generic class. `T` argument is a value type in `Attribute` dictionary.
 
 `BacktraceClient` accepts `BacktraceClientConfiguration` with following parameters:
-- Credentials - `BacktraceCredentials` property,
-- ClientAttributes - custom client attributes,
-- ReportPerMin - number of reports sending per one minute. If `ReportPerMin` is equal to zero you can pass unlimited number of reports to `Backtrace` server,
+- `Credentials` - the `BacktraceCredentials` object to use for connection to the Backtrace server.
+- `ClientAttributes` - custom attributes to be submitted to Backtrace alongside the error report.
+- `ReportPerMin` - A cap on the number of reports that can be sent per minute. If `ReportPerMin` is equal to zero then there is no cap.
 
 
 ## BacktraceData  <a name="architecture-BacktraceData"></a>
@@ -347,21 +347,22 @@ You can extend `BacktraceReportBase` and `BacktraceBase` to create your own Back
 **`BacktraceResult`** is a class that holds response and result from a `Send` or `SendAsync` call. The class contains a `Status` property that indicates whether the call was completed (`OK`), the call returned with an error (`ServerError`), or the call was aborted because client reporting limit was reached (`LimitReached`). Additionally, the class has a `Message` property that contains details about the status. Note that the `Send` call may produce an error report on an inner exception, in this case you can find an additional `BacktraceResult` object in the `InnerExceptionResult` property.
 
 ## BacktraceDatabase  <a name="architecture-BacktraceDatabase"></a>
-**`BacktraceDatabase`** is a class that stores error report data in your local hard drive. If `DatabaseSettings` doesn't contain a **valid `databasePath`** then `BacktraceDatabase` won't generate minidump files and store data. 
+**`BacktraceDatabase`** is a class that stores error report data in your local hard drive. If `DatabaseSettings` dones't contain a **valid** `DatabasePath` then `BacktraceDatabase` won't generate minidump files and store error report data. 
 
 `BacktraceDatabase` stores error reports that were not sent successfully due to network outage or server unavailability. `BacktraceDatabase` periodically tries to resend reports 
 cached in the database.  In `BacktraceDatabaseSettings` you can set the maximum number of entries (`MaxEntryNumber`) to be stored in the database. The database will retry sending 
 stored reports every `RetryInterval` seconds up to `MaxRetries` times, both customizable in the `BacktraceDatabaseSettings`. 
 
 `BacktraceDatabaseSettings` has the following parameters:
-- DatabasePath - directory, where `BacktraceDatabase` stores error reports that were not sent successfully
-- MaxEntryNumber - Maximum number of stored reports in Database. If value is equal to zero, then `BacktraceDatabase` will store unlimited number of entries,
-* MaxDatabaseSize - Maximum database size in MB. If value is equal to zero, then size is unlimited
-,
-* AutoSendMode - Flag that allows `BacktraceDatabase` to resend a report after `HttpClient` failure,
-* RetryBehavior - Retry setting behavior,
-* RetryInterval - How much seconds `BacktraceDatabase` wait until next retry.
-* MaxRetries - Maximum number of entries.
+- DatabasePath - the local directory path where `BacktraceDatabase` stores error report data when reports fail to send
+- MaxEntryNumber - Maximum number of stored reports in Database. If value is equal to `0`, then there is no limit.
+- MaxDatabaseSize - Maximum database size in MB. If value is equal to `0`, there is no limit.
+- AutoSendMode - if the value is `true`, `BacktraceDatabase` will automatically try to resend stored reports. Default is `false`.
+- RetryBehavior - 
+	- `RetryBehavior.ByInterval` - Default. `BacktraceDatabase` will try to resend the reports every time interval specified by `RetryInterval`.
+	- `RetryBehavior.NoRetry` - Will not attempt to resend reports
+- RetryInterval - the time interval between retries, in seconds.
+- MaxRetries - the maximum number of times `BacktraceDatabase` will attempt to resend error report before removing it from the database.
 
 
 
