@@ -2,8 +2,8 @@
 
 ## Version 1.2.0 - 09.05.2018
 - `BacktraceDatabase` - offline error report storage and auto re-submission support in the event of network outage and server unavailability. 
-- TLS 1.2 support for synchronous `BacktraceClient.Send`. However `BacktraceClient.SendAsync` is preferred wherever possible.
-- Removed TlsLegacySupport option in BacktraceClient
+- `BacktraceClient.Send` now works properly with TLS 1.2 under .NET 4.6+ and .NET Core 2.0. However, `BacktraceClient.SendAsync` is strongly recommended whenever possible.
+- Removed TlsLegacySupport flag in BacktraceClient
 
 ## Version 1.1.4 - 27.04.2018
 - Fix: A bug where casing of some fields is changed after JSON serialization.
