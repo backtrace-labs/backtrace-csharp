@@ -148,6 +148,9 @@ namespace Backtrace.Services
             IncrementBatches();
         }
 
+        /// <summary>
+        /// Increment each batch
+        /// </summary>
         private void IncrementBatches()
         {
             for (int i = _retryNumber - 2; i >= 0; i--)
@@ -158,10 +161,13 @@ namespace Backtrace.Services
             }
         }
 
+        /// <summary>
+        /// Remove last batch
+        /// </summary>
         private void RemoveMaxRetries()
         {
             var currentBatch = BatchRetry[_retryNumber - 1];
-            var total = currentBatch.Count - 1;
+            var total = currentBatch.Count;
             for (int i = 0; i < total; i++)
             {
                 var value = currentBatch[i];
