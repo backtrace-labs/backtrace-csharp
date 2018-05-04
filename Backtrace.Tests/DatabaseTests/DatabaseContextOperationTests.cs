@@ -31,6 +31,21 @@ namespace Backtrace.Tests.DatabaseTests
             }
             Assert.AreEqual(totalNumberOfEntries + entryNumber, _database.Count());
         }
+        [Test(Author = "Konrad Dysput", Description = "Test maximum number of entries")]
+        public void TestMaximumNumberOfEntries()
+        {
+            _database.Clear();
+            //we set maximum number of entries to equal to 100 in Setup method on DatabaseTestBase class
+            int maximumNumberOfEntries = 101;
+            //we add 100 entries - 100 is our database limit
+            for (int i = 0; i < maximumNumberOfEntries - 1; i++)
+            {
+                _database.BacktraceDatabaseContext.Add(GetEntry());
+            }
+            _database.Start();
+            Assert.Throws<ArgumentException>(() => _database.Add(null, new Dictionary<string, object>(), MiniDumpType.None));
+        }
+
 
         [Test(Author = "Konrad Dysput", Description = "Test FIFO retry order")]
         public void TestFifoOrder()

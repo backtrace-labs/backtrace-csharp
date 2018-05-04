@@ -100,7 +100,7 @@ namespace Backtrace
             }
             if (BacktraceDatabaseContext?.Any() == true)
             {
-                Trace.WriteLine("You already start BacktraceDatabase.");
+                _enable = true;
                 return;
             }
             // load reports from hard drive

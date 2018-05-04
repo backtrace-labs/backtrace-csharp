@@ -25,7 +25,7 @@ namespace Backtrace.Tests.DatabaseTests.Model
         /// Database
         /// </summary>
         protected BacktraceDatabase<object> _database;
-        
+
         [SetUp]
         public virtual void Setup()
         {
@@ -46,7 +46,13 @@ namespace Backtrace.Tests.DatabaseTests.Model
             var mockCacheContext = new Mock<IBacktraceDatabaseContext<object>>();
             mockFileContext.Setup(n => n.RemoveOrphaned(It.IsAny<IEnumerable<BacktraceDatabaseEntry<object>>>()));
 
-            _database = new BacktraceDatabase<object>(projectPath)
+            var settings = new BacktraceDatabaseSettings(projectPath)
+            {
+                AutoSendMode = false, //we don't want to test timers
+                MaxEntryNumber = 100,
+                TotalRetry = 3 
+            };
+            _database = new BacktraceDatabase<object>(settings)
             {
                 BacktraceDatabaseContext = new MockBacktraceDatabaseContext(projectPath, 3, RetryOrder.Stack),
                 BacktraceDatabaseFileContext = mockFileContext.Object,
