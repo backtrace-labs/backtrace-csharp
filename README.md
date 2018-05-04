@@ -183,7 +183,7 @@ ServicePointManager.ServerCertificateValidationCallback
 ```
 
 
-#### Database initializaiton
+#### Database initialization
 
 `BacktraceClient` allows you to customize the initialization of `BacktraceDatabase` for local storage of error reports by suppling `BacktraceDatabaseSettings` object as a parameter.
 
@@ -347,19 +347,19 @@ You can extend `BacktraceReportBase` and `BacktraceBase` to create your own Back
 **`BacktraceResult`** is a class that holds response and result from a `Send` or `SendAsync` call. The class contains a `Status` property that indicates whether the call was completed (`OK`), the call returned with an error (`ServerError`), or the call was aborted because client reporting limit was reached (`LimitReached`). Additionally, the class has a `Message` property that contains details about the status. Note that the `Send` call may produce an error report on an inner exception, in this case you can find an additional `BacktraceResult` object in the `InnerExceptionResult` property.
 
 ## BacktraceDatabase  <a name="architecture-BacktraceDatabase"></a>
-**`BacktraceDatabase`** is a class that stores error report data in your local hard drive. If `DatabaseSettings` dones't contain a **valid `databasePath`** then `BacktraceDatabase` won't generate minidump files and store data. 
+**`BacktraceDatabase`** is a class that stores error report data in your local hard drive. If `DatabaseSettings` doesn't contain a **valid `databasePath`** then `BacktraceDatabase` won't generate minidump files and store data. 
 
 `BacktraceDatabase` stores error reports that were not sent successfully due to network outage or server unavailability. `BacktraceDatabase` periodically tries to resend reports 
 cached in the database.  In `BacktraceDatabaseSettings` you can set the maximum number of entries (`MaxEntryNumber`) to be stored in the database. The database will retry sending 
 stored reports every `RetryInterval` seconds up to `MaxRetries` times, both customizable in the `BacktraceDatabaseSettings`. 
 
 `BacktraceDatabaseSettings` has the following parameters:
-- DatabasePath - directory, where `BacktraceDatabase` stores error reports thath were not sent succesfully
+- DatabasePath - directory, where `BacktraceDatabase` stores error reports that were not sent successfully
 - MaxEntryNumber - Maximum number of stored reports in Database. If value is equal to zero, then `BacktraceDatabase` will store unlimited number of entries,
 * MaxDatabaseSize - Maximum database size in MB. If value is equal to zero, then size is unlimited
 ,
 * AutoSendMode - Flag that allows `BacktraceDatabase` to resend a report after `HttpClient` failure,
-* RetryBehavior - Retry setting behaviour,
+* RetryBehavior - Retry setting behavior,
 * RetryInterval - How much seconds `BacktraceDatabase` wait until next retry.
 * MaxRetries - Maximum number of entries.
 
