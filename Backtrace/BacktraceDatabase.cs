@@ -47,6 +47,7 @@ namespace Backtrace
         /// </summary>
         private string DatabasePath => DatabaseSettings.DatabasePath;
 
+        private bool _timerBackgroundWork = false;
         /// <summary>
         /// Determine if BacktraceDatabase is enable and library can store reports
         /// </summary>
@@ -240,40 +241,8 @@ namespace Backtrace
 
         private async void OnTimedEventAsync(object source, ElapsedEventArgs e)
         {
-            if (!BacktraceDatabaseContext.Any() || !_timer.Enabled) return;
-            _timer.Stop();
-            //read first entry (keep in mind LIFO and FIFO settings) from memory database
-            var entry = BacktraceDatabaseContext.FirstOrDefault();
-            while (entry != null)
-            {
-                var backtraceData = entry.BacktraceData;
-                //meanwhile someone delete data from a disk
-                if (backtraceData == null)
-                {
-                    Delete(entry);
-                }
-                else
-                {
-                    //send entry from database to API
-                    var result = await BacktraceApi.SendAsync(backtraceData);
-                    if (result.Status == BacktraceResultStatus.Ok)
-                    {
-                        Delete(entry);
-                    }
-                    else
-                    {
-                        BacktraceDatabaseContext.IncrementBatchRetry();
-                        break;
-                    }
-                }
-                entry = BacktraceDatabaseContext.FirstOrDefault();
-            }
-            _timer.Start();
-        }
-#endif
-        private void OnTimedEvent(object source, ElapsedEventArgs e)
-        {
-            if (!BacktraceDatabaseContext.Any() || !_timer.Enabled) return;
+            if (!BacktraceDatabaseContext.Any() || _timerBackgroundWork) return;
+            _timerBackgroundWork = true;
             _timer.Stop();
             //read first entry (keep in mind LIFO and FIFO settings) from memory database
             var entry = BacktraceDatabaseContext.FirstOrDefault();
@@ -285,20 +254,64 @@ namespace Backtrace
                 {
                     Delete(entry);
                 }
-                //send entry from database to API
-                var result = BacktraceApi.Send(backtraceData);
-                if (result.Status == BacktraceResultStatus.Ok)
+                else
+                {
+                    //send entry from database to API
+                    var result = await BacktraceApi.SendAsync(backtraceData);
+                        if (result.Status == BacktraceResultStatus.Ok)
+                    {
+                        Delete(entry);
+                    }
+                    else
+                    {
+                        entry.Dispose();
+                        BacktraceDatabaseContext.IncrementBatchRetry();
+                        break;
+                    }
+
+                }
+                entry = BacktraceDatabaseContext.FirstOrDefault();
+            }
+            _timer.Start();
+            _timerBackgroundWork = false;
+        }
+#endif
+        private void OnTimedEvent(object source, ElapsedEventArgs e)
+        {
+            if (!BacktraceDatabaseContext.Any() || _timerBackgroundWork) return;
+            _timerBackgroundWork = true;
+            _timer.Stop();
+            //read first entry (keep in mind LIFO and FIFO settings) from memory database
+            var entry = BacktraceDatabaseContext.FirstOrDefault();
+            while (entry != null)
+            {
+                var backtraceData = entry.BacktraceData;
+                //meanwhile someone delete data from a disk
+                if (backtraceData == null || backtraceData.Report == null)
                 {
                     Delete(entry);
                 }
                 else
                 {
-                    BacktraceDatabaseContext.IncrementBatchRetry();
-                    break;
+                    //send entry from database to API
+                    var result = BacktraceApi.Send(backtraceData);
+                    if (result.Status == BacktraceResultStatus.Ok)
+                    {
+                        Delete(entry);
+                    }
+                    else
+                    {
+                        entry.Dispose();
+                        BacktraceDatabaseContext.IncrementBatchRetry();
+                        break;
+
+                    }
                 }
                 entry = BacktraceDatabaseContext.FirstOrDefault();
             }
+            _timerBackgroundWork = false;
             _timer.Start();
+
         }
 
         /// <summary>
@@ -356,6 +369,7 @@ namespace Backtrace
                     continue;
                 }
                 BacktraceDatabaseContext.Add(entry);
+                entry.Dispose();
             }
         }
 

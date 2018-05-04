@@ -26,7 +26,6 @@ namespace Backtrace.UniversalWindowsPlatform
     /// </summary>
     sealed partial class App : Application
     {
-
         private static Windows.Storage.StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
 
         private static BacktraceCredentials credentials =
@@ -65,8 +64,7 @@ namespace Backtrace.UniversalWindowsPlatform
             Trace.WriteLine($"Used database path: {localFolder.Path}");
 
             backtraceClient = new BacktraceClient(
-               credentials,
-               tlsLegacySupport:true
+               credentials
            );
             this.InitializeComponent();
             this.Suspending += OnSuspending;

@@ -93,7 +93,7 @@ namespace Backtrace.Model
         {
             get
             {
-                return Report.AttachmentPaths;
+                return Report.AttachmentPaths.Distinct().ToList();
             }
         }
 

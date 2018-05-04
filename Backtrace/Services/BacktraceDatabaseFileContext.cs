@@ -68,7 +68,7 @@ namespace Backtrace.Services
                 var file = files.ElementAt(fileIndex);
                 //check if file should be stored in database
                 //database only store data in json and files in dmp extension
-                if(file.Extension != ".dmp" || file.Extension != ".json")
+                if(file.Extension != ".dmp" && file.Extension != ".json")
                 {
                     file.Delete();
                     continue;

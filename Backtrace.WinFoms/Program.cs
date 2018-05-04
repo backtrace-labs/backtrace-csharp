@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Backtrace.Model;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -19,8 +20,7 @@ namespace Backtrace.WinFoms
             //initialize new BacktraceClient 
             BacktraceClient backtraceClient = new BacktraceClient(
                     new BacktraceCredentials(ApplicationCredentials.Host, ApplicationCredentials.Token),
-                    reportPerMin: 0, //unlimited number of reports per secound
-                    tlsLegacySupport: true
+                    reportPerMin: 0 //unlimited number of reports per secound
             );
             //Setting application exceptions
             backtraceClient.HandleApplicationException();
@@ -28,7 +28,7 @@ namespace Backtrace.WinFoms
             var result = backtraceClient.SendAsync("WPF Application crash report started").Result;
             if(result.Status == Types.BacktraceResultStatus.Ok)
             {
-                Trace.WriteLine($"Report is availble on Backtrace API. Backtrace Object Id: {result.Object}");
+                Trace.WriteLine($"Report is availble on Backtrace API!");
             }
             
             Application.EnableVisualStyles();
