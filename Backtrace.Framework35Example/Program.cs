@@ -16,7 +16,7 @@ namespace Backtrace.Framework35Example
             BacktraceClient backtraceClientWithSectionCredentials = new BacktraceClient();
 
             var credentials = new BacktraceCredentials(ApplicationSettings.Host, ApplicationSettings.Token);
-            var backtraceClient = new BacktraceClient(credentials, new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath), tlsLegacySupport: true);
+            var backtraceClient = new BacktraceClient(credentials, new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath));
 
             //Add new scoped attributes
             backtraceClient.Attributes["ClientAttributeNumber"] = 1;

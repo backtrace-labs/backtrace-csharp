@@ -72,7 +72,7 @@ namespace Backtrace.Tests.IntegrationTests
             var mockHttp = new MockHttpMessageHandler();
             mockHttp.When(serverUrl)
                 .Respond("application/json", "{'object' : 'aaa'}");
-            var api = new BacktraceApi<object>(credentials, 0, false)
+            var api = new BacktraceApi<object>(credentials, 0)
             {
                 HttpClient = mockHttp.ToHttpClient()
             };

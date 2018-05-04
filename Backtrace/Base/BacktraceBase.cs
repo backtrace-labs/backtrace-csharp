@@ -121,15 +121,13 @@ namespace Backtrace.Base
         /// <param name="attributes">Additional information about current application</param>
         /// <param name="databaseSettings">Backtrace database settings</param>
         /// <param name="reportPerMin">Number of reports sending per one minute. If value is equal to zero, there is no request sending to API. Value have to be greater than or equal to 0</param>
-        /// <param name="tlsLegacySupport">Set SSL and TLS flags for https request to Backtrace API</param>
         public BacktraceBase(
             BacktraceCredentials backtraceCredentials,
             Dictionary<string, T> attributes = null,
             BacktraceDatabaseSettings databaseSettings = null,
-            uint reportPerMin = 3,
-            bool tlsLegacySupport = false)
+            uint reportPerMin = 3)
             : this(backtraceCredentials, attributes, new BacktraceDatabase<T>(databaseSettings),
-                  reportPerMin, tlsLegacySupport)
+                  reportPerMin)
         { }
 
         /// <summary>
@@ -139,16 +137,14 @@ namespace Backtrace.Base
         /// <param name="attributes">Additional information about current application</param>
         /// <param name="databaseSettings">Backtrace database settings</param>
         /// <param name="reportPerMin">Number of reports sending per one minute. If value is equal to zero, there is no request sending to API. Value have to be greater than or equal to 0</param>
-        /// <param name="tlsLegacySupport">Set SSL and TLS flags for https request to Backtrace API</param>
         public BacktraceBase(
             BacktraceCredentials backtraceCredentials,
             Dictionary<string, T> attributes = null,
             IBacktraceDatabase<T> database = null,
-            uint reportPerMin = 3,
-            bool tlsLegacySupport = false)
+            uint reportPerMin = 3)
         {
             Attributes = attributes ?? new Dictionary<string, T>();
-            BacktraceApi = new BacktraceApi<T>(backtraceCredentials, reportPerMin, tlsLegacySupport);
+            BacktraceApi = new BacktraceApi<T>(backtraceCredentials, reportPerMin);
             Database = database ?? new BacktraceDatabase<T>()
             {
                 BacktraceApi = BacktraceApi

@@ -47,14 +47,13 @@ namespace Backtrace.Services
         /// Create a new instance of Backtrace API
         /// </summary>
         /// <param name="credentials">API credentials</param>
-        public BacktraceApi(BacktraceCredentials credentials, uint reportPerMin = 3, bool tlsLegacySupport = false)
+        public BacktraceApi(BacktraceCredentials credentials, uint reportPerMin = 3)
         {
             if (credentials == null)
             {
                 throw new ArgumentException($"{nameof(BacktraceCredentials)} cannot be null");
             }
             _serverurl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
-            SetTlsLegacy(tlsLegacySupport);
             reportLimitWatcher = new ReportLimitWatcher<T>(reportPerMin);
         }
         #region asyncRequest
@@ -125,23 +124,6 @@ namespace Backtrace.Services
 #endif
         #endregion
 
-
-        /// <summary>
-        /// Set tls and ssl legacy support for https requests to Backtrace API
-        /// </summary>
-        internal void SetTlsLegacy(bool legacySupport)
-        {
-            if (!legacySupport)
-            {
-                return;
-            }
-            ServicePointManager.SecurityProtocol =
-                     SecurityProtocolType.Tls
-                    | (SecurityProtocolType)0x00000300
-                    | (SecurityProtocolType)0x00000C00;
-            ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true;
-        }
-
         #region synchronousRequest
         /// <summary>
         /// Sending a diagnostic report data to server API. 
@@ -152,7 +134,7 @@ namespace Backtrace.Services
         {
 #if !NET35
             return Task.Run(() => SendAsync(data)).Result;
-#endif
+#else
             //check rate limiting
             bool watcherValidation = reportLimitWatcher.WatchReport(data.Report);
             if (!watcherValidation)
@@ -194,6 +176,7 @@ namespace Backtrace.Services
                 OnServerError?.Invoke(exception);
                 return BacktraceResult.OnError(report, exception);
             }
+#endif
         }
 
         /// <summary>

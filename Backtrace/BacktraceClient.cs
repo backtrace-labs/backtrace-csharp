@@ -34,16 +34,14 @@ namespace Backtrace
         /// <param name="attributes">Client's attributes</param>
         /// <param name="databaseSettings">Backtrace database settings</param>
         /// <param name="reportPerMin">Numbers of records sending per one min</param>
-        /// <param name="tlsLegacySupport">Set SSL and TLS flags for https request to Backtrace API</param>
         public BacktraceClient(
             string sectionName,
             string databasePath,
             Dictionary<string, object> attributes = null,
-            uint reportPerMin = 3,
-            bool tlsLegacySupport = false)
+            uint reportPerMin = 3)
             : this(BacktraceCredentials.ReadConfigurationSection(sectionName),
                 attributes, new BacktraceDatabase<object>(new BacktraceDatabaseSettings(databasePath)),
-                reportPerMin, tlsLegacySupport)
+                reportPerMin)
         { }
 
 
@@ -54,16 +52,13 @@ namespace Backtrace
         /// <param name="attributes">Client's attributes</param>
         /// <param name="databaseSettings">Backtrace database settings</param>
         /// <param name="reportPerMin">Numbers of records sending per one min</param>
-        /// <param name="tlsLegacySupport">Set SSL and TLS flags for https request to Backtrace API</param>
         public BacktraceClient(
             string sectionName,
             IBacktraceDatabase<object> backtraceDatabase,
             Dictionary<string, object> attributes = null,
-            uint reportPerMin = 3,
-            bool tlsLegacySupport = false)
+            uint reportPerMin = 3)
             : this(BacktraceCredentials.ReadConfigurationSection(sectionName),
-                attributes, backtraceDatabase,
-                reportPerMin, tlsLegacySupport)
+                attributes, backtraceDatabase, reportPerMin)
         { }
 
 
@@ -74,15 +69,13 @@ namespace Backtrace
         /// <param name="attributes">Client's attributes</param>
         /// <param name="databaseSettings">Backtrace database settings</param>
         /// <param name="reportPerMin">Numbers of records sending per one min</param>
-        /// <param name="tlsLegacySupport">Set SSL and TLS flags for https request to Backtrace API</param>
         public BacktraceClient(
             BacktraceDatabaseSettings databaseSettings,
             string sectionName = "BacktraceCredentials",
             Dictionary<string, object> attributes = null,
-            uint reportPerMin = 3,
-            bool tlsLegacySupport = false)
+            uint reportPerMin = 3)
             : base(BacktraceCredentials.ReadConfigurationSection(sectionName),
-                attributes, new BacktraceDatabase<object>(databaseSettings), reportPerMin, tlsLegacySupport)
+                attributes, new BacktraceDatabase<object>(databaseSettings), reportPerMin)
         { }
 
         /// <summary>
@@ -92,24 +85,22 @@ namespace Backtrace
         /// <param name="attributes">Client's attributes</param>
         /// <param name="databaseSettings">Backtrace database settings</param>
         /// <param name="reportPerMin">Numbers of records sending per one min</param>
-        /// <param name="tlsLegacySupport">Set SSL and TLS flags for https request to Backtrace API</param>
         public BacktraceClient(
             string sectionName = "BacktraceCredentials",
             Dictionary<string, object> attributes = null,
             IBacktraceDatabase<object> database = null,
-            uint reportPerMin = 3,
-            bool tlsLegacySupport = false)
+            uint reportPerMin = 3)
             : base(BacktraceCredentials.ReadConfigurationSection(sectionName),
-                attributes, database, reportPerMin, tlsLegacySupport)
+                attributes, database, reportPerMin)
         { }
 #endif
         /// <summary>
         /// Initializing Backtrace client instance with BacktraceCredentials
         /// </summary>
         /// <param name="setup">Backtrace client configuration</param>
-        public BacktraceClient(BacktraceClientConfiguration setup)
-            : base(setup.Credentials, setup.ClientAttributes,
-                  setup.DatabaseSettings, setup.ReportPerMin, setup.TlsLegacySupport)
+        /// <param name="backtraceDatabase">Backtrace database</param>
+        public BacktraceClient(BacktraceClientConfiguration setup, IBacktraceDatabase<object> backtraceDatabase)
+            : base(setup.Credentials, setup.ClientAttributes, backtraceDatabase, setup.ReportPerMin)
         { }
         /// <summary>
         /// Initializing Backtrace client instance with BacktraceCredentials
@@ -118,15 +109,13 @@ namespace Backtrace
         /// <param name="databaseSettings">Backtrace database settings</param>
         /// <param name="attributes">Client's attributes</param>
         /// <param name="reportPerMin">Numbers of records sending per one minute</param>
-        /// <param name="tlsLegacySupport">Set SSL and TLS flags for https request to Backtrace API</param>
         public BacktraceClient(
             BacktraceCredentials backtraceCredentials,
             BacktraceDatabaseSettings databaseSettings,
             Dictionary<string, object> attributes = null,
-            uint reportPerMin = 3,
-            bool tlsLegacySupport = false)
+            uint reportPerMin = 3)
             : base(backtraceCredentials, attributes,
-                  databaseSettings, reportPerMin, tlsLegacySupport)
+                  databaseSettings, reportPerMin)
         { }
 
         /// <summary>
@@ -136,16 +125,14 @@ namespace Backtrace
         /// <param name="attributes">Client's attributes</param>
         /// <param name="databaseSettings">Backtrace database settings</param>
         /// <param name="reportPerMin">Numbers of records sending per one minute</param>
-        /// <param name="tlsLegacySupport">Set SSL and TLS flags for https request to Backtrace API</param>
         public BacktraceClient(
             BacktraceCredentials backtraceCredentials,
             string databasePath,
             Dictionary<string, object> attributes = null,
-            uint reportPerMin = 3,
-            bool tlsLegacySupport = false)
+            uint reportPerMin = 3)
             : base(backtraceCredentials, attributes,
                   new BacktraceDatabaseSettings(databasePath),
-                  reportPerMin, tlsLegacySupport)
+                  reportPerMin)
         { }
 
         /// <summary>
@@ -155,15 +142,13 @@ namespace Backtrace
         /// <param name="attributes">Client's attributes</param>
         /// <param name="databaseSettings">Backtrace database settings</param>
         /// <param name="reportPerMin">Numbers of records sending per one minute</param>
-        /// <param name="tlsLegacySupport">Set SSL and TLS flags for https request to Backtrace API</param>
         public BacktraceClient(
             BacktraceCredentials backtraceCredentials,
             Dictionary<string, object> attributes = null,
             IBacktraceDatabase<object> database = null,
-            uint reportPerMin = 3,
-            bool tlsLegacySupport = false)
+            uint reportPerMin = 3)
             : base(backtraceCredentials, attributes,
-                  database, reportPerMin, tlsLegacySupport)
+                  database, reportPerMin)
         { }
         #endregion
 
@@ -223,7 +208,7 @@ namespace Backtrace
         {
             OnReportStart?.Invoke(backtraceReport);
             var result = await base.SendAsync(backtraceReport);
-            AfterSend?.Invoke(result);           
+            AfterSend?.Invoke(result);
             return result;
         }
 
