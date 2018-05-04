@@ -156,9 +156,8 @@ Additionally and optionally, `BacktraceClient` constructor also accepts the foll
 
 Client configuration example:
 ```csharp
-var configuration = 
-new BacktraceClientConfiguration(credentials, 
-    new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath));
+var database = new BacktraceDatabase<object>("path to database directory");
+var configuration = new BacktraceClientConfiguration(credentials, database);
 var backtraceClient = new BacktraceClient(configuration);
 
 ```
@@ -166,10 +165,11 @@ var backtraceClient = new BacktraceClient(configuration);
 Constructor with parameters example:
 
 ```csharp
+var database = new BacktraceDatabase<object>("path to database directory");
 var backtraceClient = new BacktraceClient(
     sectionName: "BacktraceCredentials",
     attributes: new Dictionary<string, object>() { { "Attribute", "value" } },
-    databaseSettings: new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath),
+    database: database,
     reportPerMin: 0
 );
 ```
@@ -179,10 +179,10 @@ var backtraceClient = new BacktraceClient(
 For .NET Standard 2.0 and .NET Framework 4.6+, TLS 1.2 support is built-in.
 
 For .NET Framework 4.5 (and below) as well as .NET Standard 2.0 (and below), TLS 1.2 support may not be available, but you can use still enable lower TLS/SSL support by supplying `tlsLegacySupport` parameter to `BacktraceClient` constructor, like so:
-```csharp
 
-var configuration = new BacktraceClientConfiguration(credentials, 
-    new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath))
+```csharp
+var database = new BacktraceDatabase<object>("path to database directory");
+var configuration = new BacktraceClientConfiguration(credentials, database)
 {
     TlsLegacySupport = true,
     ReportPerMin = 0
@@ -202,7 +202,8 @@ var dbSettings = new BacktraceDatabaseSettings("path to database"){
     AutoSendMode = true,
     RetryBehavior = RetryBehavior.ByInterval,
 };
-var configuration = BacktraceClientConfiguration(credentials, dbSettings);
+var database = new BacktraceDatabase<object>(dbSettings);
+var configuration = BacktraceClientConfiguration(credentials, database);
 var backtraceClient = new BacktraceClient(configuration);
 ```
 
