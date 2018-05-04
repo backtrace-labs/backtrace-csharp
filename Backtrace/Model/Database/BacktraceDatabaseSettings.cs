@@ -40,14 +40,14 @@ namespace Backtrace.Model.Database
         public RetryBehavior RetryBehavior { get; set; } = RetryBehavior.ByInterval;
 
         /// <summary>
-        /// How much secounds library should wait before next retry.
+        /// How much seconds library should wait before next retry.
         /// </summary>
-        public uint RetryTime { get; set; } = 5;
+        public uint RetryInterval { get; set; } = 5;
 
         /// <summary>
-        /// Total number of retries
+        /// Maximum number of retries
         /// </summary>
-        public uint TotalRetry { get; set; } = 3;
+        public uint MaxRetries { get; set; } = 3;
 
         public RetryOrder RetryOrder { get; set; } = RetryOrder.Stack;
     }

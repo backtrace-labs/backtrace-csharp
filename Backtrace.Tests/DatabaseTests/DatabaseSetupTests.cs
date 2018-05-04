@@ -39,7 +39,7 @@ namespace Backtrace.Tests.DatabaseTests
 
             //initialize database with invalid arguments
             Assert.Throws<ArgumentException>(() => new BacktraceDatabase<object>(new BacktraceDatabaseSettings("not existing directory")));
-            Assert.Throws<ArgumentException>(() => new BacktraceDatabase<object>(new BacktraceDatabaseSettings(_projectDirectory) { TotalRetry = 0 }));
+            Assert.Throws<ArgumentException>(() => new BacktraceDatabase<object>(new BacktraceDatabaseSettings(_projectDirectory) { MaxRetries = 0 }));
 
             //initialize database with valid settings
             Assert.DoesNotThrow(() => new BacktraceDatabase<object>(new BacktraceDatabaseSettings(_projectDirectory)));

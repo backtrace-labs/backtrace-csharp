@@ -84,7 +84,7 @@ namespace Backtrace
                 throw new ArgumentException("Databse path does not exists");
             }
             DatabaseSettings = databaseSettings;
-            BacktraceDatabaseContext = new BacktraceDatabaseContext<T>(DatabasePath, DatabaseSettings.TotalRetry, DatabaseSettings.RetryOrder);
+            BacktraceDatabaseContext = new BacktraceDatabaseContext<T>(DatabasePath, DatabaseSettings.MaxRetries, DatabaseSettings.RetryOrder);
             BacktraceDatabaseFileContext = new BacktraceDatabaseFileContext<T>(DatabasePath);
         }
 
@@ -120,7 +120,7 @@ namespace Backtrace
         private void SetupTimer()
         {
             // timer require time in ms
-            _timer.Interval = DatabaseSettings.RetryTime * 1000;
+            _timer.Interval = DatabaseSettings.RetryInterval * 1000;
             // don't stop timer work
             _timer.AutoReset = true;
 #if NET35
