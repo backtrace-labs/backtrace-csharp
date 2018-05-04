@@ -86,7 +86,7 @@ dotnet add package Backtrace
 
 Visual Studio allows you to build a project and run all available samples (includes support for .NET Core, .NET Framework 4.5, .NET Framework 3.5). 
 - Double click `.sln` file or `open` project directory in Visual Studio.
-- In `Solution Explorer` navigate to directory `Sample` and set preffered project (.NET Core/Framework) as startup project.
+- In `Solution Explorer` navigate to directory `Sample` and set preferred project (.NET Core/Framework) as startup project.
 
 ![Visual Studio](https://github.com/backtrace-labs/backtrace-csharp/raw/master/Backtrace/Documents/Images/VisualStudio.PNG)
 
@@ -108,7 +108,7 @@ You can use .NET Core's CLI to run sample project on Windows, Mac OS and Linux. 
 ``` 
     cd Backtrace.Core  
 ``` 
-- Open `Program.cs` in project **Backtrace.Core** and replace `BacktraceCredential` constructor patemeters with with your `Backtrace endpoint URL` (e.g. https://xxx.sp.backtrace.io:6098) and `submission token`:
+- Open `Program.cs` in project **Backtrace.Core** and replace `BacktraceCredential` constructor parameters with with your `Backtrace endpoint URL` (e.g. https://xxx.sp.backtrace.io:6098) and `submission token`:
 ```csharp
     var backtraceCredentials = new BacktraceCredentials(@"https://myserver.sp.backtrace.io:6097", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
 ```
@@ -130,7 +130,7 @@ You can use .NET Core's CLI to run sample project on Windows, Mac OS and Linux. 
 
 ![VisualStudioMacOS](https://github.com/backtrace-labs/backtrace-csharp/raw/master/Backtrace/Documents/Images/VisualStudioMacOS.PNG)
 
-- Open `Program.cs` class in project **Backtrace.Core** and replace `BacktraceCredential` constructor patemeters with with your `Backtrace endpoint URL` (e.g. https://xxx.sp.backtrace.io:6098) and `submission token`:
+- Open `Program.cs` class in project **Backtrace.Core** and replace `BacktraceCredential` constructor parameters with with your `Backtrace endpoint URL` (e.g. https://xxx.sp.backtrace.io:6098) and `submission token`:
 ```csharp
     var backtraceCredentials = new BacktraceCredentials(@"https://myserver.sp.backtrace.io:6097", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
 ```
@@ -184,7 +184,7 @@ ServicePointManager.ServerCertificateValidationCallback
 ```
 
 
-#### Database initializaiton
+#### Database initialization
 
 `BacktraceClient` allows you to customize the initialization of `BacktraceDatabase` for local storage of error reports by supplying a `BacktraceDatabaseSettings` parameter, as follows:
 
@@ -233,7 +233,7 @@ Notes:
 
 #### Asynchronous Send Support
 
-For developers that use .NET 4.5+ and .NET Standard we recommend using `SendAsync` method, which uses asynchourous Tasks. Both `Send` and `SendAsync` method returns `BacktraceResult`. See example below:
+For developers that use .NET 4.5+ and .NET Standard we recommend using `SendAsync` method, which uses asynchronous Tasks. Both `Send` and `SendAsync` method returns `BacktraceResult`. See example below:
 
 ```csharp
 try

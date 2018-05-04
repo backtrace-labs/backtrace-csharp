@@ -42,7 +42,7 @@ namespace Backtrace.Tests.Events
                 HttpClient = mockHttp.ToHttpClient()
             };
 
-            var apiWithInvalidUrl = new BacktraceApi<object>(invalidCredentials, 100, false)
+            var apiWithInvalidUrl = new BacktraceApi<object>(invalidCredentials, 100)
             {
                 HttpClient = mockHttp.ToHttpClient()
             };

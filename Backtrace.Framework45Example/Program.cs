@@ -16,8 +16,7 @@ namespace Backtrace.Framework45Example
         private BacktraceClient backtraceClient = new BacktraceClient(
             new BacktraceCredentials(ApplicationSettings.Host, ApplicationSettings.Token),
             new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath),
-            reportPerMin: 0, //unlimited number of reports per secound
-            tlsLegacySupport: true
+            reportPerMin: 0 //unlimited number of reports per secound
         );
 
         public Program()
