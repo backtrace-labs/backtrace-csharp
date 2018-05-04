@@ -99,7 +99,7 @@ namespace Backtrace
         /// </summary>
         /// <param name="setup">Backtrace client configuration</param>
         /// <param name="backtraceDatabase">Backtrace database</param>
-        public BacktraceClient(BacktraceClientConfiguration setup, IBacktraceDatabase<object> backtraceDatabase)
+        public BacktraceClient(BacktraceClientConfiguration setup, IBacktraceDatabase<object> backtraceDatabase = null)
             : base(setup.Credentials, setup.ClientAttributes, backtraceDatabase, setup.ReportPerMin)
         { }
         /// <summary>
