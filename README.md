@@ -190,7 +190,7 @@ ServicePointManager.ServerCertificateValidationCallback
 
 ```csharp
 var dbSettings = new BacktraceDatabaseSettings("databaseDirectory"){
-    MaxEntryCount = 100,
+    MaxRecordCount = 100,
     MaxDatabaseSize = 1000,
     AutoSendMode = true,
     RetryBehavior = RetryBehavior.ByInterval,
@@ -350,12 +350,12 @@ You can extend `BacktraceReportBase` and `BacktraceBase` to create your own Back
 **`BacktraceDatabase`** is a class that stores error report data in your local hard drive. If `DatabaseSettings` dones't contain a **valid** `DatabasePath` then `BacktraceDatabase` won't generate minidump files and store error report data. 
 
 `BacktraceDatabase` stores error reports that were not sent successfully due to network outage or server unavailability. `BacktraceDatabase` periodically tries to resend reports 
-cached in the database.  In `BacktraceDatabaseSettings` you can set the maximum number of entries (`MaxEntryCount`) to be stored in the database. The database will retry sending 
+cached in the database.  In `BacktraceDatabaseSettings` you can set the maximum number of entries (`MaxRecordCount`) to be stored in the database. The database will retry sending 
 stored reports every `RetryInterval` seconds up to `RetryLimit` times, both customizable in the `BacktraceDatabaseSettings`. 
 
 `BacktraceDatabaseSettings` has the following properties:
 - `DatabasePath` - the local directory path where `BacktraceDatabase` stores error report data when reports fail to send
-- `MaxEntryCount` - Maximum number of stored reports in Database. If value is equal to `0`, then there is no limit.
+- `MaxRecordCount` - Maximum number of stored reports in Database. If value is equal to `0`, then there is no limit.
 - `MaxDatabaseSize` - Maximum database size in MB. If value is equal to `0`, there is no limit.
 - `AutoSendMode` - if the value is `true`, `BacktraceDatabase` will automatically try to resend stored reports. Default is `false`.
 - `RetryBehavior` - 

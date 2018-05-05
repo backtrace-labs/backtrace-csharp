@@ -22,7 +22,7 @@ namespace Backtrace.Model.Database
         /// <summary>
         /// Maximum number of stored reports in Database. If value is equal to zero, then limit not exists
         /// </summary>
-        public uint MaxEntryCount { get; set; } = 0;
+        public uint MaxRecordCount { get; set; } = 0;
 
         /// <summary>
         /// Maximum database size in MB. If value is equal to zero, then size is unlimited

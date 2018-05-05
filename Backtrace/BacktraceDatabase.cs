@@ -169,7 +169,7 @@ namespace Backtrace
             {
                 return null;
             }
-            if (BacktraceDatabaseContext.Count() + 1 > DatabaseSettings.MaxEntryCount && DatabaseSettings.MaxEntryCount != 0)
+            if (BacktraceDatabaseContext.Count() + 1 > DatabaseSettings.MaxRecordCount && DatabaseSettings.MaxRecordCount != 0)
             {
                 throw new ArgumentException("Maximum number of entries available in BacktraceDatabase");
             }
