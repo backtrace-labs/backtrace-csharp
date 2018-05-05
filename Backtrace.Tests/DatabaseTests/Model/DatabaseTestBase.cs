@@ -49,8 +49,8 @@ namespace Backtrace.Tests.DatabaseTests.Model
             var settings = new BacktraceDatabaseSettings(projectPath)
             {
                 AutoSendMode = false, //we don't want to test timers
-                MaxEntryNumber = 100,
-                MaxRetries = 3 
+                MaxEntryCount = 100,
+                RetryLimit = 3 
             };
             _database = new BacktraceDatabase<object>(settings)
             {

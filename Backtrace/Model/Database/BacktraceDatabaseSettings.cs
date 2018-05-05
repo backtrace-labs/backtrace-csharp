@@ -22,7 +22,7 @@ namespace Backtrace.Model.Database
         /// <summary>
         /// Maximum number of stored reports in Database. If value is equal to zero, then limit not exists
         /// </summary>
-        public uint MaxEntryNumber { get; set; } = 0;
+        public uint MaxEntryCount { get; set; } = 0;
 
         /// <summary>
         /// Maximum database size in MB. If value is equal to zero, then size is unlimited
@@ -47,7 +47,7 @@ namespace Backtrace.Model.Database
         /// <summary>
         /// Maximum number of retries
         /// </summary>
-        public uint MaxRetries { get; set; } = 3;
+        public uint RetryLimit { get; set; } = 3;
 
         public RetryOrder RetryOrder { get; set; } = RetryOrder.Stack;
     }
