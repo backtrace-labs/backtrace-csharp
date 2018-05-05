@@ -70,6 +70,9 @@ namespace Backtrace.Model.Database
         [JsonIgnore]
         internal IBacktraceDatabaseEntryWriter EntryWriter;
 
+        /// <summary>
+        /// Get valid BacktraceData from current entry
+        /// </summary>
         [JsonIgnore]
         public virtual BacktraceData<T> BacktraceData
         {
@@ -103,13 +106,20 @@ namespace Backtrace.Model.Database
                 }
             }
         }
-
+        /// <summary>
+        /// Constructor for serialization purpose
+        /// </summary>
         [JsonConstructor]
         internal BacktraceDatabaseEntry()
         {
             EntryPath = $"{Id}-entry.json";
         }
 
+        /// <summary>
+        /// Create new instance of database entry
+        /// </summary>
+        /// <param name="data">Diagnostic data</param>
+        /// <param name="path">database path</param>
         public BacktraceDatabaseEntry(BacktraceData<T> data, string path)
         {
             Id = data.Uuid;
@@ -118,6 +128,10 @@ namespace Backtrace.Model.Database
             EntryWriter = new BacktraceDatabaseEntryWriter(path);           
         }
 
+        /// <summary>
+        /// Save data to hard drive
+        /// </summary>
+        /// <returns></returns>
         public bool Save()
         {
             try
@@ -150,14 +164,21 @@ namespace Backtrace.Model.Database
             return File.Exists(DiagnosticDataPath) && File.Exists(ReportPath);
         }
 
+        /// <summary>
+        /// Delete all entry files
+        /// </summary>
         internal virtual void Delete()
         {
             Delete(MiniDumpPath);
             Delete(ReportPath);
             Delete(DiagnosticDataPath);
-            Delete(EntryPath);
-            
+            Delete(EntryPath);   
         }
+
+        /// <summary>
+        /// Delete single file on database entry
+        /// </summary>
+        /// <param name="path">path to file</param>
         private void Delete(string path)
         {
             try
@@ -177,6 +198,11 @@ namespace Backtrace.Model.Database
             }
         }
 
+        /// <summary>
+        /// Read single entry from file
+        /// </summary>
+        /// <param name="file">Current file</param>
+        /// <returns>Saved database entry</returns>
         internal static BacktraceDatabaseEntry<T> ReadFromFile(FileInfo file)
         {
             using (StreamReader streamReader = file.OpenText())
@@ -186,7 +212,7 @@ namespace Backtrace.Model.Database
                 return entry;
             }
         }
-
+        #region dispose
         public void Dispose()
         {
             Dispose(true);
@@ -201,5 +227,6 @@ namespace Backtrace.Model.Database
                 Entry = null;
             }
         }
+        #endregion
     }
 }
