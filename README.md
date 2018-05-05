@@ -326,7 +326,7 @@ You can extend `BacktraceReportBase` and `BacktraceBase` to create your own Back
 ## BacktraceClient  <a name="architecture-BacktraceClient"></a>
 **`BacktraceClient`** is a class that allows you to instantiate a client instance that interacts with `BacktraceApi`. This class sets up connection to the Backtrace endpoint and manages error reporting behavior (for example, saving minidump files on your local hard drive and limiting the number of error reports per minute). `BacktraceClient` extends `BacktraceBase` generic class. `T` argument is a value type in `Attribute` dictionary.
 
-`BacktraceClient` accepts `BacktraceClientConfiguration` with following parameters:
+`BacktraceClient` takes a `BacktraceClientConfiguration` parameter, which has the following properties:
 - `Credentials` - the `BacktraceCredentials` object to use for connection to the Backtrace server.
 - `ClientAttributes` - custom attributes to be submitted to Backtrace alongside the error report.
 - `ReportPerMin` - A cap on the number of reports that can be sent per minute. If `ReportPerMin` is equal to zero then there is no cap.
@@ -353,7 +353,7 @@ You can extend `BacktraceReportBase` and `BacktraceBase` to create your own Back
 cached in the database.  In `BacktraceDatabaseSettings` you can set the maximum number of entries (`MaxEntryNumber`) to be stored in the database. The database will retry sending 
 stored reports every `RetryInterval` seconds up to `MaxRetries` times, both customizable in the `BacktraceDatabaseSettings`. 
 
-`BacktraceDatabaseSettings` has the following parameters:
+`BacktraceDatabaseSettings` has the following properties:
 - `DatabasePath` - the local directory path where `BacktraceDatabase` stores error report data when reports fail to send
 - `MaxEntryNumber` - Maximum number of stored reports in Database. If value is equal to `0`, then there is no limit.
 - `MaxDatabaseSize` - Maximum database size in MB. If value is equal to `0`, there is no limit.
