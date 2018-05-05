@@ -354,15 +354,15 @@ cached in the database.  In `BacktraceDatabaseSettings` you can set the maximum 
 stored reports every `RetryInterval` seconds up to `MaxRetries` times, both customizable in the `BacktraceDatabaseSettings`. 
 
 `BacktraceDatabaseSettings` has the following parameters:
-- DatabasePath - the local directory path where `BacktraceDatabase` stores error report data when reports fail to send
-- MaxEntryNumber - Maximum number of stored reports in Database. If value is equal to `0`, then there is no limit.
-- MaxDatabaseSize - Maximum database size in MB. If value is equal to `0`, there is no limit.
-- AutoSendMode - if the value is `true`, `BacktraceDatabase` will automatically try to resend stored reports. Default is `false`.
-- RetryBehavior - 
+- `DatabasePath` - the local directory path where `BacktraceDatabase` stores error report data when reports fail to send
+- `MaxEntryNumber` - Maximum number of stored reports in Database. If value is equal to `0`, then there is no limit.
+- `MaxDatabaseSize` - Maximum database size in MB. If value is equal to `0`, there is no limit.
+- `AutoSendMode` - if the value is `true`, `BacktraceDatabase` will automatically try to resend stored reports. Default is `false`.
+- `RetryBehavior` - 
 	- `RetryBehavior.ByInterval` - Default. `BacktraceDatabase` will try to resend the reports every time interval specified by `RetryInterval`.
 	- `RetryBehavior.NoRetry` - Will not attempt to resend reports
-- RetryInterval - the time interval between retries, in seconds.
-- MaxRetries - the maximum number of times `BacktraceDatabase` will attempt to resend error report before removing it from the database.
+- `RetryInterval` - the time interval between retries, in seconds.
+- `MaxRetries` - the maximum number of times `BacktraceDatabase` will attempt to resend error report before removing it from the database.
 
 
 
