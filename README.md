@@ -190,7 +190,7 @@ ServicePointManager.ServerCertificateValidationCallback
 
 ```csharp
 var dbSettings = new BacktraceDatabaseSettings("databaseDirectory"){
-    MaxEntryNumber = 100,
+    MaxRecordCount = 100,
     MaxDatabaseSize = 1000,
     AutoSendMode = true,
     RetryBehavior = RetryBehavior.ByInterval,
@@ -326,7 +326,7 @@ You can extend `BacktraceReportBase` and `BacktraceBase` to create your own Back
 ## BacktraceClient  <a name="architecture-BacktraceClient"></a>
 **`BacktraceClient`** is a class that allows you to instantiate a client instance that interacts with `BacktraceApi`. This class sets up connection to the Backtrace endpoint and manages error reporting behavior (for example, saving minidump files on your local hard drive and limiting the number of error reports per minute). `BacktraceClient` extends `BacktraceBase` generic class. `T` argument is a value type in `Attribute` dictionary.
 
-`BacktraceClient` accepts `BacktraceClientConfiguration` with following parameters:
+`BacktraceClient` takes a `BacktraceClientConfiguration` parameter, which has the following properties:
 - `Credentials` - the `BacktraceCredentials` object to use for connection to the Backtrace server.
 - `ClientAttributes` - custom attributes to be submitted to Backtrace alongside the error report.
 - `ReportPerMin` - A cap on the number of reports that can be sent per minute. If `ReportPerMin` is equal to zero then there is no cap.
@@ -350,19 +350,19 @@ You can extend `BacktraceReportBase` and `BacktraceBase` to create your own Back
 **`BacktraceDatabase`** is a class that stores error report data in your local hard drive. If `DatabaseSettings` dones't contain a **valid** `DatabasePath` then `BacktraceDatabase` won't generate minidump files and store error report data. 
 
 `BacktraceDatabase` stores error reports that were not sent successfully due to network outage or server unavailability. `BacktraceDatabase` periodically tries to resend reports 
-cached in the database.  In `BacktraceDatabaseSettings` you can set the maximum number of entries (`MaxEntryNumber`) to be stored in the database. The database will retry sending 
-stored reports every `RetryInterval` seconds up to `MaxRetries` times, both customizable in the `BacktraceDatabaseSettings`. 
+cached in the database.  In `BacktraceDatabaseSettings` you can set the maximum number of entries (`MaxRecordCount`) to be stored in the database. The database will retry sending 
+stored reports every `RetryInterval` seconds up to `RetryLimit` times, both customizable in the `BacktraceDatabaseSettings`. 
 
-`BacktraceDatabaseSettings` has the following parameters:
-- DatabasePath - the local directory path where `BacktraceDatabase` stores error report data when reports fail to send
-- MaxEntryNumber - Maximum number of stored reports in Database. If value is equal to `0`, then there is no limit.
-- MaxDatabaseSize - Maximum database size in MB. If value is equal to `0`, there is no limit.
-- AutoSendMode - if the value is `true`, `BacktraceDatabase` will automatically try to resend stored reports. Default is `false`.
-- RetryBehavior - 
+`BacktraceDatabaseSettings` has the following properties:
+- `DatabasePath` - the local directory path where `BacktraceDatabase` stores error report data when reports fail to send
+- `MaxRecordCount` - Maximum number of stored reports in Database. If value is equal to `0`, then there is no limit.
+- `MaxDatabaseSize` - Maximum database size in MB. If value is equal to `0`, there is no limit.
+- `AutoSendMode` - if the value is `true`, `BacktraceDatabase` will automatically try to resend stored reports. Default is `false`.
+- `RetryBehavior` - 
 	- `RetryBehavior.ByInterval` - Default. `BacktraceDatabase` will try to resend the reports every time interval specified by `RetryInterval`.
 	- `RetryBehavior.NoRetry` - Will not attempt to resend reports
-- RetryInterval - the time interval between retries, in seconds.
-- MaxRetries - the maximum number of times `BacktraceDatabase` will attempt to resend error report before removing it from the database.
+- `RetryInterval` - the time interval between retries, in seconds.
+- `RetryLimit` - the maximum number of times `BacktraceDatabase` will attempt to resend error report before removing it from the database.
 
 
 

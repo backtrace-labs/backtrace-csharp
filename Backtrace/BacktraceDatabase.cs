@@ -85,7 +85,7 @@ namespace Backtrace
                 throw new ArgumentException("Databse path does not exists");
             }
             DatabaseSettings = databaseSettings;
-            BacktraceDatabaseContext = new BacktraceDatabaseContext<T>(DatabasePath, DatabaseSettings.MaxRetries, DatabaseSettings.RetryOrder);
+            BacktraceDatabaseContext = new BacktraceDatabaseContext<T>(DatabasePath, DatabaseSettings.RetryLimit, DatabaseSettings.RetryOrder);
             BacktraceDatabaseFileContext = new BacktraceDatabaseFileContext<T>(DatabasePath);
         }
 
@@ -169,7 +169,7 @@ namespace Backtrace
             {
                 return null;
             }
-            if (BacktraceDatabaseContext.Count() + 1 > DatabaseSettings.MaxEntryNumber && DatabaseSettings.MaxEntryNumber != 0)
+            if (BacktraceDatabaseContext.Count() + 1 > DatabaseSettings.MaxRecordCount && DatabaseSettings.MaxRecordCount != 0)
             {
                 throw new ArgumentException("Maximum number of entries available in BacktraceDatabase");
             }
