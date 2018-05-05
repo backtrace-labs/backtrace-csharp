@@ -4,7 +4,7 @@ using System.Collections.Specialized;
 using System.Configuration;
 using System.Text;
 
-namespace Backtrace
+namespace Backtrace.Model
 {
     /// <summary>
     /// Bactrace credentials informations
@@ -20,13 +20,7 @@ namespace Backtrace
         /// <summary>
         /// Get a Uri to Backtrace servcie
         /// </summary>
-        public Uri BacktraceHostUri
-        {
-            get
-            {
-                return _backtraceHostUri;
-            }
-        }
+        public Uri BacktraceHostUri => _backtraceHostUri;
 
         /// <summary>
         /// Get an access token
@@ -38,6 +32,7 @@ namespace Backtrace
                 return Encoding.UTF8.GetString(_accessToken);
             }
         }
+
         /// <summary>
         /// Initialize Backtrace credencials
         /// </summary>
@@ -64,9 +59,7 @@ namespace Backtrace
             string backtraceHostUrl,
             byte[] accessToken)
         : this(new Uri(backtraceHostUrl), accessToken)
-        {
-
-        }
+        { }
 
         /// <summary>
         /// Initialize Backtrace credencials
@@ -88,9 +81,7 @@ namespace Backtrace
             Uri backtraceHostUri,
             string accessToken)
         : this(backtraceHostUri, Encoding.UTF8.GetBytes(accessToken))
-        {
-
-        }
+        { }
         /// <summary>
         /// Check if model passed to constructor is valid
         /// </summary>
@@ -100,15 +91,6 @@ namespace Backtrace
         internal bool IsValid(Uri uri, byte[] token)
         {
             return token != null && token.Length > 0 && uri.IsWellFormedOriginalString();
-        }
-
-
-        /// <summary>
-        /// Check if Backtrace Credential has valid information
-        /// </summary>
-        internal bool IsValid()
-        {
-            return _accessToken != null && _accessToken.Length > 0 && _backtraceHostUri.IsWellFormedOriginalString();
         }
 
 #if NET35 || NET45
@@ -125,16 +107,13 @@ namespace Backtrace
             {
                 throw new ArgumentException($"Section {nameof(sectionName)} is null or empty");
             }
-            string backtraceHostUri = string.Empty;
-            string accessToken = string.Empty;
             var applicationSettings = ConfigurationManager.GetSection(sectionName) as NameValueCollection;
-
             if (applicationSettings == null || applicationSettings.Count == 0)
             {
                 throw new InvalidOperationException("Application setting are not defined");
             }
-            backtraceHostUri = applicationSettings[_configurationHostRecordName];
-            accessToken = applicationSettings[_configurationTokenRecordName];
+            string backtraceHostUri = applicationSettings[_configurationHostRecordName];
+            string accessToken = applicationSettings[_configurationTokenRecordName];
             return new BacktraceCredentials(backtraceHostUri, accessToken);
         }
 #endif

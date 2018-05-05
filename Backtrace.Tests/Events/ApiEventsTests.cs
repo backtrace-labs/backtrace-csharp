@@ -1,6 +1,7 @@
 ﻿using Backtrace.Base;
 using Backtrace.Interfaces;
 using Backtrace.Model;
+using Backtrace.Model.Database;
 using Backtrace.Services;
 using Backtrace.Types;
 using Moq;
@@ -8,8 +9,6 @@ using NUnit.Framework;
 using RichardSzalay.MockHttp;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Backtrace.Tests.Events
@@ -38,27 +37,37 @@ namespace Backtrace.Tests.Events
 
             mockHttp.When(invalidUrl)
                 .Respond("application/json", "{'message': 'invalid data'}");
+            var api = new BacktraceApi<object>(credentials, 0)
+            {
+                HttpClient = mockHttp.ToHttpClient()
+            };
 
-            var api = new Mock<BacktraceApi<object>>(credentials);
-            api.Object.HttpClient = mockHttp.ToHttpClient();
+            var apiWithInvalidUrl = new BacktraceApi<object>(invalidCredentials, 100)
+            {
+                HttpClient = mockHttp.ToHttpClient()
+            };
 
-            var apiWithInvalidUrl = new Mock<BacktraceApi<object>>(invalidCredentials);
-            api.Object.HttpClient = mockHttp.ToHttpClient();
 
             //mock database
             var database = new Mock<IBacktraceDatabase<object>>();
-            database.Setup(n => n.GenerateMiniDump(It.IsAny<BacktraceReportBase<object>>(), It.IsAny<MiniDumpType>()));
+            database.Setup(n =>
+                n.Add(It.IsAny<BacktraceReportBase<object>>(),
+                    It.IsAny<Dictionary<string, object>>(),
+                    It.IsAny<MiniDumpType>()));
+
+            database.Setup(n =>
+               n.Delete(It.IsAny<BacktraceDatabaseEntry<object>>()));
 
             //setup new client
-            _backtraceClient = new BacktraceClient(credentials, reportPerMin: 0)
+            _backtraceClient = new BacktraceClient(credentials, database: database.Object, reportPerMin: 0)
             {
-                _backtraceApi = api.Object,
-                _database = database.Object
+                BacktraceApi = api,
+                Database = database.Object
             };
-            _clientWithInvalidParameters = new BacktraceClient(invalidCredentials, reportPerMin: 0)
+            _clientWithInvalidParameters = new BacktraceClient(invalidCredentials, database: database.Object, reportPerMin: 0)
             {
-                _backtraceApi = apiWithInvalidUrl.Object,
-                _database = database.Object
+                BacktraceApi = apiWithInvalidUrl,
+                Database = database.Object
             };
         }
 
@@ -101,8 +110,5 @@ namespace Backtrace.Tests.Events
             Assert.IsTrue(responseEventTrigger);
             Assert.AreEqual(totalResponses, 4);
         }
-
-
-
     }
 }

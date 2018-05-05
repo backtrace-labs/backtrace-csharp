@@ -1,6 +1,7 @@
 ﻿using Backtrace.Core.Model;
 using Backtrace.Interfaces;
 using Backtrace.Model;
+using Backtrace.Model.Database;
 using Backtrace.Services;
 using System;
 using System.Collections.Generic;
@@ -13,13 +14,21 @@ namespace Backtrace.Core
     class Program
     {
         private Tree tree;
-        //initialize new BacktraceClient with custom configuration section readed from file App.config
-        //Client will be initialized with values stored in default section name "BacktraceCredentials"
-        private BacktraceClient backtraceClient = new BacktraceClient(
-            new BacktraceCredentials(ApplicationCredentials.Host, ApplicationCredentials.Token),
-            reportPerMin: 0, //unlimited number of reports per secound
-            tlsLegacySupport: true
-        );
+
+        /// <summary>
+        /// Credentials
+        /// </summary>
+        private BacktraceCredentials credentials = new BacktraceCredentials(ApplicationSettings.Host, ApplicationSettings.Token);
+
+        /// <summary>
+        /// Database settings
+        /// </summary>
+        private BacktraceDatabaseSettings databaseSettings = new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath);
+
+        /// <summary>
+        /// New instance of BacktraceClient. Check SetupBacktraceLibrary method for intiailization example
+        /// </summary>
+        private BacktraceClient backtraceClient;
 
         public Program()
         {
@@ -140,6 +149,17 @@ namespace Backtrace.Core
         /// </summary>
         private void SetupBacktraceLibrary()
         {
+            //create Backtrace library configuration
+            var configuartion = new BacktraceClientConfiguration(credentials)
+            {
+                ReportPerMin = 0
+            };
+            //create Backtrace database
+            var database = new BacktraceDatabase<object>(databaseSettings);
+            //setup new client
+            backtraceClient = new BacktraceClient(configuartion, database);
+
+            //handle all unhandled application exceptions
             backtraceClient.HandleApplicationException();
             //Add new scoped attributes
             backtraceClient.Attributes["ClientAttributeNumber"] = 1;

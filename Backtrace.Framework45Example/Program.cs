@@ -1,8 +1,10 @@
 ﻿using Backtrace.Framework45Example.Model;
 using Backtrace.Model;
+using Backtrace.Model.Database;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Backtrace.Framework45Example
@@ -10,13 +12,21 @@ namespace Backtrace.Framework45Example
     class Program
     {
         private Tree tree;
-        //initialize new BacktraceClient with custom configuration section readed from file App.config
-        //Client will be initialized with values stored in default section name "BacktraceCredentials"
-        private BacktraceClient backtraceClient = new BacktraceClient(
-            new BacktraceCredentials(ApplicationCredentials.Host, ApplicationCredentials.Token),
-            reportPerMin: 0, //unlimited number of reports per secound
-            tlsLegacySupport: true
-        );
+
+        /// <summary>
+        /// Credentials
+        /// </summary>
+        private BacktraceCredentials credentials = new BacktraceCredentials(ApplicationSettings.Host, ApplicationSettings.Token);
+
+        /// <summary>
+        /// Database settings
+        /// </summary>
+        private BacktraceDatabaseSettings databaseSettings = new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath);
+
+        /// <summary>
+        /// New instance of BacktraceClient. Check SetupBacktraceLibrary method for intiailization example
+        /// </summary>
+        private BacktraceClient backtraceClient;
 
         public Program()
         {
@@ -84,8 +94,8 @@ namespace Backtrace.Framework45Example
                     continue;
                 }
             }
-            var response = await backtraceClient.SendAsync($"{DateTime.Now}: Tree generated");
-            Console.WriteLine($"Tree generated! Backtrace object id for last message: {response.Object}");
+            //var response = await backtraceClient.SendAsync($"{DateTime.Now}: Tree generated");
+            //Console.WriteLine($"Tree generated! Backtrace object id for last message: {response.Object}");
         }
 
         private async Task TryClean()
@@ -122,7 +132,6 @@ namespace Backtrace.Framework45Example
                     await backtraceClient.SendAsync(argumentException);
                 }
             }
-            await backtraceClient.SendAsync($"{DateTime.Now}: Tree clean");
 
         }
 
@@ -131,12 +140,29 @@ namespace Backtrace.Framework45Example
             *p = *p / *j;
         }
 
-
         /// <summary>
         /// Setup client behaviour - attributes, events
         /// </summary>
         private void SetupBacktraceLibrary()
         {
+            //setup tls support for tested server
+            ServicePointManager.SecurityProtocol =
+                    SecurityProtocolType.Tls
+                   | (SecurityProtocolType)0x00000300
+                   | (SecurityProtocolType)0x00000C00;
+
+
+            //create Backtrace library configuration
+            var configuartion = new BacktraceClientConfiguration(credentials)
+            {
+                ReportPerMin = 0
+            };
+            //create Backtrace database
+            var database = new BacktraceDatabase<object>(databaseSettings);
+            //setup new client
+            backtraceClient = new BacktraceClient(configuartion, database);
+
+            //handle all unhandled application exceptions
             backtraceClient.HandleApplicationException();
             //Add new scoped attributes
             backtraceClient.Attributes["ClientAttributeNumber"] = 1;
@@ -165,7 +191,6 @@ namespace Backtrace.Framework45Example
                    return data;
                };
         }
-            
         static void Main(string[] args)
         {
             Program program = new Program();

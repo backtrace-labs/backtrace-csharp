@@ -11,19 +11,25 @@ namespace Backtrace.Services
     /// <summary>
     /// Report watcher class. Watcher controls number of reports sending per one minute. If value reportPerMin is equal to zero, there is no request sending to API. Value has to be greater than or equal to 0
     /// </summary>
-    internal class ReportWatcher<T>
+    internal class ReportLimitWatcher<T>
     {
-        private readonly long _queReportTime = 60;
-        internal readonly Queue<long> _reportQue;
-        private bool _watcherEnable;
+        /// <summary>
+        /// Set event executed when client site report limit reached
+        /// </summary>
+        internal Action<BacktraceReport> OnClientReportLimitReached = null;
 
+        internal readonly Queue<long> _reportQue;
+
+        private readonly long _queReportTime = 60;
+        private bool _watcherEnable;
         private int _reportPerSec;
+
 
         /// <summary>
         /// Create new instance of background watcher
         /// </summary>
         /// <param name="reportPerMin">How many times per minute watcher can send a report</param>
-        public ReportWatcher(uint reportPerMin)
+        public ReportLimitWatcher(uint reportPerMin)
         {
             if (reportPerMin < 0)
             {
@@ -49,7 +55,6 @@ namespace Backtrace.Services
         /// <returns>true if user can add a new report</returns>
         public bool WatchReport(BacktraceReportBase<T> report)
         {
-            System.Diagnostics.Trace.WriteLine($"{report.Message} : {report.Timestamp}");
             if (!_watcherEnable)
             {
                 return true;
@@ -58,6 +63,7 @@ namespace Backtrace.Services
             Clear();
             if (_reportQue.Count + 1 > _reportPerSec)
             {
+                OnClientReportLimitReached?.Invoke(report as BacktraceReport);
                 return false;
             }
             _reportQue.Enqueue(report.Timestamp);

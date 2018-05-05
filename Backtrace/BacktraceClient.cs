@@ -1,9 +1,9 @@
 ﻿using Backtrace.Base;
 using Backtrace.Interfaces;
 using Backtrace.Model;
+using Backtrace.Model.Database;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 #if !NET35
 using System.Threading.Tasks;
 #endif
@@ -32,35 +32,123 @@ namespace Backtrace
         /// </summary>
         /// <param name="sectionName">Backtrace configuration section in App.config or Web.config file. Default section is BacktraceCredentials</param>
         /// <param name="attributes">Client's attributes</param>
-        /// <param name="databaseDirectory">Database path used to store minidumps and temporary reports</param>
+        /// <param name="databaseSettings">Backtrace database settings</param>
         /// <param name="reportPerMin">Numbers of records sending per one min</param>
-        /// <param name="tlsLegacySupport">Set SSL and TLS flags for https request to Backtrace API</param>
+        public BacktraceClient(
+            string sectionName,
+            string databasePath,
+            Dictionary<string, object> attributes = null,
+            uint reportPerMin = 3)
+            : this(BacktraceCredentials.ReadConfigurationSection(sectionName),
+                attributes, new BacktraceDatabase<object>(new BacktraceDatabaseSettings(databasePath)),
+                reportPerMin)
+        { }
+
+
+        /// <summary>
+        /// Initializing Backtrace client instance
+        /// </summary>
+        /// <param name="sectionName">Backtrace configuration section in App.config or Web.config file. Default section is BacktraceCredentials</param>
+        /// <param name="attributes">Client's attributes</param>
+        /// <param name="databaseSettings">Backtrace database settings</param>
+        /// <param name="reportPerMin">Numbers of records sending per one min</param>
+        public BacktraceClient(
+            string sectionName,
+            IBacktraceDatabase<object> backtraceDatabase,
+            Dictionary<string, object> attributes = null,
+            uint reportPerMin = 3)
+            : this(BacktraceCredentials.ReadConfigurationSection(sectionName),
+                attributes, backtraceDatabase, reportPerMin)
+        { }
+
+
+        /// <summary>
+        /// Initializing Backtrace client instance
+        /// </summary>
+        /// <param name="sectionName">Backtrace configuration section in App.config or Web.config file. Default section is BacktraceCredentials</param>
+        /// <param name="attributes">Client's attributes</param>
+        /// <param name="databaseSettings">Backtrace database settings</param>
+        /// <param name="reportPerMin">Numbers of records sending per one min</param>
+        public BacktraceClient(
+            BacktraceDatabaseSettings databaseSettings,
+            string sectionName = "BacktraceCredentials",
+            Dictionary<string, object> attributes = null,
+            uint reportPerMin = 3)
+            : base(BacktraceCredentials.ReadConfigurationSection(sectionName),
+                attributes, new BacktraceDatabase<object>(databaseSettings), reportPerMin)
+        { }
+
+        /// <summary>
+        /// Initializing Backtrace client instance
+        /// </summary>
+        /// <param name="sectionName">Backtrace configuration section in App.config or Web.config file. Default section is BacktraceCredentials</param>
+        /// <param name="attributes">Client's attributes</param>
+        /// <param name="databaseSettings">Backtrace database settings</param>
+        /// <param name="reportPerMin">Numbers of records sending per one min</param>
         public BacktraceClient(
             string sectionName = "BacktraceCredentials",
             Dictionary<string, object> attributes = null,
-            string databaseDirectory = "",
-            uint reportPerMin = 3,
-            bool tlsLegacySupport = false)
+            IBacktraceDatabase<object> database = null,
+            uint reportPerMin = 3)
             : base(BacktraceCredentials.ReadConfigurationSection(sectionName),
-                attributes, databaseDirectory, reportPerMin, tlsLegacySupport)
+                attributes, database, reportPerMin)
         { }
 #endif
+        /// <summary>
+        /// Initializing Backtrace client instance with BacktraceCredentials
+        /// </summary>
+        /// <param name="setup">Backtrace client configuration</param>
+        /// <param name="backtraceDatabase">Backtrace database</param>
+        public BacktraceClient(BacktraceClientConfiguration setup, IBacktraceDatabase<object> backtraceDatabase = null)
+            : base(setup.Credentials, setup.ClientAttributes, backtraceDatabase, setup.ReportPerMin)
+        { }
+        /// <summary>
+        /// Initializing Backtrace client instance with BacktraceCredentials
+        /// </summary>
+        /// <param name="backtraceCredentials">Backtrace credentials</param>
+        /// <param name="databaseSettings">Backtrace database settings</param>
+        /// <param name="attributes">Client's attributes</param>
+        /// <param name="reportPerMin">Numbers of records sending per one minute</param>
+        public BacktraceClient(
+            BacktraceCredentials backtraceCredentials,
+            BacktraceDatabaseSettings databaseSettings,
+            Dictionary<string, object> attributes = null,
+            uint reportPerMin = 3)
+            : base(backtraceCredentials, attributes,
+                  databaseSettings, reportPerMin)
+        { }
 
         /// <summary>
         /// Initializing Backtrace client instance with BacktraceCredentials
         /// </summary>
         /// <param name="backtraceCredentials">Backtrace credentials</param>
         /// <param name="attributes">Client's attributes</param>
-        /// <param name="databaseDirectory">Database path used to store minidumps and temporary reports</param>
+        /// <param name="databaseSettings">Backtrace database settings</param>
         /// <param name="reportPerMin">Numbers of records sending per one minute</param>
-        /// <param name="tlsLegacySupport">Set SSL and TLS flags for https request to Backtrace API</param>
+        public BacktraceClient(
+            BacktraceCredentials backtraceCredentials,
+            string databasePath,
+            Dictionary<string, object> attributes = null,
+            uint reportPerMin = 3)
+            : base(backtraceCredentials, attributes,
+                  new BacktraceDatabaseSettings(databasePath),
+                  reportPerMin)
+        { }
+
+        /// <summary>
+        /// Initializing Backtrace client instance with BacktraceCredentials
+        /// </summary>
+        /// <param name="backtraceCredentials">Backtrace credentials</param>
+        /// <param name="attributes">Client's attributes</param>
+        /// <param name="databaseSettings">Backtrace database settings</param>
+        /// <param name="reportPerMin">Numbers of records sending per one minute</param>
         public BacktraceClient(
             BacktraceCredentials backtraceCredentials,
             Dictionary<string, object> attributes = null,
-            string databaseDirectory = "",
-            uint reportPerMin = 3,
-            bool tlsLegacySupport = false)
-            : base(backtraceCredentials, attributes, databaseDirectory, reportPerMin, tlsLegacySupport)
+            IBacktraceDatabase<object> database = null,
+            uint reportPerMin = 3)
+            : base(backtraceCredentials, attributes,
+                  database, reportPerMin)
         { }
         #endregion
 
@@ -71,6 +159,7 @@ namespace Backtrace
         /// <param name="exception">Current exception</param>
         /// <param name="attributes">Additional information about application state</param>
         /// <param name="attachmentPaths">Path to all report attachments</param>
+        [Obsolete("Send is obsolete, please use SendAsync instead if possible.")]
         public virtual BacktraceResult Send(
             Exception exception,
             Dictionary<string, object> attributes = null,
@@ -85,6 +174,7 @@ namespace Backtrace
         /// <param name="message">Custom client message</param>
         /// <param name="attributes">Additional information about application state</param>
         /// <param name="attachmentPaths">Path to all report attachments</param>
+        [Obsolete("Send is obsolete, please use SendAsync instead if possible.")]
         public virtual BacktraceResult Send(
             string message,
             Dictionary<string, object> attributes = null,
@@ -97,15 +187,12 @@ namespace Backtrace
         /// Sending a backtrace report to Backtrace API
         /// </summary>
         /// <param name="backtraceReport">Current report</param>
+        [Obsolete("Send is obsolete, please use SendAsync instead if possible.")]
         public BacktraceResult Send(BacktraceReport backtraceReport)
         {
             OnReportStart?.Invoke(backtraceReport);
             var result = base.Send(backtraceReport);
             AfterSend?.Invoke(result);
-
-            //check if there is more errors to send
-            //handle inner exception
-            result.InnerExceptionResult = HandleInnerException(backtraceReport);
             return result;
         }
         #endregion
@@ -122,10 +209,6 @@ namespace Backtrace
             OnReportStart?.Invoke(backtraceReport);
             var result = await base.SendAsync(backtraceReport);
             AfterSend?.Invoke(result);
-
-            //check if there is more errors to send
-            //handle inner exception
-            result.InnerExceptionResult = await HandleInnerExceptionAsync(backtraceReport);
             return result;
         }
 
@@ -157,49 +240,10 @@ namespace Backtrace
             return await SendAsync(new BacktraceReport(exception, attributes, attachmentPaths));
         }
         #endregion
-
-        /// <summary>
-        /// Handle inner exception in current backtrace report
-        /// if inner exception exists, client should send report twice - one with current exception, one with inner exception
-        /// </summary>
-        /// <param name="report">current report</param>
-        private async Task<BacktraceResult> HandleInnerExceptionAsync(BacktraceReport report)
-        {
-            var innerExceptionReport = CreateInnerReport(report);
-            if (innerExceptionReport == null)
-            {
-                return null;
-            }
-            return await SendAsync(innerExceptionReport);
-        }
 #endif
 
-        /// <summary>
-        /// Handle inner exception in current backtrace report
-        /// if inner exception exists, client should send report twice - one with current exception, one with inner exception
-        /// </summary>
-        /// <param name="report">current report</param>
-        private BacktraceResult HandleInnerException(BacktraceReport report)
-        {
-            var innerExceptionReport = CreateInnerReport(report);
-            if (innerExceptionReport == null)
-            {
-                return null;
-            }
-            return Send(innerExceptionReport);
-        }
 
-        private BacktraceReport CreateInnerReport(BacktraceReport report)
-        {
-            // there is no additional exception inside current exception
-            // or exception does not exists
-            if (!report.ExceptionTypeReport || report.Exception.InnerException == null)
-            {
-                return null;
-            }
-            //we have to create a copy of an inner exception report
-            //to have the same calling assembly property
-            return report.CreateInnerReport();
-        }
+
+
     }
 }

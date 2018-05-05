@@ -19,26 +19,13 @@ namespace Backtrace.Model
         /// server will reject request if uuid is already found
         /// </summary>
         [JsonProperty(PropertyName = "uuid")]
-        public Guid Uuid
-        {
-            get
-            {
-                return Report.Uuid;
-            }
-        }
-
+        public Guid Uuid { get; private set; }
 
         /// <summary>
         /// UTC timestamp in seconds
         /// </summary>
         [JsonProperty(PropertyName = "timestamp")]
-        public long Timestamp
-        {
-            get
-            {
-                return Report.Timestamp;
-            }
-        }
+        public long Timestamp { get; private set; }
 
         /// <summary>
         /// Name of programming language/environment this error comes from.
@@ -50,121 +37,53 @@ namespace Backtrace.Model
         /// Version of programming language/environment this error comes from.
         /// </summary>
         [JsonProperty(PropertyName = "langVersion")]
-        public string LangVersion
-        {
-            get
-            {
-                return typeof(string).Assembly.ImageRuntimeVersion;
-            }
-        }
+        public string LangVersion { get; private set; }
 
         /// <summary>
         /// Name of the client that is sending this error report.
         /// </summary>
         [JsonProperty(PropertyName = "agent")]
-        public string Agent
-        {
-            get
-            {
-                return CurrentAssembly.Name;
-            }
-        }
+        public string Agent { get; private set; }
 
         /// <summary>
         /// Version of the C# library
         /// </summary>
         [JsonProperty(PropertyName = "agentVersion")]
-        public string AgentVersion
-        {
-            get
-            {
-                return CurrentAssembly.Version.ToString();
-            }
-        }
-
+        public string AgentVersion { get; set; }
 
         /// <summary>
         /// Get built-in attributes
         /// </summary>
         [JsonProperty(PropertyName = "attributes")]
-        public Dictionary<string, object> Attributes
-        {
-            get
-            {
-                return _backtraceAttributes.Attributes;
-            }
-        }
+        public Dictionary<string, object> Attributes { get; set; }
+
 
         /// <summary>
         /// Get current host environment variables and application dependencies
         /// </summary>
         [JsonProperty(PropertyName = "annotations")]
-        internal Annotations Annotations
-        {
-            get
-            {
-                return new Annotations(Report.CallingAssembly, _backtraceAttributes.ComplexAttributes);
-            }
-        }
+        internal Annotations Annotations { get; set; }
 
         /// <summary>
         /// Application thread details
         /// </summary>
         [JsonProperty(PropertyName = "threads")]
-        internal Dictionary<string, ThreadInformation> ThreadInformations
-        {
-            get
-            {
-                return ThreadData.ThreadInformations;
-            }
-        }
-
-        /// <summary>
-        /// Information about available application threads
-        /// </summary>
-        internal ThreadData ThreadData { get; set; }
+        internal Dictionary<string, ThreadInformation> ThreadInformations { get; set; }
 
         /// <summary>
         /// Get a main thread name
         /// </summary>
         [JsonProperty(PropertyName = "mainThread")]
-        public string MainThread
-        {
-            get
-            {
-                return ThreadData.MainThread;
-            }
-        }
+        public string MainThread { get; set; }
 
         /// <summary>
         /// Get a report classifiers. If user send custom message, then variable should be null
         /// </summary>
         [JsonProperty(PropertyName = "classifiers", NullValueHandling = NullValueHandling.Ignore)]
-        public string[] Classifier
-        {
-            get
-            {
-                if (Report.ExceptionTypeReport)
-                {
-                    return new[] { Report.Classifier };
-                }
-                return null;
-            }
-        }
+        public string[] Classifier { get; set; }
 
         [JsonProperty(PropertyName = "sourceCode", NullValueHandling = NullValueHandling.Ignore)]
-        internal Dictionary<string, SourceCode> SourceCode
-        {
-            get
-            {
-                var sourceCode = new SourceCodeData(Report.ExceptionStack);
-                if (sourceCode.data.Any())
-                {
-                    return sourceCode.data;
-                }
-                return null;
-            }
-        }
+        internal Dictionary<string, SourceCode> SourceCode { get; set; }
 
         /// <summary>
         /// Get a path to report attachments
@@ -174,32 +93,59 @@ namespace Backtrace.Model
         {
             get
             {
-                return Report.AttachmentPaths;
+                return Report.AttachmentPaths.Distinct().ToList();
             }
         }
 
         /// <summary>
         /// Current BacktraceReport
         /// </summary>
-        internal readonly BacktraceReportBase<T> Report;
-
-        /// <summary>
-        /// Get a Backtrace a built-in attributes from current application
-        /// </summary>
-        private readonly BacktraceAttributes<T> _backtraceAttributes;
-
-        private readonly AssemblyName CurrentAssembly = Assembly.GetExecutingAssembly().GetName();
+        internal BacktraceReportBase<T> Report { get; set; }
 
         /// <summary>
         /// Create instance of report data
         /// </summary>
         /// <param name="report">Current report</param>
-        /// <param name="scopedAttributes">BacktraceClient's attributes</param>
-        public BacktraceData(BacktraceReportBase<T> report, Dictionary<string, T> scopedAttributes)
+        /// <param name="clientAttributes">BacktraceClient's attributes</param>
+        [JsonConstructor]
+        public BacktraceData(BacktraceReportBase<T> report, Dictionary<string, T> clientAttributes)
         {
+            if (report == null)
+            {
+                return;
+            }
             Report = report;
-            _backtraceAttributes = new BacktraceAttributes<T>(Report, scopedAttributes);
-            ThreadData = new ThreadData(report.CallingAssembly, Report.ExceptionStack);
+            SetReportInformation();
+            SetAttributes(clientAttributes);
+            SetThreadInformations();
+
+        }
+
+        private void SetThreadInformations()
+        {
+            var threadData = new ThreadData(Report.CallingAssembly, Report.DiagnosticStack);
+            ThreadInformations = threadData.ThreadInformations;
+            MainThread = threadData.MainThread;
+            var sourceCodeData = new SourceCodeData(Report.DiagnosticStack);
+            SourceCode = sourceCodeData.data.Any() ? sourceCodeData.data : null;
+        }
+
+        private void SetAttributes(Dictionary<string, T> clientAttributes)
+        {
+            var backtraceAttributes = new BacktraceAttributes<T>(Report, clientAttributes);
+            Attributes = backtraceAttributes.Attributes;
+            Annotations = new Annotations(Report.CallingAssembly, backtraceAttributes.ComplexAttributes);
+        }
+
+        private void SetReportInformation()
+        {
+            AssemblyName CurrentAssembly = Assembly.GetExecutingAssembly().GetName();
+            Uuid = Report.Uuid;
+            Timestamp = Report.Timestamp;
+            LangVersion = typeof(string).Assembly.ImageRuntimeVersion;
+            Agent = CurrentAssembly.Name;
+            AgentVersion = CurrentAssembly.Version.ToString();
+            Classifier = Report.ExceptionTypeReport ? new[] { Report.Classifier } : null;
         }
     }
 }

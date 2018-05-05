@@ -21,7 +21,7 @@ namespace Backtrace.Tests.ServicesTests
         [Test(Author = "Konrad Dysput", Description = "Test queue add operation")]
         public void TestQueueAddOperations()
         {
-            var reportWatcher = new ReportWatcher<object>(2);
+            var reportWatcher = new ReportLimitWatcher<object>(2);
             Assert.DoesNotThrow(() => reportWatcher.WatchReport(new BacktraceReport("text information")));
             Thread.Sleep(3000);
             Assert.IsTrue(reportWatcher.WatchReport(new BacktraceReport("last available information")));
@@ -38,9 +38,9 @@ namespace Backtrace.Tests.ServicesTests
         public void TestWatcherInitialization()
         {
             //watcher not work
-            var reportWatcher = new ReportWatcher<object>(0);
+            var reportWatcher = new ReportLimitWatcher<object>(0);
             uint max = uint.MaxValue;
-            Assert.Throws<OverflowException>(() => new ReportWatcher<object>(max *2));
+            Assert.Throws<OverflowException>(() => new ReportLimitWatcher<object>(max *2));
             Assert.True(reportWatcher.WatchReport(new BacktraceReport("test")));
         }
     }

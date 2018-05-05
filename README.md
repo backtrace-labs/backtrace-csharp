@@ -5,10 +5,9 @@
 ## Usage
 
 ```csharp
+// replace with your endpoint url and token
 var backtraceCredentials = 
 	new BacktraceCredentials(@"https://myserver.sp.backtrace.io:6097", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
-	// replace with your endpoint url and token
-
 var backtraceClient = new BacktraceClient(backtraceCredentials);
 
 try{
@@ -87,7 +86,7 @@ dotnet add package Backtrace
 
 Visual Studio allows you to build a project and run all available samples (includes support for .NET Core, .NET Framework 4.5, .NET Framework 3.5). 
 - Double click `.sln` file or `open` project directory in Visual Studio.
-- In `Solution Explorer` navigate to directory `Sample` and set preffered project (.NET Core/Framework) as startup project.
+- In `Solution Explorer` navigate to directory `Sample` and set preferred project (.NET Core/Framework) as startup project.
 
 ![Visual Studio](https://github.com/backtrace-labs/backtrace-csharp/raw/master/Backtrace/Documents/Images/VisualStudio.PNG)
 
@@ -109,7 +108,7 @@ You can use .NET Core's CLI to run sample project on Windows, Mac OS and Linux. 
 ``` 
     cd Backtrace.Core  
 ``` 
-- Open `Program.cs` in project **Backtrace.Core** and replace `BacktraceCredential` constructor patemeters with with your `Backtrace endpoint URL` (e.g. https://xxx.sp.backtrace.io:6098) and `submission token`:
+- Open `Program.cs` in project **Backtrace.Core** and replace `BacktraceCredential` constructor parameters with with your `Backtrace endpoint URL` (e.g. https://xxx.sp.backtrace.io:6098) and `submission token`:
 ```csharp
     var backtraceCredentials = new BacktraceCredentials(@"https://myserver.sp.backtrace.io:6097", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
 ```
@@ -131,7 +130,7 @@ You can use .NET Core's CLI to run sample project on Windows, Mac OS and Linux. 
 
 ![VisualStudioMacOS](https://github.com/backtrace-labs/backtrace-csharp/raw/master/Backtrace/Documents/Images/VisualStudioMacOS.PNG)
 
-- Open `Program.cs` class in project **Backtrace.Core** and replace `BacktraceCredential` constructor patemeters with with your `Backtrace endpoint URL` (e.g. https://xxx.sp.backtrace.io:6098) and `submission token`:
+- Open `Program.cs` class in project **Backtrace.Core** and replace `BacktraceCredential` constructor parameters with with your `Backtrace endpoint URL` (e.g. https://xxx.sp.backtrace.io:6098) and `submission token`:
 ```csharp
     var backtraceCredentials = new BacktraceCredentials(@"https://myserver.sp.backtrace.io:6097", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
 ```
@@ -153,35 +152,56 @@ var credentials = new BacktraceCredentials("backtrace_endpoint_url", "token");
 var backtraceClient = new BacktraceClient(credentials);
 ```
 
-Additionally and optionally, `BacktraceClient` constructor also accepts the following parameters: **custom attributes**, **database directory path** and **maximum number of error reports per minute**.
+For more advanced usage of `BacktraceClient`, you can supply `BacktraceClientConfiguration` as a parameter. See the following example:
 
 ```csharp
-var backtraceClient = new BacktraceClient(
-    sectionName: "BacktraceCredentials",
-    attributes: new Dictionary<string, object>() { { "Attribute", "value" } },
-    databaseDirectory: "pathToDatabaseDirectory",
-    reportPerMin: 0
-);
+var configuration = new BacktraceClientConfiguration(credentials){
+    ClientAttributes = new Dictionary<string, object>() { 
+        { "attribute_name", "attribute_value" } },
+    ReportPerMin = 3,
+}
+var backtraceClient = new BacktraceClient(configuration);
 ```
+For more information on `BacktraceClientConfiguration` parameters please see <a href="#architecture-BacktraceClient">Architecture</a> section.
 
+
+Notes:
+- If parameter `reportPerMin` is equal to 0, there is no limit on the number of error reports per minute. When the `reportPerMin` cap is reached, `BacktraceClient.Send` method will return false.
 #### TLS/SSL Support
 
 For .NET Standard 2.0 and .NET Framework 4.6+, TLS 1.2 support is built-in.
 
-For .NET Framework 4.5 (and below) as well as .NET Standard 2.0 (and below), TLS 1.2 support may not be available, but you can use still enable lower TLS/SSL support by supplying `tlsLegacySupport` parameter to `BacktraceClient` constructor, like so:
-```
-var backtraceClient = new BacktraceClient(
-    sectionName: "BacktraceCredentials",
-    attributes: new Dictionary<string, object>() { { "Attribute", "value" } },
-    databaseDirectory: "pathToDatabaseDirectory",
-    reportPerMin: 0,
-    tlsLegacySupport: true
-);
+For .NET Framework 4.5 (and below) as well as .NET Standard 2.0 (and below), TLS 1.2 support may not be available, but you can use still enable lower TLS/SSL support by adding the following code **before** `BacktraceClient` initialization.
+
+```csharp
+ServicePointManager.SecurityProtocol =
+                     SecurityProtocolType.Tls
+                    | (SecurityProtocolType)0x00000300
+                    | (SecurityProtocolType)0x00000C00;
+
+ServicePointManager.ServerCertificateValidationCallback 
+    += (sender, certificate, chain, errors) => true;
 ```
 
-Note:
-- `databaseDirectory` parameter is optional. Make sure the directory designated is empty. BacktraceClient will use this directory to save additional information relating to program execution. If a `databaseDirectory` path is supplied, the Backtrace library will generate and attach a minidump to each error report automatically.
-- If parameter `reportPerMin` is equal to 0, there is no limit on the number of error reports per minute. When an error is submitted when the `reportPerMin` cap is reached, `BacktraceClient.Send` method will return false.
+
+#### Database initialization
+
+`BacktraceClient` allows you to customize the initialization of `BacktraceDatabase` for local storage of error reports by supplying a `BacktraceDatabaseSettings` parameter, as follows:
+
+```csharp
+var dbSettings = new BacktraceDatabaseSettings("databaseDirectory"){
+    MaxRecordCount = 100,
+    MaxDatabaseSize = 1000,
+    AutoSendMode = true,
+    RetryBehavior = RetryBehavior.ByInterval,
+};
+var database = new BacktraceDatabase<object>(dbSettings);
+var configuration = BacktraceClientConfiguration(credentials);
+var backtraceClient = new BacktraceClient(configuration, database);
+```
+
+Notes:
+- If a valid `databaseDirectory` directory is supplied, the Backtrace library will generate and attach a minidump to each error report automatically. Otherwise, `BacktraceDatabase` will be disabled.
 
 
 ## Sending an error report <a name="documentation-sending-report"></a>
@@ -207,10 +227,13 @@ catch (Exception exception)
     var result = backtraceClient.Send(backtraceReport);
 }
 ```
+Notes:
+- if you initialize `BacktraceClient` with `BacktraceDatabase` and your application is offline or you pass invalid credentials to `BacktraceClient`, reports will be stored in database directory path,
+- for .NET 4.5+, we recommend to use `SendAsync` method
 
 #### Asynchronous Send Support
 
-For developers that use .NET 4.5+ and .NET Standard we recommend using `SendAsync` method, which uses asynchourous Tasks. Both `Send` and `SendAsync` method returns `BacktraceResult`. See example below:
+For developers that use .NET 4.5+ and .NET Standard we recommend using `SendAsync` method, which uses asynchronous Tasks. Both `Send` and `SendAsync` method returns `BacktraceResult`. See example below:
 
 ```csharp
 try
@@ -239,7 +262,14 @@ try
 }
 catch (Exception exception)
 {
+  //use extension method
+  var report = exception.ToBacktraceReport();
+  backtraceClient.Send(report);
+  
+  //pass exception to Send method
   backtraceClient.Send(exception);
+  
+  //pass your custom message to Send method
   await backtraceClient.SendAsync("Message");
 }
 ```
@@ -270,6 +300,7 @@ backtraceClient.BeforeSend =
 `BacktraceClient` currently supports the following events:
 - `BeforeSend`
 - `AfterSend`
+- `RequestHandler`
 - `OnReportStart`
 - `OnClientReportLimitReached`
 - `OnUnhandledApplicationException`
@@ -295,6 +326,12 @@ You can extend `BacktraceReportBase` and `BacktraceBase` to create your own Back
 ## BacktraceClient  <a name="architecture-BacktraceClient"></a>
 **`BacktraceClient`** is a class that allows you to instantiate a client instance that interacts with `BacktraceApi`. This class sets up connection to the Backtrace endpoint and manages error reporting behavior (for example, saving minidump files on your local hard drive and limiting the number of error reports per minute). `BacktraceClient` extends `BacktraceBase` generic class. `T` argument is a value type in `Attribute` dictionary.
 
+`BacktraceClient` takes a `BacktraceClientConfiguration` parameter, which has the following properties:
+- `Credentials` - the `BacktraceCredentials` object to use for connection to the Backtrace server.
+- `ClientAttributes` - custom attributes to be submitted to Backtrace alongside the error report.
+- `ReportPerMin` - A cap on the number of reports that can be sent per minute. If `ReportPerMin` is equal to zero then there is no cap.
+
+
 ## BacktraceData  <a name="architecture-BacktraceData"></a>
 **`BacktraceData`** is a generic, serializable class that holds the data to create a diagnostic JSON to be sent to the Backtrace endpoint via `BacktraceApi`. You can add additional pre-processors for `BacktraceData` by attaching an event handler to the `BacktraceClient.BeforeSend` event. `BacktraceData` require `BacktraceReport` and `BacktraceClient` client attributes.
 
@@ -310,10 +347,29 @@ You can extend `BacktraceReportBase` and `BacktraceBase` to create your own Back
 **`BacktraceResult`** is a class that holds response and result from a `Send` or `SendAsync` call. The class contains a `Status` property that indicates whether the call was completed (`OK`), the call returned with an error (`ServerError`), or the call was aborted because client reporting limit was reached (`LimitReached`). Additionally, the class has a `Message` property that contains details about the status. Note that the `Send` call may produce an error report on an inner exception, in this case you can find an additional `BacktraceResult` object in the `InnerExceptionResult` property.
 
 ## BacktraceDatabase  <a name="architecture-BacktraceDatabase"></a>
-**`BacktraceDatabase`** is a class stores data in your local harddrive. An `BacktraceDatabase` instance is instantiated when the `BacktraceClient` constructor is called. If `databaseDirectory` isn't set in the `BacktraceClient` constructor call, `BacktraceDatabase` won't generate minidump files. Before start - make sure that the directory designed in **BacktraceClient.databaseDirectory** is **empty**. 
+**`BacktraceDatabase`** is a class that stores error report data in your local hard drive. If `DatabaseSettings` dones't contain a **valid** `DatabasePath` then `BacktraceDatabase` won't generate minidump files and store error report data. 
+
+`BacktraceDatabase` stores error reports that were not sent successfully due to network outage or server unavailability. `BacktraceDatabase` periodically tries to resend reports 
+cached in the database.  In `BacktraceDatabaseSettings` you can set the maximum number of entries (`MaxRecordCount`) to be stored in the database. The database will retry sending 
+stored reports every `RetryInterval` seconds up to `RetryLimit` times, both customizable in the `BacktraceDatabaseSettings`. 
+
+`BacktraceDatabaseSettings` has the following properties:
+- `DatabasePath` - the local directory path where `BacktraceDatabase` stores error report data when reports fail to send
+- `MaxRecordCount` - Maximum number of stored reports in Database. If value is equal to `0`, then there is no limit.
+- `MaxDatabaseSize` - Maximum database size in MB. If value is equal to `0`, there is no limit.
+- `AutoSendMode` - if the value is `true`, `BacktraceDatabase` will automatically try to resend stored reports. Default is `false`.
+- `RetryBehavior` - 
+	- `RetryBehavior.ByInterval` - Default. `BacktraceDatabase` will try to resend the reports every time interval specified by `RetryInterval`.
+	- `RetryBehavior.NoRetry` - Will not attempt to resend reports
+- `RetryInterval` - the time interval between retries, in seconds.
+- `RetryLimit` - the maximum number of times `BacktraceDatabase` will attempt to resend error report before removing it from the database.
+
+
+
+If you want to clear your database or remove all reports after send method you can use `Clear`, `Flush` and `FlushAsync` methods.
 
 ## ReportWatcher  <a name="architecture-ReportWatcher"></a>
-**`ReportWatcher`** is a class that validate send requests to the Backtrace endpoint. If `reportPerMin` is set in the `BacktraceClient` constructor call, `ReportWatcher` will drop error reports that go over the limit.
+**`ReportWatcher`** is a class that validate send requests to the Backtrace endpoint. If `reportPerMin` is set in the `BacktraceClient` constructor call, `ReportWatcher` will drop error reports that go over the limit. `BacktraceClient` check rate limit before `BacktraceApi` generate diagnostic json. 
 
 
 # Good to know <a name="good-to-know"></a>

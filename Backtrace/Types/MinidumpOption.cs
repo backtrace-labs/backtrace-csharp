@@ -12,6 +12,7 @@ namespace Backtrace.Types
     {
 #pragma warning disable 1591
         // From dbghelp.h:
+        None = 0xffffffff,
         Normal = 0x00000000,
         WithDataSegs = 0x00000001,
         WithFullMemory = 0x00000002,
