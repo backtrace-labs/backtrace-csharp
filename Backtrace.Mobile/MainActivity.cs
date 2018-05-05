@@ -21,7 +21,7 @@ namespace Backtrace.Mobile
             var database = new BacktraceDatabase<object>(new BacktraceDatabaseSettings(directoryPath));
 
             //setup client configuration
-            var credentials = new BacktraceCredentials(ApplicationCredentials.Host, ApplicationCredentials.Token);
+            var credentials = new BacktraceCredentials(ApplicationSettings.Host, ApplicationSettings.Token);
             var clientConfiguration = new BacktraceClientConfiguration(credentials);
 
             // Initialize new BacktraceClient 
