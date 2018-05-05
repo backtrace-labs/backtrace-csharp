@@ -36,7 +36,7 @@ namespace Backtrace.UWP
         /// Backtrace Credentials
         /// </summary>
         private static BacktraceCredentials credentials =
-            new BacktraceCredentials(ApplicationCredentials.Host, ApplicationCredentials.Token);
+            new BacktraceCredentials(ApplicationSettings.Host, ApplicationSettings.Token);
 
         /// <summary>
         /// Backtrace Celint
