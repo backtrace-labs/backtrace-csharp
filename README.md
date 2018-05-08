@@ -19,28 +19,41 @@ catch(Exception exception){
 ```
 
 # Table of contents
-1. [Supported .NET Frameworks](#supported-frameworks)
-2. [Installation](#installation)
+1. [Features Summary](#features-summary)
+2. [Supported .NET Frameworks](#supported-frameworks)
+3. [Installation](#installation)
     1. [Prerequisites](#installation-before-start)
     2. [NuGet installation](#installation-nuget)
-3. [Running sample application](#sample-app)
+4. [Running sample application](#sample-app)
     1. [Visual Studio](#sample-app-vs)
     2. [.NET Core CLI](#sample-app-cli)
     3. [Visual Studio for Mac](#sample-app-vs-mac)
-4. [Documentation](#documentation)
+5. [Documentation](#documentation)
     1. [Initialize new BacktraceClient](#documentation-initialization)
+        * [Database Initialization](#documentation-database-initialization)
     2. [Sending a report](#documentation-sending-report)
     3. [Events](#documentation-events)
     4. [Customization](#documentation-customization)
-5. [Architecture](#architecture)
+6. [Architecture](#architecture)
     1. [BacktraceReport](#architecture-BacktraceReport)
     2. [BacktraceClient](#architecture-BacktraceClient)
     3. [BacktraceData](#architecture-BacktraceData)
     4. [BacktraceApi](#architecture-BacktraceApi)
     5. [BacktraceDatabase](#architecture-BacktraceDatabase)
     6. [ReportWatcher](#architecture-ReportWatcher)
-6. [Good to know](#good-to-know)
-7. [Release Notes](#changelog)
+7. [Good to know](#good-to-know)
+8. [Release Notes](#changelog)
+
+
+# Features Summary <a name="features-summary"></a>
+* Light-weight C# client library that quickly submits C#/.NET errors to your Backtrace dashboard
+* Supports a wide range of .NET versions such as .NET Framework, .NET Core, Mono, Xamarin and Unity. Read more [here](#supported-frameworks)
+* Supports both CLI and IDE work environments
+* Supports asynchronous Tasks in .NET 4.5+
+* Supports offline database for error report storage and re-submission in case of network outage
+* Fully customizable and extendable event handlers and base classes for custom implementations
+* Available as a [NuGet Package](https://www.nuget.org/packages/Backtrace/) as well as a fully open-sourced [Github Release](https://github.com/backtrace-labs/backtrace-csharp/).
+
 
 # Supported .NET Frameworks <a name="supported-frameworks"></a>
 * .NET Framework 3.5 +
@@ -58,13 +71,13 @@ catch(Exception exception){
 ## Prerequisites <a name="installation-before-start"></a>
 
 ### Development Environment
-- On `Windows`, we recommend `Visual Studio 2017` or above for IDE. You can download and install `Visual Studio` [here](https://www.visualstudio.com/downloads/). As an alternative to `Visual Studio` you can use .NET Core command line interface, see installation guide [here](https://docs.microsoft.com/en-us/dotnet/core/windows-prerequisites?tabs=netcore2x)
-- On `Mac OS X`, you can download and install `Visual Studio` [here](https://www.visualstudio.com/downloads/) if you prefer using an IDE. For command line, you should to download and install [.NET Core 2.0 or above](https://www.microsoft.com/net/download/macos).  
-- On `Linux`, [Visual Studio Code](https://code.visualstudio.com/) is available as a light-weight IDE. Similarly, you can use .NET Core command line interface, see instruction for `Linux` [here](https://docs.microsoft.com/en-US/dotnet/core/linux-prerequisites?tabs=netcore2x)
+- On *Windows*, we recommend *Visual Studio 2017* or above for IDE. You can download and install *Visual Studio* [here](https://www.visualstudio.com/downloads/). As an alternative to `Visual Studio` you can use .NET Core command line interface, see installation guide [here](https://docs.microsoft.com/en-us/dotnet/core/windows-prerequisites?tabs=netcore2x)
+- On *Mac OS X*, you can download and install *Visual Studio* [here](https://www.visualstudio.com/downloads/) if you prefer using an IDE. For command line, you should to download and install [.NET Core 2.0 or above](https://www.microsoft.com/net/download/macos).  
+- On *Linux*, [Visual Studio Code](https://code.visualstudio.com/) is available as a light-weight IDE. Similarly, you can use .NET Core command line interface, see instruction for *Linux* [here](https://docs.microsoft.com/en-US/dotnet/core/linux-prerequisites?tabs=netcore2x)
 
 ### NuGet  
 
-The `Backtrace` library is available via NuGet. You can read more about NuGet and how to download the packages [here](https://docs.microsoft.com/en-us/nuget/)
+The *Backtrace* library is available via NuGet. You can read more about NuGet and how to download the packages [here](https://docs.microsoft.com/en-us/nuget/)
 
 ## Installing Backtrace via NuGet <a name="installation-nuget"></a>
 
@@ -185,7 +198,7 @@ ServicePointManager.ServerCertificateValidationCallback
 ```
 
 
-#### Database initialization
+#### Database initialization <a name="documentation-database-initialization"></a>
 
 `BacktraceClient` allows you to customize the initialization of `BacktraceDatabase` for local storage of error reports by supplying a `BacktraceDatabaseSettings` parameter, as follows:
 
