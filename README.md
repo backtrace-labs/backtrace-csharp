@@ -155,6 +155,7 @@ var backtraceClient = new BacktraceClient(credentials);
 For more advanced usage of `BacktraceClient`, you can supply `BacktraceClientConfiguration` as a parameter. See the following example:
 
 ```csharp
+var credentials = new BacktraceCredentials("backtrace_endpoint_url", "token");
 var configuration = new BacktraceClientConfiguration(credentials){
     ClientAttributes = new Dictionary<string, object>() { 
         { "attribute_name", "attribute_value" } },
@@ -196,7 +197,8 @@ var dbSettings = new BacktraceDatabaseSettings("databaseDirectory"){
     RetryBehavior = RetryBehavior.ByInterval,
 };
 var database = new BacktraceDatabase<object>(dbSettings);
-var configuration = BacktraceClientConfiguration(credentials);
+var credentials = new BacktraceCredentials("backtrace_endpoint_url", "token");
+var configuration = new BacktraceClientConfiguration(credentials);
 var backtraceClient = new BacktraceClient(configuration, database);
 ```
 
