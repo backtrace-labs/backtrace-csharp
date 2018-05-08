@@ -77,7 +77,7 @@ catch(Exception exception){
 
 ### NuGet  
 
-The **Backtrace** library is available via NuGet. You can read more about NuGet and how to download the packages [here](https://docs.microsoft.com/en-us/nuget/)
+The [**Backtrace** library](https://www.nuget.org/packages/Backtrace/) is available on NuGet. You can read more about NuGet and how to download the packages [here](https://docs.microsoft.com/en-us/nuget/)
 
 ## Installing Backtrace via NuGet <a name="installation-nuget"></a>
 
