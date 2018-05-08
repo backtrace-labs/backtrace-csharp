@@ -194,7 +194,7 @@ var dbSettings = new BacktraceDatabaseSettings("databaseDirectory"){
     MaxRecordCount = 100,
     MaxDatabaseSize = 1000,
     AutoSendMode = true,
-    RetryBehavior = RetryBehavior.ByInterval,
+    RetryBehavior = RetryBehavior.ByInterval
 };
 var database = new BacktraceDatabase<object>(dbSettings);
 var credentials = new BacktraceCredentials("backtrace_endpoint_url", "token");
