@@ -71,13 +71,13 @@ catch(Exception exception){
 ## Prerequisites <a name="installation-before-start"></a>
 
 ### Development Environment
-- On *Windows*, we recommend *Visual Studio 2017* or above for IDE. You can download and install *Visual Studio* [here](https://www.visualstudio.com/downloads/). As an alternative to `Visual Studio` you can use .NET Core command line interface, see installation guide [here](https://docs.microsoft.com/en-us/dotnet/core/windows-prerequisites?tabs=netcore2x)
-- On *Mac OS X*, you can download and install *Visual Studio* [here](https://www.visualstudio.com/downloads/) if you prefer using an IDE. For command line, you should to download and install [.NET Core 2.0 or above](https://www.microsoft.com/net/download/macos).  
-- On *Linux*, [Visual Studio Code](https://code.visualstudio.com/) is available as a light-weight IDE. Similarly, you can use .NET Core command line interface, see instruction for *Linux* [here](https://docs.microsoft.com/en-US/dotnet/core/linux-prerequisites?tabs=netcore2x)
+- On **Windows**, we recommend **Visual Studio 2017** or above for IDE. You can download and install **Visual Studio** [here](https://www.visualstudio.com/downloads/). As an alternative to `Visual Studio` you can use .NET Core command line interface, see installation guide [here](https://docs.microsoft.com/en-us/dotnet/core/windows-prerequisites?tabs=netcore2x)
+- On **Mac OS X**, you can download and install **Visual Studio** [here](https://www.visualstudio.com/downloads/) if you prefer using an IDE. For command line, you should to download and install [.NET Core 2.0 or above](https://www.microsoft.com/net/download/macos).  
+- On **Linux**, [Visual Studio Code](https://code.visualstudio.com/) is available as a light-weight IDE. Similarly, you can use .NET Core command line interface, see instruction for *Linux* [here](https://docs.microsoft.com/en-US/dotnet/core/linux-prerequisites?tabs=netcore2x)
 
 ### NuGet  
 
-The *Backtrace* library is available via NuGet. You can read more about NuGet and how to download the packages [here](https://docs.microsoft.com/en-us/nuget/)
+The **Backtrace** library is available via NuGet. You can read more about NuGet and how to download the packages [here](https://docs.microsoft.com/en-us/nuget/)
 
 ## Installing Backtrace via NuGet <a name="installation-nuget"></a>
 
@@ -98,8 +98,8 @@ dotnet add package Backtrace
 ## Visual Studio <a name="sample-app-vs"></a>
 
 Visual Studio allows you to build a project and run all available samples (includes support for .NET Core, .NET Framework 4.5, .NET Framework 3.5). 
-- Double click `.sln` file or `open` project directory in Visual Studio.
-- In `Solution Explorer` navigate to directory `Sample` and set preferred project (.NET Core/Framework) as startup project.
+- Double click `.sln` file or **open** project directory in Visual Studio.
+- In **Solution Explorer** navigate to directory `Sample` and set preferred project (.NET Core/Framework) as startup project.
 
 ![Visual Studio](https://github.com/backtrace-labs/backtrace-csharp/raw/master/Backtrace/Documents/Images/VisualStudio.PNG)
 
