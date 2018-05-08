@@ -181,21 +181,6 @@ For more information on `BacktraceClientConfiguration` parameters please see <a 
 
 Notes:
 - If parameter `reportPerMin` is equal to 0, there is no limit on the number of error reports per minute. When the `reportPerMin` cap is reached, `BacktraceClient.Send` method will return false.
-#### TLS/SSL Support
-
-For .NET Standard 2.0 and .NET Framework 4.6+, TLS 1.2 support is built-in.
-
-For .NET Framework 4.5 (and below) as well as .NET Standard 2.0 (and below), TLS 1.2 support may not be available, but you can use still enable lower TLS/SSL support by adding the following code **before** `BacktraceClient` initialization.
-
-```csharp
-ServicePointManager.SecurityProtocol =
-                     SecurityProtocolType.Tls
-                    | (SecurityProtocolType)0x00000300
-                    | (SecurityProtocolType)0x00000C00;
-
-ServicePointManager.ServerCertificateValidationCallback 
-    += (sender, certificate, chain, errors) => true;
-```
 
 
 #### Database initialization <a name="documentation-database-initialization"></a>
@@ -217,6 +202,24 @@ var backtraceClient = new BacktraceClient(configuration, database);
 
 Notes:
 - If a valid `databaseDirectory` directory is supplied, the Backtrace library will generate and attach a minidump to each error report automatically. Otherwise, `BacktraceDatabase` will be disabled.
+
+
+#### TLS/SSL Support
+
+For .NET Standard 2.0 and .NET Framework 4.6+, TLS 1.2 support is built-in.
+
+For .NET Framework 4.5 (and below) as well as .NET Standard 2.0 (and below), TLS 1.2 support may not be available, but you can use still enable lower TLS/SSL support by adding the following code **before** `BacktraceClient` initialization.
+
+```csharp
+ServicePointManager.SecurityProtocol =
+                     SecurityProtocolType.Tls
+                    | (SecurityProtocolType)0x00000300
+                    | (SecurityProtocolType)0x00000C00;
+
+ServicePointManager.ServerCertificateValidationCallback 
+    += (sender, certificate, chain, errors) => true;
+```
+
 
 
 ## Sending an error report <a name="documentation-sending-report"></a>
