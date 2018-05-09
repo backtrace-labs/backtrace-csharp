@@ -46,7 +46,8 @@ catch(Exception exception){
 
 
 # Features Summary <a name="features-summary"></a>
-* Light-weight C# client library that quickly submits C#/.NET errors to your Backtrace dashboard
+* Light-weight C# client library that quickly submits C#/.NET exceptions and crashes to your Backtrace dashboard
+  * Can include callstack, system metadata, custom metadata, and file attachments (e.g. minidump) if needed.
 * Supports a wide range of .NET versions such as .NET Framework, .NET Core, Mono, Xamarin and Unity. Read more [here](#supported-frameworks)
 * Supports both CLI and IDE work environments
 * Supports asynchronous Tasks in .NET 4.5+
