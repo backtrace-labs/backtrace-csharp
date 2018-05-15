@@ -27,9 +27,9 @@ namespace Backtrace.Tests.IntegrationTests
         BacktraceClient _backtraceClient;
 
         /// <summary>
-        /// Last database entry
+        /// Last database record
         /// </summary>
-        BacktraceDatabaseEntry<object> _lastEntry;
+        BacktraceDatabaseRecord<object> _lastRecord;
 
         /// <summary>
         /// Enable hard drive write errors
@@ -39,30 +39,30 @@ namespace Backtrace.Tests.IntegrationTests
         bool _writeFail = false;
 
         /// <summary>
-        /// Get new database entry 
+        /// Get new database record 
         /// </summary>
-        /// <returns>Database entry mock</returns>
-        protected BacktraceDatabaseEntry<object> GetEntry()
+        /// <returns>Database record mock</returns>
+        protected BacktraceDatabaseRecord<object> GetRecord()
         {
-            //mock single entry
-            var mockEntry = new Mock<BacktraceDatabaseEntry<object>>();
-            mockEntry.Setup(n => n.Delete());
-            mockEntry.SetupProperty(n => n.Entry, null);
+            //mock single record
+            var mockRecord = new Mock<BacktraceDatabaseRecord<object>>();
+            mockRecord.Setup(n => n.Delete());
+            mockRecord.SetupProperty(n => n.Record, null);
 
-            //mock entry writer
-            mockEntry.Object.EntryWriter = new MockBacktraceDatabaseWriter();
+            //mock record writer
+            mockRecord.Object.RecordWriter = new MockBacktraceDatabaseWriter();
             if (_enableWriteErrors)
             {
-                ((MockBacktraceDatabaseWriter)mockEntry.Object.EntryWriter).writeFail = _writeFail;
+                ((MockBacktraceDatabaseWriter)mockRecord.Object.RecordWriter).writeFail = _writeFail;
             }
 
-            return mockEntry.Object;
+            return mockRecord.Object;
         }
 
         [SetUp]
         public void Setup()
         {
-            _lastEntry = GetEntry();
+            _lastRecord = GetRecord();
             //get project path
             string projectPath = Environment.CurrentDirectory;
             //setup credentials
@@ -79,9 +79,9 @@ namespace Backtrace.Tests.IntegrationTests
 
             //mock file context
             var mockFileContext = new Mock<IBacktraceDatabaseFileContext<object>>();
-            mockFileContext.Setup(n => n.GetEntries())
+            mockFileContext.Setup(n => n.GetRecords())
                 .Returns(new List<FileInfo>());
-            mockFileContext.Setup(n => n.RemoveOrphaned(It.IsAny<IEnumerable<BacktraceDatabaseEntry<object>>>()));
+            mockFileContext.Setup(n => n.RemoveOrphaned(It.IsAny<IEnumerable<BacktraceDatabaseRecord<object>>>()));
 
             //mock cache
             var mockCacheContext = new Mock<IBacktraceDatabaseContext<object>>();
@@ -89,10 +89,10 @@ namespace Backtrace.Tests.IntegrationTests
             mockCacheContext.Setup(n => n.Add(It.IsAny<BacktraceData<object>>()))
                 .Callback(() =>
                 {
-                    mockCacheContext.Object.Add(_lastEntry);
-                    _lastEntry = GetEntry();
+                    mockCacheContext.Object.Add(_lastRecord);
+                    _lastRecord = GetRecord();
                 })
-                .Returns(_lastEntry);
+                .Returns(_lastRecord);
 
 
             var database = new BacktraceDatabase<object>(new BacktraceDatabaseSettings(projectPath) { RetryBehavior = RetryBehavior.NoRetry })

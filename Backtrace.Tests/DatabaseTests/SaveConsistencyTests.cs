@@ -18,28 +18,28 @@ namespace Backtrace.Tests.DatabaseTests
         [TestCase(10, 5)]
         [TestCase(50, 5)]
         [TestCase(100, 10)]
-        public void TestWriteConsistency(int successRate, int numberOfEntries)
+        public void TestWriteConsistency(int successRate, int numberOfRecords)
         {
             int totalFails = 0;
             Random random = new Random();
-            var entries = new List<BacktraceDatabaseEntry<object>>();
-            for (int i = 0; i < numberOfEntries; i++)
+            var records = new List<BacktraceDatabaseRecord<object>>();
+            for (int i = 0; i < numberOfRecords; i++)
             {
                 var percentage = random.Next(0, 100);
                 bool writeFail = percentage < successRate;
-                var entry = GetEntry();
-                ((MockBacktraceDatabaseWriter)entry.EntryWriter).writeFail = writeFail;
-                var result = entry.Save();
+                var record = GetRecord();
+                ((MockBacktraceDatabaseWriter)record.RecordWriter).writeFail = writeFail;
+                var result = record.Save();
                 if (result)
                 {
-                    entries.Add(entry);
+                    records.Add(record);
                 }
                 else
                 {
                     totalFails++;
                 }
             }
-            Assert.AreEqual(totalFails, numberOfEntries - entries.Count);
+            Assert.AreEqual(totalFails, numberOfRecords - records.Count);
         }
 
 

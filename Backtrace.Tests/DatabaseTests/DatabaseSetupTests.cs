@@ -56,9 +56,9 @@ namespace Backtrace.Tests.DatabaseTests
             Assert.DoesNotThrow(() => database.Count());
 
             //mock deleting
-            var mockEntry = new Mock<BacktraceDatabaseEntry<object>>();
-            mockEntry.Setup(n => n.Delete());
-            Assert.DoesNotThrow(() => database.Delete(mockEntry.Object));
+            var mockRecord = new Mock<BacktraceDatabaseRecord<object>>();
+            mockRecord.Setup(n => n.Delete());
+            Assert.DoesNotThrow(() => database.Delete(mockRecord.Object));
             Assert.DoesNotThrow(() => database.Delete(null));
 
             //test flush methods

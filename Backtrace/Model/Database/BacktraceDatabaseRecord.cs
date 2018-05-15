@@ -11,28 +11,28 @@ using System.Text;
 namespace Backtrace.Model.Database
 {
     /// <summary>
-    /// Single entry in BacktraceDatabase
+    /// Single record in BacktraceDatabase
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class BacktraceDatabaseEntry<T> : IDisposable
+    public class BacktraceDatabaseRecord<T> : IDisposable
     {
         /// <summary>
-        /// Entry Id
+        /// Id
         /// </summary>
         [JsonProperty]
         public Guid Id { get; set; } = Guid.NewGuid();
 
         /// <summary>
-        /// Check if current entry is in use
+        /// Check if current record is in use
         /// </summary>
         [JsonIgnore]
         internal bool Locked { get; set; } = false;
 
         /// <summary>
-        /// Path to json stored all information about current entry
+        /// Path to json stored all information about current record
         /// </summary>
-        [JsonProperty(PropertyName = "entryName")]
-        internal string EntryPath { get; set; }
+        [JsonProperty(PropertyName = "recordName")]
+        internal string RecordPath { get; set; }
 
         /// <summary>
         /// Path to a diagnostic data json
@@ -53,16 +53,16 @@ namespace Backtrace.Model.Database
         internal string ReportPath { get; set; }
 
         /// <summary>
-        /// Total size of entry
+        /// Total size of record
         /// </summary>
         [JsonProperty(PropertyName = "size")]
         internal long Size { get; set; }
 
         /// <summary>
-        /// Stored entry
+        /// Stored record
         /// </summary>
         [JsonIgnore]
-        internal virtual BacktraceData<T> Entry { get; set; }
+        internal virtual BacktraceData<T> Record { get; set; }
 
         /// <summary>
         /// Path to database directory
@@ -71,22 +71,22 @@ namespace Backtrace.Model.Database
         private readonly string _path = string.Empty;
 
         /// <summary>
-        /// Entry writer
+        /// Record writer
         /// </summary>
         [JsonIgnore]
-        internal IBacktraceDatabaseEntryWriter EntryWriter;
+        internal IBacktraceDatabaseRecordWriter RecordWriter;
 
         /// <summary>
-        /// Get valid BacktraceData from current entry
+        /// Get valid BacktraceData from current record
         /// </summary>
         [JsonIgnore]
         public virtual BacktraceData<T> BacktraceData
         {
             get
             {
-                if (Entry != null)
+                if (Record != null)
                 {
-                    return Entry;
+                    return Record;
                 }
                 if (!Valid())
                 {
@@ -116,22 +116,22 @@ namespace Backtrace.Model.Database
         /// Constructor for serialization purpose
         /// </summary>
         [JsonConstructor]
-        internal BacktraceDatabaseEntry()
+        internal BacktraceDatabaseRecord()
         {
-            EntryPath = $"{Id}-entry.json";
+            RecordPath = $"{Id}-record.json";
         }
 
         /// <summary>
-        /// Create new instance of database entry
+        /// Create new instance of database record
         /// </summary>
         /// <param name="data">Diagnostic data</param>
         /// <param name="path">database path</param>
-        public BacktraceDatabaseEntry(BacktraceData<T> data, string path)
+        public BacktraceDatabaseRecord(BacktraceData<T> data, string path)
         {
             Id = data.Uuid;
-            Entry = data;
+            Record = data;
             _path = path;
-            EntryWriter = new BacktraceDatabaseEntryWriter(path);
+            RecordWriter = new BacktraceDatabaseRecordWriter(path);
         }
 
         /// <summary>
@@ -142,22 +142,22 @@ namespace Backtrace.Model.Database
         {
             try
             {
-                DiagnosticDataPath = Save(Entry, $"{Id}-attachment");
-                ReportPath = Save(Entry.Report, $"{Id}-report");
+                DiagnosticDataPath = Save(Record, $"{Id}-attachment");
+                ReportPath = Save(Record.Report, $"{Id}-report");
                 
                 // get minidump information
-                MiniDumpPath = Entry.Report?.MinidumpFile ?? string.Empty;
+                MiniDumpPath = Record.Report?.MinidumpFile ?? string.Empty;
                 Size += MiniDumpPath == string.Empty ? 0 : new FileInfo(MiniDumpPath).Length;
 
-                //save entry
-                EntryPath = Path.Combine(_path, $"{Id}-entry.json");
-                //check current entry size
+                //save record
+                RecordPath = Path.Combine(_path, $"{Id}-record.json");
+                //check current record size
                 var json = JsonConvert.SerializeObject(this);
                 byte[] file = Encoding.UTF8.GetBytes(json);
-                //add entry size
+                //add record size
                 Size += file.Length;
-                //save it again with actual entry size
-                EntryWriter.Write(this, $"{Id}-entry");
+                //save it again with actual record size
+                RecordWriter.Write(this, $"{Id}-record");
                 return true;
             }
             catch (IOException)
@@ -173,7 +173,7 @@ namespace Backtrace.Model.Database
         }
 
         /// <summary>
-        /// Save single file from database entry
+        /// Save single file from database record
         /// </summary>
         /// <param name="data">single file (json/dmp)</param>
         /// <param name="prefix">file prefix</param>
@@ -187,31 +187,31 @@ namespace Backtrace.Model.Database
             var json = JsonConvert.SerializeObject(data);
             byte[] file = Encoding.UTF8.GetBytes(json);
             Size += file.Length;
-            return EntryWriter.Write(file, prefix);
+            return RecordWriter.Write(file, prefix);
         }
 
         /// <summary>
-        /// Check if all necessary files declared on entry exists
+        /// Check if all necessary files declared on record exists
         /// </summary>
-        /// <returns>True if entry is valid</returns>
+        /// <returns>True if record is valid</returns>
         public bool Valid()
         {
             return File.Exists(DiagnosticDataPath) && File.Exists(ReportPath);
         }
 
         /// <summary>
-        /// Delete all entry files
+        /// Delete all record files
         /// </summary>
         internal virtual void Delete()
         {
             Delete(MiniDumpPath);
             Delete(ReportPath);
             Delete(DiagnosticDataPath);
-            Delete(EntryPath);
+            Delete(RecordPath);
         }
 
         /// <summary>
-        /// Delete single file on database entry
+        /// Delete single file on database record
         /// </summary>
         /// <param name="path">path to file</param>
         private void Delete(string path)
@@ -234,17 +234,17 @@ namespace Backtrace.Model.Database
         }
 
         /// <summary>
-        /// Read single entry from file
+        /// Read single record from file
         /// </summary>
         /// <param name="file">Current file</param>
-        /// <returns>Saved database entry</returns>
-        internal static BacktraceDatabaseEntry<T> ReadFromFile(FileInfo file)
+        /// <returns>Saved database record</returns>
+        internal static BacktraceDatabaseRecord<T> ReadFromFile(FileInfo file)
         {
             using (StreamReader streamReader = file.OpenText())
             {
                 var json = streamReader.ReadToEnd();
-                var entry = JsonConvert.DeserializeObject<BacktraceDatabaseEntry<T>>(json);
-                return entry;
+                var record = JsonConvert.DeserializeObject<BacktraceDatabaseRecord<T>>(json);
+                return record;
             }
         }
         #region dispose
@@ -259,7 +259,7 @@ namespace Backtrace.Model.Database
             if (disposing)
             {
                 Locked = false;
-                Entry = null;
+                Record = null;
             }
         }
         #endregion

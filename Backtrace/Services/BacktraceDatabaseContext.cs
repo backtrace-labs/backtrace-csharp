@@ -18,7 +18,7 @@ namespace Backtrace.Services
         /// <summary>
         /// Database cache
         /// </summary>
-        internal Dictionary<int, List<BacktraceDatabaseEntry<T>>> BatchRetry = new Dictionary<int, List<BacktraceDatabaseEntry<T>>>();
+        internal Dictionary<int, List<BacktraceDatabaseRecord<T>>> BatchRetry = new Dictionary<int, List<BacktraceDatabaseRecord<T>>>();
 
         /// <summary>
         /// Total database size on hard drive
@@ -26,9 +26,9 @@ namespace Backtrace.Services
         internal long TotalSize = 0;
 
         /// <summary>
-        /// Total entries in BacktraceDatabase
+        /// Total records in BacktraceDatabase
         /// </summary>
-        internal int TotalEntries = 0;
+        internal int TotalRecords = 0;
 
         /// <summary>
         /// Path to database directory 
@@ -41,7 +41,7 @@ namespace Backtrace.Services
         private readonly int _retryNumber;
 
         /// <summary>
-        /// Entry order
+        /// Record order
         /// </summary>
         internal RetryOrder RetryOrder { get; set; }
 
@@ -50,7 +50,7 @@ namespace Backtrace.Services
         /// </summary>
         /// <param name="path">Path to database directory</param>
         /// <param name="retryNumber">Total number of retries</param>
-        /// <param name="retryOrder">Entry order</param>
+        /// <param name="retryOrder">Record order</param>
         public BacktraceDatabaseContext(string path, uint retryNumber, RetryOrder retryOrder)
         {
             _path = path;
@@ -70,68 +70,68 @@ namespace Backtrace.Services
             }
             for (int i = 0; i < _retryNumber; i++)
             {
-                BatchRetry[i] = new List<BacktraceDatabaseEntry<T>>();
+                BatchRetry[i] = new List<BacktraceDatabaseRecord<T>>();
             }
         }
 
         /// <summary>
-        /// Add new entry to database
+        /// Add new record to database
         /// </summary>
         /// <param name="backtraceData">Diagnostic data that should be stored in database</param>
-        /// <returns>New instance of DatabaseEntry</returns>
-        public virtual BacktraceDatabaseEntry<T> Add(BacktraceData<T> backtraceData)
+        /// <returns>New instance of DatabaseRecordy</returns>
+        public virtual BacktraceDatabaseRecord<T> Add(BacktraceData<T> backtraceData)
         {
             if (backtraceData == null) throw new NullReferenceException(nameof(BacktraceData<T>));
-            //create new entry and save it on hard drive
-            var entry = new BacktraceDatabaseEntry<T>(backtraceData, _path);
-            entry.Save();
-            //add entry to database context
-            return Add(entry);
+            //create new record and save it on hard drive
+            var record = new BacktraceDatabaseRecord<T>(backtraceData, _path);
+            record.Save();
+            //add record to database context
+            return Add(record);
         }
 
         /// <summary>
-        /// Add existing entry to database
+        /// Add existing record to database
         /// </summary>
-        /// <param name="backtraceEntry">Database entry</param>
-        public BacktraceDatabaseEntry<T> Add(BacktraceDatabaseEntry<T> backtraceEntry)
+        /// <param name="backtraceRecord">Database record</param>
+        public BacktraceDatabaseRecord<T> Add(BacktraceDatabaseRecord<T> backtraceRecord)
         {
-            if (backtraceEntry == null) throw new NullReferenceException(nameof(BacktraceDatabaseEntry<T>));
-            //lock entry, because Add method returns entry
-            backtraceEntry.Locked = true;
+            if (backtraceRecord == null) throw new NullReferenceException(nameof(BacktraceDatabaseRecord<T>));
+            //lock record, because Add method returns record
+            backtraceRecord.Locked = true;
             //increment total size of database
-            TotalSize += backtraceEntry.Size;
-            //add entry to first batch
-            BatchRetry[0].Add(backtraceEntry);
-            //increment total entries
-            TotalEntries++;
-            return backtraceEntry;
+            TotalSize += backtraceRecord.Size;
+            //add record to first batch
+            BatchRetry[0].Add(backtraceRecord);
+            //increment total records
+            TotalRecords++;
+            return backtraceRecord;
         }
 
         /// <summary>
-        /// Check if any entry exists
+        /// Check if any record exists
         /// </summary>
-        /// <param name="entry"></param>
+        /// <param name="record"></param>
         /// <returns></returns>
-        public bool Any(BacktraceDatabaseEntry<T> entry)
+        public bool Any(BacktraceDatabaseRecord<T> record)
         {
-            return BatchRetry.SelectMany(n => n.Value).Any(n => n.Id == entry.Id);
+            return BatchRetry.SelectMany(n => n.Value).Any(n => n.Id == record.Id);
         }
 
         /// <summary>
-        /// Check if any entry exists
+        /// Check if any record exists
         /// </summary>
         public bool Any()
         {
-            return TotalEntries != 0;
+            return TotalRecords != 0;
         }
 
         /// <summary>
-        /// Delete existing entry from database
+        /// Delete existing record from database
         /// </summary>
-        /// <param name="entry">Database entry to delete</param>
-        public virtual void Delete(BacktraceDatabaseEntry<T> entry)
+        /// <param name="record">Database records to delete</param>
+        public virtual void Delete(BacktraceDatabaseRecord<T> record)
         {
-            if (entry == null)
+            if (record == null)
             {
                 return;
             }
@@ -139,14 +139,14 @@ namespace Backtrace.Services
             {
                 foreach (var value in BatchRetry[key])
                 {
-                    if (value.Id == entry.Id)
+                    if (value.Id == record.Id)
                     {
                         //delete value from hard drive
                         value.Delete();
                         //delete value from current batch
                         BatchRetry[key].Remove(value);
-                        //decrement all entries
-                        TotalEntries--;
+                        //decrement all records
+                        TotalRecords--;
                         //decrement total size of database
                         TotalSize -= value.Size;
                         return;
@@ -157,7 +157,7 @@ namespace Backtrace.Services
         }
 
         /// <summary>
-        /// Increment retry time for current entry
+        /// Increment retry time for current record
         /// </summary>
         public void IncrementBatchRetry()
         {
@@ -173,7 +173,7 @@ namespace Backtrace.Services
             for (int i = _retryNumber - 2; i >= 0; i--)
             {
                 var temp = BatchRetry[i];
-                BatchRetry[i] = new List<BacktraceDatabaseEntry<T>>();
+                BatchRetry[i] = new List<BacktraceDatabaseRecord<T>>();
                 BatchRetry[i + 1] = temp;
             }
         }
@@ -189,47 +189,47 @@ namespace Backtrace.Services
             {
                 var value = currentBatch[i];
                 value.Delete();
-                TotalEntries--;
+                TotalRecords--;
                 //decrement total size of database
                 TotalSize -= value.Size;
             }
         }
 
         /// <summary>
-        /// Get all database entryes
+        /// Get all database records
         /// </summary>
-        /// <returns>all existing database entries</returns>
-        public IEnumerable<BacktraceDatabaseEntry<T>> Get()
+        /// <returns>all existing database records</returns>
+        public IEnumerable<BacktraceDatabaseRecord<T>> Get()
         {
             return BatchRetry.SelectMany(n => n.Value);
         }
 
         /// <summary>
-        /// Get total number of entries in database
+        /// Get total number of records in database
         /// </summary>
         /// <returns></returns>
-        public int Count() => TotalEntries;
+        public int Count() => TotalRecords;
 
         /// <summary>
         /// Dispose
         /// </summary>
         public virtual void Dispose()
         {
-            TotalEntries = 0;
+            TotalRecords = 0;
             BatchRetry.Clear();
         }
 
         /// <summary>
-        /// Delete all entries from database
+        /// Delete all records from database
         /// </summary>
         public void Clear()
         {
-            var entries = BatchRetry.SelectMany(n => n.Value);
-            foreach (var entry in entries)
+            var records = BatchRetry.SelectMany(n => n.Value);
+            foreach (var record in records)
             {
-                entry.Delete();
+                record.Delete();
             }
-            TotalEntries = 0;
+            TotalRecords = 0;
             TotalSize = 0;
             //clear all existing batches
             foreach (var batch in BatchRetry)
@@ -239,62 +239,62 @@ namespace Backtrace.Services
         }
 
         /// <summary>
-        /// Get last exising database entry. Method returns entry based on order in Database
+        /// Get last exising database record. Method returns record based on order in Database
         /// </summary>
-        /// <returns>First Backtrace database entry</returns>
-        public BacktraceDatabaseEntry<T> LastOrDefault()
+        /// <returns>First Backtrace database record</returns>
+        public BacktraceDatabaseRecord<T> LastOrDefault()
         {
             return RetryOrder == RetryOrder.Stack
-                    ? GetLastEntry()
-                    : GetFirstEntry();
+                    ? GetLastRecord()
+                    : GetFirstRecord();
         }
 
         /// <summary>
-        /// Get first exising database entry. Method returns entry based on order in Database
+        /// Get first exising database record. Method returns record based on order in Database
         /// </summary>
-        /// <returns>First Backtrace database entry</returns>
-        public BacktraceDatabaseEntry<T> FirstOrDefault()
+        /// <returns>First Backtrace database record</returns>
+        public BacktraceDatabaseRecord<T> FirstOrDefault()
         {
             return RetryOrder == RetryOrder.Queue
-                    ? GetFirstEntry()
-                    : GetLastEntry();
+                    ? GetFirstRecord()
+                    : GetLastRecord();
         }
 
         /// <summary>
-        /// Get first entry in in-cache BacktraceDatabase
+        /// Get first record in in-cache BacktraceDatabase
         /// </summary>
-        /// <returns>First database entry</returns>
-        private BacktraceDatabaseEntry<T> GetFirstEntry()
+        /// <returns>First database record</returns>
+        private BacktraceDatabaseRecord<T> GetFirstRecord()
         {
             //get all batches (from the beginning)
             for (int i = 0; i < _retryNumber - 1; i++)
             {
-                //if batch has any entry that is not used
+                //if batch has any record that is not used
                 //set lock to true 
                 //and return file
                 if (BatchRetry.ContainsKey(i) && BatchRetry[i].Any(n => !n.Locked))
                 {
-                    var entry = BatchRetry[i].First(n => !n.Locked);
-                    entry.Locked = true;
-                    return entry;
+                    var record = BatchRetry[i].First(n => !n.Locked);
+                    record.Locked = true;
+                    return record;
                 }
             }
             return null;
         }
 
         /// <summary>
-        /// Get last entry in in-cache BacktraceDatabase
+        /// Get last record in in-cache BacktraceDatabase
         /// </summary>
-        /// <returns>Last database entry</returns>
-        private BacktraceDatabaseEntry<T> GetLastEntry()
+        /// <returns>Last database record</returns>
+        private BacktraceDatabaseRecord<T> GetLastRecord()
         {
             for (int i = _retryNumber - 1; i >= 0; i--)
             {
                 if (BatchRetry[i].Any(n => !n.Locked))
                 {
-                    var entry = BatchRetry[i].Last(n => !n.Locked);
-                    entry.Locked = true;
-                    return entry;
+                    var record = BatchRetry[i].Last(n => !n.Locked);
+                    record.Locked = true;
+                    return record;
                 }
             }
             return null;

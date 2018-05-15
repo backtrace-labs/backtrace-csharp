@@ -11,55 +11,55 @@ namespace Backtrace.Interfaces
     internal interface IBacktraceDatabaseContext<T> : IDisposable
     {
         /// <summary>
-        /// Add new report to Database
+        /// Add new record to Database
         /// </summary>
         /// <param name="backtraceData">Diagnostic data</param>
-        BacktraceDatabaseEntry<T> Add(BacktraceData<T> backtraceData);
+        BacktraceDatabaseRecord<T> Add(BacktraceData<T> backtraceData);
 
         /// <summary>
         /// Add new data to database
         /// </summary>
-        /// <param name="backtraceDatabaseEntry">Database entry</param>
-        BacktraceDatabaseEntry<T> Add(BacktraceDatabaseEntry<T> backtraceDatabaseEntry);
+        /// <param name="backtraceDatabaseRecord">Database record</param>
+        BacktraceDatabaseRecord<T> Add(BacktraceDatabaseRecord<T> backtraceDatabaseRecord);
 
         /// <summary>
-        /// Get first entry or null
+        /// Get first record or null
         /// </summary>
-        /// <returns>First existing entry in database store</returns>
-        BacktraceDatabaseEntry<T> FirstOrDefault();
+        /// <returns>First existing record in database store</returns>
+        BacktraceDatabaseRecord<T> FirstOrDefault();
 
         /// <summary>
-        /// Get last entry or null
+        /// Get last record or null
         /// </summary>
-        /// <returns>Last existing entry in database store</returns>
-        BacktraceDatabaseEntry<T> LastOrDefault();
+        /// <returns>Last existing record in database store</returns>
+        BacktraceDatabaseRecord<T> LastOrDefault();
 
         /// <summary>
-        /// Get all repots stored in Database
+        /// Get all records stored in Database
         /// </summary>
-        IEnumerable<BacktraceDatabaseEntry<T>> Get();
+        IEnumerable<BacktraceDatabaseRecord<T>> Get();
 
         /// <summary>
-        /// Delete database entry by using BacktraceDatabaseEntry
+        /// Delete database record by using BacktraceDatabaseRecord
         /// </summary>
-        /// <param name="entry">Database entry</param>
-        void Delete(BacktraceDatabaseEntry<T> entry);
+        /// <param name="record">Database record</param>
+        void Delete(BacktraceDatabaseRecord<T> record);
 
         /// <summary>
-        /// Check if any similar entry exists
+        /// Check if any similar record exists
         /// </summary>
-        /// <param name="n">Compared entry</param>
-        bool Any(BacktraceDatabaseEntry<T> n);
+        /// <param name="n">Compared record</param>
+        bool Any(BacktraceDatabaseRecord<T> n);
 
         /// <summary>
-        /// Check if any similar entry exists
+        /// Check if any similar record exists
         /// </summary>
         bool Any();
 
         /// <summary>
-        /// Get total count of entries
+        /// Get total count of records
         /// </summary>
-        /// <returns>Total number of entries</returns>
+        /// <returns>Total number of records</returns>
         int Count();
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace Backtrace.Interfaces
         void Clear();
 
         /// <summary>
-        /// Increment retry time for all entries
+        /// Increment record time for all records
         /// </summary>
         void IncrementBatchRetry();
 

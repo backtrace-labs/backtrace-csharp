@@ -15,13 +15,13 @@ namespace Backtrace.Tests.DatabaseTests
     public class BatchTests : DatabaseTestBase
     {
         /// <summary>
-        /// Add entry to first batch on context
+        /// Add record to first batch on context
         /// </summary>
-        private void AddEntries(int numberOfEntriesOnBatch)
+        private void AddRecords(int numberOfRecordsOnBatch)
         {
-            for (int i = 0; i < numberOfEntriesOnBatch; i++)
+            for (int i = 0; i < numberOfRecordsOnBatch; i++)
             {
-                _database.BacktraceDatabaseContext.Add(GetEntry());
+                _database.BacktraceDatabaseContext.Add(GetRecord());
             }
         }
         [TestCase(3, 2, 0)]
@@ -29,30 +29,30 @@ namespace Backtrace.Tests.DatabaseTests
         [TestCase(1, 2, 3)]
         [TestCase(2, 0, 10)]
         [Test(Author = "Konrad Dysput", Description = "Test batch configuration")]
-        public void TestBatchAdd(int entriesOnFirstBatch, int entriesOnSecoundBatch, int entriesOnThirdBatch)
+        public void TestBatchAdd(int recordsOnFirstBatch, int recordsOnSecoundBatch, int recordsOnThirdBatch)
         {
             //Set first batch (destination: Third batch)
-            AddEntries(entriesOnThirdBatch);
-            var totalEntries = _database.BacktraceDatabaseContext.Count();
-            Assert.AreEqual(totalEntries, entriesOnThirdBatch);
+            AddRecords(recordsOnThirdBatch);
+            var totalRecords = _database.BacktraceDatabaseContext.Count();
+            Assert.AreEqual(totalRecords, recordsOnThirdBatch);
 
-            //move first batch to secound and add new entries to first batch
+            //move first batch to secound and add new records to first batch
             _database.BacktraceDatabaseContext.IncrementBatchRetry();
             //set new first batch (destination: secound batch)
-            AddEntries(entriesOnSecoundBatch);
-            totalEntries = _database.BacktraceDatabaseContext.Count();
-            Assert.AreEqual(totalEntries, entriesOnSecoundBatch + entriesOnThirdBatch);
+            AddRecords(recordsOnSecoundBatch);
+            totalRecords = _database.BacktraceDatabaseContext.Count();
+            Assert.AreEqual(totalRecords, recordsOnSecoundBatch + recordsOnThirdBatch);
 
             //move rest batches and set first batch
             _database.BacktraceDatabaseContext.IncrementBatchRetry();
-            AddEntries(entriesOnFirstBatch);
-            totalEntries = _database.BacktraceDatabaseContext.Count();
-            Assert.AreEqual(totalEntries, entriesOnFirstBatch + entriesOnSecoundBatch + entriesOnThirdBatch);
+            AddRecords(recordsOnFirstBatch);
+            totalRecords = _database.BacktraceDatabaseContext.Count();
+            Assert.AreEqual(totalRecords, recordsOnFirstBatch + recordsOnSecoundBatch + recordsOnThirdBatch);
 
             //test batch remove
             _database.BacktraceDatabaseContext.IncrementBatchRetry();
-            totalEntries = _database.BacktraceDatabaseContext.Count();
-            Assert.AreEqual(totalEntries, entriesOnFirstBatch + entriesOnSecoundBatch);
+            totalRecords = _database.BacktraceDatabaseContext.Count();
+            Assert.AreEqual(totalRecords, recordsOnFirstBatch + recordsOnSecoundBatch);
         }
     }
 }

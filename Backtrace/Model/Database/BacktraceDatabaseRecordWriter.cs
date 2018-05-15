@@ -9,9 +9,9 @@ using System.Text;
 namespace Backtrace.Model.Database
 {
     /// <summary>
-    /// Database entry writer
+    /// Database record writer
     /// </summary>
-    internal class BacktraceDatabaseEntryWriter : IBacktraceDatabaseEntryWriter
+    internal class BacktraceDatabaseRecordWriter : IBacktraceDatabaseRecordWriter
     {
         /// <summary>
         /// Path to destination directory
@@ -19,10 +19,10 @@ namespace Backtrace.Model.Database
         private readonly string _destinationPath;
 
         /// <summary>
-        /// Initialize new database entry writer
+        /// Initialize new database record writer
         /// </summary>
         /// <param name="path">Path to destination folder</param>
-        internal BacktraceDatabaseEntryWriter(string path)
+        internal BacktraceDatabaseRecordWriter(string path)
         {
             _destinationPath = path;
         }
@@ -40,7 +40,7 @@ namespace Backtrace.Model.Database
             string tempFilePath = Path.Combine(_destinationPath, $"temp_{filename}");
             SaveTemporaryFile(tempFilePath, data);
             string destFilePath = Path.Combine(_destinationPath, filename);
-            SaveValidReport(tempFilePath, destFilePath);
+            SaveValidRecord(tempFilePath, destFilePath);
             return destFilePath;
         }
 
@@ -58,7 +58,7 @@ namespace Backtrace.Model.Database
         /// </summary>
         /// <param name="sourcePath">Temporary file path</param>
         /// <param name="destinationPath">destination path</param>
-        public virtual void SaveValidReport(string sourcePath, string destinationPath)
+        public virtual void SaveValidRecord(string sourcePath, string destinationPath)
         {
             File.Move(sourcePath, destinationPath);
         }

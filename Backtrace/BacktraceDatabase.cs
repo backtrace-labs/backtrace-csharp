@@ -28,7 +28,7 @@ namespace Backtrace
         public IBacktraceApi<T> BacktraceApi { get; set; }
 
         /// <summary>
-        /// Database context - in memory cache and entry operations
+        /// Database context - in memory cache and record operations
         /// </summary>
         internal IBacktraceDatabaseContext<T> BacktraceDatabaseContext { get; set; }
 
@@ -163,7 +163,7 @@ namespace Backtrace
         /// <summary>
         /// Add new report to BacktraceDatabase
         /// </summary>
-        public BacktraceDatabaseEntry<T> Add(BacktraceReportBase<T> backtraceReport, Dictionary<string, T> attributes, MiniDumpType miniDumpType = MiniDumpType.Normal)
+        public BacktraceDatabaseRecord<T> Add(BacktraceReportBase<T> backtraceReport, Dictionary<string, T> attributes, MiniDumpType miniDumpType = MiniDumpType.Normal)
         {
             if (!_enable)
             {
@@ -171,7 +171,7 @@ namespace Backtrace
             }
             if (BacktraceDatabaseContext.Count() + 1 > DatabaseSettings.MaxRecordCount && DatabaseSettings.MaxRecordCount != 0)
             {
-                throw new ArgumentException("Maximum number of entries available in BacktraceDatabase");
+                throw new ArgumentException("Maximum number of records available in BacktraceDatabase");
             }
             if (miniDumpType != MiniDumpType.None)
             {
@@ -188,15 +188,19 @@ namespace Backtrace
 
 
         /// <summary>
-        /// Get all stored reports in BacktraceDatabase
+        /// Get all stored records in BacktraceDatabase
         /// </summary>
-        /// <returns>All stored reports in BacktraceDatabase</returns>
-        public IEnumerable<BacktraceDatabaseEntry<T>> Get() => BacktraceDatabaseContext?.Get() ?? new List<BacktraceDatabaseEntry<T>>();
-
-        public void Delete(BacktraceDatabaseEntry<T> entry) => BacktraceDatabaseContext?.Delete(entry);
+        /// <returns>All stored records in BacktraceDatabase</returns>
+        public IEnumerable<BacktraceDatabaseRecord<T>> Get() => BacktraceDatabaseContext?.Get() ?? new List<BacktraceDatabaseRecord<T>>();
 
         /// <summary>
-        /// Send and delete all entries from database
+        /// Delete single record from database
+        /// </summary>
+        /// <param name="record">Record to delete</param>
+        public void Delete(BacktraceDatabaseRecord<T> record) => BacktraceDatabaseContext?.Delete(record);
+
+        /// <summary>
+        /// Send and delete all records from database
         /// </summary>
         public void Flush()
         {
@@ -204,12 +208,12 @@ namespace Backtrace
             {
                 throw new ArgumentException("BacktraceApi is required if you want to use Flush method");
             }
-            var entry = BacktraceDatabaseContext?.FirstOrDefault();
-            while (entry != null)
+            var record = BacktraceDatabaseContext?.FirstOrDefault();
+            while (record != null)
             {
-                var backtraceData = entry.BacktraceData;
-                Delete(entry);
-                entry = BacktraceDatabaseContext.FirstOrDefault();
+                var backtraceData = record.BacktraceData;
+                Delete(record);
+                record = BacktraceDatabaseContext.FirstOrDefault();
                 if (backtraceData != null)
                 {
                     BacktraceApi.Send(backtraceData);
@@ -218,7 +222,7 @@ namespace Backtrace
         }
 #if !NET35
         /// <summary>
-        /// Send and asynchronous delete all entries from database
+        /// Send and asynchronous delete all records from database
         /// </summary>
         public async Task FlushAsync()
         {
@@ -226,12 +230,12 @@ namespace Backtrace
             {
                 throw new ArgumentException("BacktraceApi is required if you want to use Flush method");
             }
-            var entry = BacktraceDatabaseContext?.FirstOrDefault();
-            while (entry != null)
+            var record = BacktraceDatabaseContext?.FirstOrDefault();
+            while (record != null)
             {
-                var backtraceData = entry.BacktraceData;
-                Delete(entry);
-                entry = BacktraceDatabaseContext.FirstOrDefault();
+                var backtraceData = record.BacktraceData;
+                Delete(record);
+                record = BacktraceDatabaseContext.FirstOrDefault();
                 if (backtraceData != null)
                 {
                     await BacktraceApi.SendAsync(backtraceData);
@@ -244,33 +248,33 @@ namespace Backtrace
             if (!BacktraceDatabaseContext.Any() || _timerBackgroundWork) return;
             _timerBackgroundWork = true;
             _timer.Stop();
-            //read first entry (keep in mind LIFO and FIFO settings) from memory database
-            var entry = BacktraceDatabaseContext.FirstOrDefault();
-            while (entry != null)
+            //read first record (keep in mind LIFO and FIFO settings) from memory database
+            var record = BacktraceDatabaseContext.FirstOrDefault();
+            while (record != null)
             {
-                var backtraceData = entry.BacktraceData;
+                var backtraceData = record.BacktraceData;
                 //meanwhile someone delete data from a disk
                 if (backtraceData == null || backtraceData.Report == null)
                 {
-                    Delete(entry);
+                    Delete(record);
                 }
                 else
                 {
-                    //send entry from database to API
+                    //send record from database to API
                     var result = await BacktraceApi.SendAsync(backtraceData);
                         if (result.Status == BacktraceResultStatus.Ok)
                     {
-                        Delete(entry);
+                        Delete(record);
                     }
                     else
                     {
-                        entry.Dispose();
+                        record.Dispose();
                         BacktraceDatabaseContext.IncrementBatchRetry();
                         break;
                     }
 
                 }
-                entry = BacktraceDatabaseContext.FirstOrDefault();
+                record = BacktraceDatabaseContext.FirstOrDefault();
             }
             _timer.Start();
             _timerBackgroundWork = false;
@@ -281,33 +285,33 @@ namespace Backtrace
             if (!BacktraceDatabaseContext.Any() || _timerBackgroundWork) return;
             _timerBackgroundWork = true;
             _timer.Stop();
-            //read first entry (keep in mind LIFO and FIFO settings) from memory database
-            var entry = BacktraceDatabaseContext.FirstOrDefault();
-            while (entry != null)
+            //read first record (keep in mind LIFO and FIFO settings) from memory database
+            var record = BacktraceDatabaseContext.FirstOrDefault();
+            while (record != null)
             {
-                var backtraceData = entry.BacktraceData;
+                var backtraceData = record.BacktraceData;
                 //meanwhile someone delete data from a disk
                 if (backtraceData == null || backtraceData.Report == null)
                 {
-                    Delete(entry);
+                    Delete(record);
                 }
                 else
                 {
-                    //send entry from database to API
+                    //send record from database to API
                     var result = BacktraceApi.Send(backtraceData);
                     if (result.Status == BacktraceResultStatus.Ok)
                     {
-                        Delete(entry);
+                        Delete(record);
                     }
                     else
                     {
-                        entry.Dispose();
+                        record.Dispose();
                         BacktraceDatabaseContext.IncrementBatchRetry();
                         break;
 
                     }
                 }
-                entry = BacktraceDatabaseContext.FirstOrDefault();
+                record = BacktraceDatabaseContext.FirstOrDefault();
             }
             _timerBackgroundWork = false;
             _timer.Start();
@@ -340,38 +344,38 @@ namespace Backtrace
         }
 
         /// <summary>
-        /// Get total number of entries in database
+        /// Get total number of records in database
         /// </summary>
-        /// <returns>Total number of entries</returns>
+        /// <returns>Total number of records</returns>
         internal int Count() => BacktraceDatabaseContext.Count();
 
         /// <summary>
-        /// Detect all orphaned minidump files
+        /// Detect all orphaned minidump and files
         /// </summary>
         private void RemoveOrphaned()
         {
-            var entries = BacktraceDatabaseContext.Get();
-            BacktraceDatabaseFileContext.RemoveOrphaned(entries);
+            var records = BacktraceDatabaseContext.Get();
+            BacktraceDatabaseFileContext.RemoveOrphaned(records);
         }
 
         /// <summary>
-        /// Load all reports stored in path passed by user
+        /// Load all records stored in database path
         /// </summary>
         private void LoadReports()
         {
-            var files = BacktraceDatabaseFileContext.GetEntries();
+            var files = BacktraceDatabaseFileContext.GetRecords();
             foreach (var file in files)
             {
-                var entry = BacktraceDatabaseEntry<T>.ReadFromFile(file);
-                if (!entry.Valid())
+                var record = BacktraceDatabaseRecord<T>.ReadFromFile(file);
+                if (!record.Valid())
                 {
-                    entry.Delete();
+                    record.Delete();
                     continue;
                 }
-                BacktraceDatabaseContext.Add(entry);
-                //max number of entries / maximum database size
+                BacktraceDatabaseContext.Add(record);
+                //max number of records / maximum database size
                 //throw exception? break 
-                entry.Dispose();
+                record.Dispose();
             }
         }
 

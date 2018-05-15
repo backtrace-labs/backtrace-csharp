@@ -24,9 +24,9 @@ namespace Backtrace.Services
         private readonly DirectoryInfo _databaseDirectoryInfo;
 
         /// <summary>
-        /// Regex for filter physical database entries
+        /// Regex for filter physical database records
         /// </summary>
-        private const string EntryFilterRegex = "*-entry.json";
+        private const string RecordFilterRegex = "*-record.json";
         /// <summary>
         /// Initialize new BacktraceDatabaseFileContext instance
         /// </summary>
@@ -46,22 +46,22 @@ namespace Backtrace.Services
         }
 
         /// <summary>
-        /// Get all valid physical entries stored in database directory
+        /// Get all valid physical records stored in database directory
         /// </summary>
-        /// <returns>All existing physical entries</returns>
-        public IEnumerable<FileInfo> GetEntries()
+        /// <returns>All existing physical records</returns>
+        public IEnumerable<FileInfo> GetRecords()
         {
             return _databaseDirectoryInfo
-                .GetFiles(EntryFilterRegex, SearchOption.TopDirectoryOnly)
+                .GetFiles(RecordFilterRegex, SearchOption.TopDirectoryOnly)
                 .OrderBy(n => n.CreationTime);
         }
 
         /// <summary>
         /// Remove orphaned files existing in database directory
         /// </summary>
-        public void RemoveOrphaned(IEnumerable<BacktraceDatabaseEntry<T>> existingEntries)
+        public void RemoveOrphaned(IEnumerable<BacktraceDatabaseRecord<T>> existingRecords)
         {
-            IEnumerable<string> entryStringIds = existingEntries.Select(n => n.Id.ToString());
+            IEnumerable<string> recordStringIds = existingRecords.Select(n => n.Id.ToString());
             var files = GetAll();
             for (int fileIndex = 0; fileIndex < files.Count(); fileIndex++)
             {
@@ -76,15 +76,15 @@ namespace Backtrace.Services
                 //get id from file name
                 //substring from position 0 to position from character '-' contains id
                 var name = file.Name.LastIndexOf('-');
-                // if file is invalid entry because our regex don't match
-                // we remove invalid file
+                // file can store invalid record because our regex don't match
+                // in this case we remove invalid file
                 if(name == -1)
                 {
                     file.Delete();
                     continue;
                 }
                 var stringGuid = file.Name.Substring(0, name);
-                if (!entryStringIds.Contains(stringGuid))
+                if (!recordStringIds.Contains(stringGuid))
                 {
                     file.Delete();
                 }

@@ -44,18 +44,18 @@ namespace Backtrace.Interfaces
         /// <summary>
         /// Add new report to Database
         /// </summary>
-        BacktraceDatabaseEntry<T> Add(BacktraceReportBase<T> backtraceReport, Dictionary<string, T> attributes, MiniDumpType miniDumpType = MiniDumpType.Normal);
+        BacktraceDatabaseRecord<T> Add(BacktraceReportBase<T> backtraceReport, Dictionary<string, T> attributes, MiniDumpType miniDumpType = MiniDumpType.Normal);
 
         /// <summary>
-        /// Get all repots stored in Database
+        /// Get all records stored in Database
         /// </summary>
-        IEnumerable<BacktraceDatabaseEntry<T>> Get();
+        IEnumerable<BacktraceDatabaseRecord<T>> Get();
         
         /// <summary>
-        /// Delete database entry by using BacktraceDatabaseEntry
+        /// Delete database record by using BacktraceDatabaseRecord
         /// </summary>
-        /// <param name="entry">Database entry</param>
-        void Delete(BacktraceDatabaseEntry<T> entry);
+        /// <param name="record">Database record</param>
+        void Delete(BacktraceDatabaseRecord<T> record);
 
         /// <summary>
         /// Get database settings
