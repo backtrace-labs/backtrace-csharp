@@ -369,6 +369,8 @@ namespace Backtrace
                     continue;
                 }
                 BacktraceDatabaseContext.Add(entry);
+                //max number of entries / maximum database size
+                //throw exception? break 
                 entry.Dispose();
             }
         }

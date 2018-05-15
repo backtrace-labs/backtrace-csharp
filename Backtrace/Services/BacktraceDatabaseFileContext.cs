@@ -89,7 +89,6 @@ namespace Backtrace.Services
                     file.Delete();
                 }
             }
-        }
-        
+        }        
     }
 }

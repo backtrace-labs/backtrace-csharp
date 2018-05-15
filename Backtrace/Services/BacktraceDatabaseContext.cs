@@ -21,6 +21,11 @@ namespace Backtrace.Services
         internal Dictionary<int, List<BacktraceDatabaseEntry<T>>> BatchRetry = new Dictionary<int, List<BacktraceDatabaseEntry<T>>>();
 
         /// <summary>
+        /// Total database size on hard drive
+        /// </summary>
+        internal long TotalSize = 0;
+
+        /// <summary>
         /// Total entries in BacktraceDatabase
         /// </summary>
         internal int TotalEntries = 0;
@@ -77,8 +82,10 @@ namespace Backtrace.Services
         public virtual BacktraceDatabaseEntry<T> Add(BacktraceData<T> backtraceData)
         {
             if (backtraceData == null) throw new NullReferenceException(nameof(BacktraceData<T>));
+            //create new entry and save it on hard drive
             var entry = new BacktraceDatabaseEntry<T>(backtraceData, _path);
             entry.Save();
+            //add entry to database context
             return Add(entry);
         }
 
@@ -89,8 +96,13 @@ namespace Backtrace.Services
         public BacktraceDatabaseEntry<T> Add(BacktraceDatabaseEntry<T> backtraceEntry)
         {
             if (backtraceEntry == null) throw new NullReferenceException(nameof(BacktraceDatabaseEntry<T>));
+            //lock entry, because Add method returns entry
             backtraceEntry.Locked = true;
+            //increment total size of database
+            TotalSize += backtraceEntry.Size;
+            //add entry to first batch
             BatchRetry[0].Add(backtraceEntry);
+            //increment total entries
             TotalEntries++;
             return backtraceEntry;
         }
@@ -129,9 +141,14 @@ namespace Backtrace.Services
                 {
                     if (value.Id == entry.Id)
                     {
+                        //delete value from hard drive
                         value.Delete();
+                        //delete value from current batch
                         BatchRetry[key].Remove(value);
+                        //decrement all entries
                         TotalEntries--;
+                        //decrement total size of database
+                        TotalSize -= value.Size;
                         return;
                     }
                 }
@@ -173,6 +190,8 @@ namespace Backtrace.Services
                 var value = currentBatch[i];
                 value.Delete();
                 TotalEntries--;
+                //decrement total size of database
+                TotalSize -= value.Size;
             }
         }
 
@@ -211,6 +230,7 @@ namespace Backtrace.Services
                 entry.Delete();
             }
             TotalEntries = 0;
+            TotalSize = 0;
             //clear all existing batches
             foreach (var batch in BatchRetry)
             {

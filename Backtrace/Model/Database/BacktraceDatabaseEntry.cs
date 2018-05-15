@@ -53,6 +53,12 @@ namespace Backtrace.Model.Database
         internal string ReportPath { get; set; }
 
         /// <summary>
+        /// Total size of entry
+        /// </summary>
+        [JsonProperty(PropertyName = "size")]
+        internal long Size { get; set; }
+
+        /// <summary>
         /// Stored entry
         /// </summary>
         [JsonIgnore]
@@ -82,7 +88,7 @@ namespace Backtrace.Model.Database
                 {
                     return Entry;
                 }
-                if(!Valid())
+                if (!Valid())
                 {
                     return null;
                 }
@@ -125,7 +131,7 @@ namespace Backtrace.Model.Database
             Id = data.Uuid;
             Entry = data;
             _path = path;
-            EntryWriter = new BacktraceDatabaseEntryWriter(path);           
+            EntryWriter = new BacktraceDatabaseEntryWriter(path);
         }
 
         /// <summary>
@@ -136,10 +142,21 @@ namespace Backtrace.Model.Database
         {
             try
             {
-                DiagnosticDataPath = EntryWriter.Write(Entry, $"{Id}-attachment");
-                ReportPath = EntryWriter.Write(Entry.Report, $"{Id}-report");
+                DiagnosticDataPath = Save(Entry, $"{Id}-attachment");
+                ReportPath = Save(Entry.Report, $"{Id}-report");
+                
+                // get minidump information
                 MiniDumpPath = Entry.Report?.MinidumpFile ?? string.Empty;
+                Size += MiniDumpPath == string.Empty ? 0 : new FileInfo(MiniDumpPath).Length;
+
+                //save entry
                 EntryPath = Path.Combine(_path, $"{Id}-entry.json");
+                //check current entry size
+                var json = JsonConvert.SerializeObject(this);
+                byte[] file = Encoding.UTF8.GetBytes(json);
+                //add entry size
+                Size += file.Length;
+                //save it again with actual entry size
                 EntryWriter.Write(this, $"{Id}-entry");
                 return true;
             }
@@ -153,6 +170,24 @@ namespace Backtrace.Model.Database
                 Trace.WriteLine($"Received {nameof(Exception)} while saving data to database");
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Save single file from database entry
+        /// </summary>
+        /// <param name="data">single file (json/dmp)</param>
+        /// <param name="prefix">file prefix</param>
+        /// <returns>path to file</returns>
+        private string Save(object data, string prefix)
+        {
+            if (data == null)
+            {
+                return string.Empty;
+            }
+            var json = JsonConvert.SerializeObject(data);
+            byte[] file = Encoding.UTF8.GetBytes(json);
+            Size += file.Length;
+            return EntryWriter.Write(file, prefix);
         }
 
         /// <summary>
@@ -172,7 +207,7 @@ namespace Backtrace.Model.Database
             Delete(MiniDumpPath);
             Delete(ReportPath);
             Delete(DiagnosticDataPath);
-            Delete(EntryPath);   
+            Delete(EntryPath);
         }
 
         /// <summary>

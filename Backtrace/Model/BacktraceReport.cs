@@ -28,6 +28,7 @@ namespace Backtrace.Model
             List<string> attachmentPaths = null)
             : base(message, attributes, attachmentPaths)
         { }
+
         /// <summary>
         /// Sending a report with custom exception
         /// </summary>
