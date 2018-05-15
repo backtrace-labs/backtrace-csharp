@@ -72,6 +72,17 @@ namespace Backtrace.Interfaces
         /// </summary>
         void IncrementBatchRetry();
 
+        /// <summary>
+        /// Get database size
+        /// </summary>
+        /// <returns>Database size</returns>
+        long GetSize();
+
+        /// <summary>
+        /// Get total number of records stored in database
+        /// </summary>
+        /// <returns>Total number of records</returns>
+        int GetTotalNumberOfRecords();
 
         /// <summary>
         /// Get all repots stored in Database

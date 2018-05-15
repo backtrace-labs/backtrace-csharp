@@ -42,6 +42,12 @@ namespace Backtrace.Interfaces
         void Clear();
 
         /// <summary>
+        /// Check all database consistency requirements
+        /// </summary>
+        /// <returns>True - if database has valid consistency requirements</returns>
+        bool ValidConsistency();
+
+        /// <summary>
         /// Add new report to Database
         /// </summary>
         BacktraceDatabaseRecord<T> Add(BacktraceReportBase<T> backtraceReport, Dictionary<string, T> attributes, MiniDumpType miniDumpType = MiniDumpType.Normal);
@@ -62,5 +68,10 @@ namespace Backtrace.Interfaces
         /// </summary>
         /// <returns></returns>
         BacktraceDatabaseSettings GetSettings();
+
+        /// <summary>
+        /// Get database size
+        /// </summary>
+        long GetDatabaseSize();
     }
 }

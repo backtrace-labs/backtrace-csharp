@@ -300,5 +300,22 @@ namespace Backtrace.Services
             return null;
         }
 
+        /// <summary>
+        /// Get database size
+        /// </summary>
+        /// <returns>database size</returns>
+        public long GetSize()
+        {
+            return TotalSize;
+        }
+
+        /// <summary>
+        /// Get total number of records
+        /// </summary>
+        /// <returns>Total number of records</returns>
+        public int GetTotalNumberOfRecords()
+        {
+            return TotalRecords;
+        }
     }
 }

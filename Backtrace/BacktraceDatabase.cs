@@ -86,7 +86,7 @@ namespace Backtrace
             }
             DatabaseSettings = databaseSettings;
             BacktraceDatabaseContext = new BacktraceDatabaseContext<T>(DatabasePath, DatabaseSettings.RetryLimit, DatabaseSettings.RetryOrder);
-            BacktraceDatabaseFileContext = new BacktraceDatabaseFileContext<T>(DatabasePath);
+            BacktraceDatabaseFileContext = new BacktraceDatabaseFileContext<T>(DatabasePath, DatabaseSettings.MaxDatabaseSize, DatabaseSettings.MaxRecordCount);
         }
 
         /// <summary>
@@ -172,6 +172,10 @@ namespace Backtrace
             if (BacktraceDatabaseContext.Count() + 1 > DatabaseSettings.MaxRecordCount && DatabaseSettings.MaxRecordCount != 0)
             {
                 throw new ArgumentException("Maximum number of records available in BacktraceDatabase");
+            }
+            if (BacktraceDatabaseContext.GetSize() > DatabaseSettings.MaxDatabaseSize)
+            {
+                throw new ArgumentException("You don't have enought space in database for more records");
             }
             if (miniDumpType != MiniDumpType.None)
             {
@@ -373,11 +377,25 @@ namespace Backtrace
                     continue;
                 }
                 BacktraceDatabaseContext.Add(record);
+                if (BacktraceDatabaseContext.GetSize() > DatabaseSettings.MaxDatabaseSize
+                    || BacktraceDatabaseContext.GetTotalNumberOfRecords() > DatabaseSettings.MaxRecordCount)
+                {
+                    throw new ArgumentException("Database directory has too many records or database size is bigger than in option declaration.");
+                }
                 //max number of records / maximum database size
                 //throw exception? break 
                 record.Dispose();
             }
         }
+
+        /// <summary>
+        /// Valid database consistency requirements
+        /// </summary>
+        public bool ValidConsistency()
+        {
+            return BacktraceDatabaseFileContext.ValidFileConsistency();
+        }
+
 
         #region dispose
         private bool _disposed = false; // To detect redundant calls
@@ -404,6 +422,15 @@ namespace Backtrace
                 }
                 _disposed = true;
             }
+        }
+
+        /// <summary>
+        /// Get database size
+        /// </summary>
+        /// <returns></returns>
+        public long GetDatabaseSize()
+        {
+            return BacktraceDatabaseContext.GetSize();
         }
 
         ~BacktraceDatabase()

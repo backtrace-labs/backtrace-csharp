@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Backtrace.Services
 {
@@ -19,6 +20,16 @@ namespace Backtrace.Services
         private readonly string _databasePath;
 
         /// <summary>
+        /// Maximum database size
+        /// </summary>
+        private readonly long _maxDatabaseSize;
+
+        /// <summary>
+        /// Maximum number of records in database
+        /// </summary>
+        private readonly uint _maxRecordNumber;
+
+        /// <summary>
         /// Database directory info
         /// </summary>
         private readonly DirectoryInfo _databaseDirectoryInfo;
@@ -30,9 +41,11 @@ namespace Backtrace.Services
         /// <summary>
         /// Initialize new BacktraceDatabaseFileContext instance
         /// </summary>
-        public BacktraceDatabaseFileContext(string databasePath)
+        public BacktraceDatabaseFileContext(string databasePath, long maxDatabaseSize, uint maxRecordNumber)
         {
             _databasePath = databasePath;
+            _maxDatabaseSize = maxDatabaseSize;
+            _maxRecordNumber = maxRecordNumber;
             _databaseDirectoryInfo = new DirectoryInfo(_databasePath);
         }
 
@@ -68,7 +81,7 @@ namespace Backtrace.Services
                 var file = files.ElementAt(fileIndex);
                 //check if file should be stored in database
                 //database only store data in json and files in dmp extension
-                if(file.Extension != ".dmp" && file.Extension != ".json")
+                if (file.Extension != ".dmp" && file.Extension != ".json")
                 {
                     file.Delete();
                     continue;
@@ -78,7 +91,7 @@ namespace Backtrace.Services
                 var name = file.Name.LastIndexOf('-');
                 // file can store invalid record because our regex don't match
                 // in this case we remove invalid file
-                if(name == -1)
+                if (name == -1)
                 {
                     file.Delete();
                     continue;
@@ -89,6 +102,31 @@ namespace Backtrace.Services
                     file.Delete();
                 }
             }
-        }        
+        }
+
+        /// <summary>
+        /// Valid all files consistencies
+        /// </summary>
+        public bool ValidFileConsistency()
+        {
+            // Get array of all files
+            FileInfo[] files = _databaseDirectoryInfo.GetFiles();
+
+            // Calculate total bytes of all files in a loop.
+            long size = 0;
+            long totalRecordFiles = 0;
+            foreach (var file in files)
+            {
+                if(Regex.Match(file.FullName, RecordFilterRegex).Success)
+                {
+                    totalRecordFiles++;
+
+                    if (_maxRecordNumber > totalRecordFiles) return false;
+                }
+                size += file.Length;
+                if (size > _maxDatabaseSize) return false;
+            }
+            return true;
+        }
     }
 }

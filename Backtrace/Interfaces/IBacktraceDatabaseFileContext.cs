@@ -21,6 +21,11 @@ namespace Backtrace.Interfaces
         IEnumerable<FileInfo> GetAll();
 
         /// <summary>
+        /// Valid all database files consistency
+        /// </summary>
+        bool ValidFileConsistency();
+
+        /// <summary>
         /// Remove orphaned files existing in database directory
         /// </summary>
         /// <param name="existingRecords">Existing entries in BacktraceDatabaseContext</param>
