@@ -40,16 +40,5 @@ namespace Backtrace.Model
             List<string> attachmentPaths = null)
             : base(exception, attributes, attachmentPaths)
         { }
-
-        /// <summary>
-        /// create a copy of BacktraceReport for inner exception object inside exception
-        /// </summary>
-        /// <returns>BacktraceReport for InnerExceptionObject</returns>
-        internal BacktraceReport CreateInnerReport()
-        {
-            var copy = (BacktraceReport)this.MemberwiseClone();
-            copy.Exception = this.Exception.InnerException;
-            return copy;
-        }
     }
 }

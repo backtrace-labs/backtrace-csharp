@@ -1,5 +1,6 @@
 ﻿using Backtrace.Model;
-using Backtrace.UniversalWindowsPlatform.Model;
+using Backtrace.Extensions;
+using Backtrace.UWP.Model;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,39 +20,62 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-namespace Backtrace.UniversalWindowsPlatform
+namespace Backtrace.UWP
 {
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.
     /// </summary>
     sealed partial class App : Application
     {
-
+        /// <summary>
+        /// Path where BacktraceLibrary will store all offline reports and minidumps
+        /// </summary>
         private static Windows.Storage.StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
 
+        /// <summary>
+        /// Backtrace Credentials
+        /// </summary>
         private static BacktraceCredentials credentials =
-            new BacktraceCredentials(ApplicationCredentials.Host, ApplicationCredentials.Token);
+            new BacktraceCredentials(ApplicationSettings.Host, ApplicationSettings.Token);
+
+        /// <summary>
+        /// Backtrace Celint
+        /// </summary>
         private static BacktraceClient backtraceClient;
 
+        /// <summary>
+        /// Sample worker
+        /// </summary>
         private static void StartJob()
         {
             Task.Run(() => CalculateDifference(-12)).Wait();
         }
-        private static async Task CalculateDifference(int i = 0)
+        /// <summary>
+        /// Sample method that generate exception
+        /// </summary>
+        /// <param name="index">index parameter</param>
+        private static async Task CalculateDifference(int index = 0)
         {
-            if (i == 2)
+            if (index % 2 == 0)
             {
-                throw new ArgumentException("i");
+                throw new ArgumentException($"{nameof(index)} has invalid value");
             }
             try
             {
-                await CalculateDifference(++i);
+                await CalculateDifference(++index);
 
             }
             catch (Exception e)
             {
-                backtraceClient.Send($"{DateTime.Now} : CalculateDifference error received");
-                await backtraceClient.SendAsync(e);                
+                //use Backtrace Extensions to get BacktraceReport from exception
+                var report = e.ToBacktraceReport();
+                await backtraceClient.SendAsync(report);
+
+                // use Backtrace client to send exception
+                await backtraceClient.SendAsync(e);
+
+                //send your custom message to API!
+                await backtraceClient.SendAsync("Received");
             }
         }
 
@@ -63,12 +87,13 @@ namespace Backtrace.UniversalWindowsPlatform
         {
             Trace.WriteLine("Backtrace Universal Windows Platform Example");
             Trace.WriteLine($"Used database path: {localFolder.Path}");
+            //Client configuration
+            var config = new BacktraceClientConfiguration(credentials);
+            //database instance
+            var database = new BacktraceDatabase<object>(localFolder.Path);
+            //client initialization
+            backtraceClient = new BacktraceClient(config, database);
 
-            backtraceClient = new BacktraceClient(
-               credentials,
-               databaseDirectory: localFolder.Path,
-               tlsLegacySupport:true
-           );
             this.InitializeComponent();
             this.Suspending += OnSuspending;
         }
@@ -112,7 +137,7 @@ namespace Backtrace.UniversalWindowsPlatform
                 // Ensure the current window is active
                 Window.Current.Activate();
             }
-
+            //Start task with sample exception submission
             StartJob();
         }
 

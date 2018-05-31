@@ -7,6 +7,7 @@ using System.IO;
 using Backtrace.Common;
 using System.Collections.Generic;
 using Backtrace.Extensions;
+using Backtrace.Base;
 #if !NET35
 using System.Threading.Tasks;
 using System.Net.Http;
@@ -20,12 +21,6 @@ namespace Backtrace.Services
     /// </summary>
     internal class BacktraceApi<T> : IBacktraceApi<T>
     {
-        /// <summary>
-        /// Asynchronous request flag. If value is equal to true, data will be send to server asynchronous
-        /// </summary>
-        [Obsolete]
-        public bool AsynchronousRequest { get; set; } = false;
-
         /// <summary>
         /// User custom request method
         /// </summary>
@@ -41,18 +36,25 @@ namespace Backtrace.Services
         /// </summary>
         public Action<BacktraceResult> OnServerResponse { get; set; }
 
+        internal readonly ReportLimitWatcher<T> reportLimitWatcher;
+
         /// <summary>
         /// Url to server
         /// </summary>
-        private readonly string _serverurl;
+        private string _serverurl;
 
         /// <summary>
         /// Create a new instance of Backtrace API
         /// </summary>
         /// <param name="credentials">API credentials</param>
-        public BacktraceApi(BacktraceCredentials credentials)
+        public BacktraceApi(BacktraceCredentials credentials, uint reportPerMin = 3)
         {
+            if (credentials == null)
+            {
+                throw new ArgumentException($"{nameof(BacktraceCredentials)} cannot be null");
+            }
             _serverurl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
+            reportLimitWatcher = new ReportLimitWatcher<T>(reportPerMin);
         }
         #region asyncRequest
 #if !NET35
@@ -64,26 +66,32 @@ namespace Backtrace.Services
 
         public async Task<BacktraceResult> SendAsync(BacktraceData<T> data)
         {
-            Guid requestId = Guid.NewGuid();
-            var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
+            //check rate limiting
+            bool watcherValidation = reportLimitWatcher.WatchReport(data.Report);
+            if (!watcherValidation)
+            {
+                return BacktraceResult.OnLimitReached(data.Report as BacktraceReport);
+            }
+            // execute user custom request handler
             if (RequestHandler != null)
             {
-                RequestHandler?.Invoke(_serverurl, FormDataHelper.GetContentTypeWithBoundary(requestId), data);
+                return RequestHandler?.Invoke(_serverurl, FormDataHelper.GetContentTypeWithBoundary(Guid.NewGuid()), data);
             }
-            return await SendAsync(requestId, json, data);
+            //get a json from diagnostic object
+            var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
+            return await SendAsync(Guid.NewGuid(), json, data.Attachments, data.Report as BacktraceReport);
         }
 
-        private async Task<BacktraceResult> SendAsync(Guid requestId, string json, BacktraceData<T> data)
+        internal async Task<BacktraceResult> SendAsync(Guid requestId, string json, List<string> attachments, BacktraceReport report)
         {
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
             string boundary = FormDataHelper.GetBoundary(requestId);
-            var report = data.Report as BacktraceReport;
 
             using (var request = new HttpRequestMessage(HttpMethod.Post, _serverurl))
             using (var content = new MultipartFormDataContent(boundary))
             {
                 content.AddJson("upload_file.json", json);
-                content.AddFiles(data.Attachments);
+                content.AddFiles(attachments);
 
                 //// clear and add content type with boundary tag
                 content.Headers.Remove("Content-Type");
@@ -116,19 +124,6 @@ namespace Backtrace.Services
 #endif
         #endregion
 
-
-        /// <summary>
-        /// Set tls and ssl legacy support for https requests to Backtrace API
-        /// </summary>
-        public void SetTlsLegacy()
-        {
-            ServicePointManager.SecurityProtocol =
-                     SecurityProtocolType.Tls
-                    | (SecurityProtocolType)0x00000300
-                    | (SecurityProtocolType)0x00000C00;
-            ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true;
-        }
-
         #region synchronousRequest
         /// <summary>
         /// Sending a diagnostic report data to server API. 
@@ -137,13 +132,31 @@ namespace Backtrace.Services
         /// <returns>Server response</returns>
         public BacktraceResult Send(BacktraceData<T> data)
         {
-            Guid requestId = Guid.NewGuid();
-            string json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
+#if !NET35
+            return Task.Run(() => SendAsync(data)).Result;
+#else
+            //check rate limiting
+            bool watcherValidation = reportLimitWatcher.WatchReport(data.Report);
+            if (!watcherValidation)
+            {
+                return BacktraceResult.OnLimitReached(data.Report as BacktraceReport);
+            }
+            // execute user custom request handler
+            if (RequestHandler != null)
+            {
+                return RequestHandler?.Invoke(_serverurl, FormDataHelper.GetContentTypeWithBoundary(Guid.NewGuid()), data);
+            }
+            //set submission data
+            string json = JsonConvert.SerializeObject(data);
             var report = data.Report as BacktraceReport;
+            return Send(Guid.NewGuid(), json, report?.AttachmentPaths ?? new List<string>(), report);
+        }
 
-            var formData = FormDataHelper.GetFormData(json, data.Attachments, requestId);
+        private BacktraceResult Send(Guid requestId, string json, List<string> attachments, BacktraceReport report)
+        {
+            var formData = FormDataHelper.GetFormData(json, attachments, requestId);
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
-            HttpWebRequest request = WebRequest.Create(_serverurl) as HttpWebRequest;
+            var request = WebRequest.Create(_serverurl) as HttpWebRequest;
 
             //Set up the request properties.
             request.Method = "POST";
@@ -163,6 +176,7 @@ namespace Backtrace.Services
                 OnServerError?.Invoke(exception);
                 return BacktraceResult.OnError(report, exception);
             }
+#endif
         }
 
         /// <summary>
@@ -181,7 +195,7 @@ namespace Backtrace.Services
                 return response;
             }
         }
-        #endregion
+#endregion
         /// <summary>
         /// Get serialization settings
         /// </summary>
@@ -191,7 +205,7 @@ namespace Backtrace.Services
             NullValueHandling = NullValueHandling.Ignore,
             DefaultValueHandling = DefaultValueHandling.Ignore
         };
-        #region dispose
+#region dispose
         private bool _disposed = false; // To detect redundant calls
         public void Dispose()
         {
@@ -217,6 +231,16 @@ namespace Backtrace.Services
         {
             Dispose(false);
         }
-        #endregion
+#endregion
+
+        public void SetClientRateLimitEvent(Action<BacktraceReport> onClientReportLimitReached)
+        {
+            reportLimitWatcher.OnClientReportLimitReached = onClientReportLimitReached;
+        }
+
+        public void SetClientRateLimit(uint rateLimit)
+        {
+            reportLimitWatcher.SetClientReportLimit(rateLimit);
+        }
     }
 }

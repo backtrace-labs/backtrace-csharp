@@ -35,7 +35,6 @@ namespace Backtrace.Model
             set
             {
                 _message = value;
-                Status = BacktraceResultStatus.ServerError;
             }
         }
 
@@ -89,7 +88,8 @@ namespace Backtrace.Model
             return new BacktraceResult()
             {
                 BacktraceReport = report,
-                Message = exception.Message
+                Message = exception.Message,
+                Status = BacktraceResultStatus.ServerError
             };
         }
     }

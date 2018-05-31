@@ -4,12 +4,11 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Linq;
 using Backtrace.Base;
-using Newtonsoft.Json;
 using System.Net.NetworkInformation;
-using System.Runtime.InteropServices;
 using Backtrace.Common;
 using Backtrace.Extensions;
 using System.Reflection;
+using Newtonsoft.Json;
 
 [assembly: InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Model.JsonData
@@ -33,21 +32,35 @@ namespace Backtrace.Model.JsonData
         /// Create instance of Backtrace Attribute
         /// </summary>
         /// <param name="report">Received report</param>
-        /// <param name="scopedAttributes">Client's attributes (report and client)</param>
-        public BacktraceAttributes(BacktraceReportBase<T> report, Dictionary<string, T> scopedAttributes)
+        /// <param name="clientAttributes">Client's attributes (report and client)</param>
+        [JsonConstructor]
+        public BacktraceAttributes(BacktraceReportBase<T> report, Dictionary<string, T> clientAttributes)
         {
-            //Environment attributes override user attributes
-            ConvertAttributes(report, scopedAttributes);
+            if(report != null)
+            {
+                ConvertAttributes(report, clientAttributes);
+                SetLibraryAttributes(report.CallingAssembly);
+                SetDebuggerAttributes(report.CallingAssembly);
+                SetExceptionAttributes(report);
+            }
+            //Environment attributes override user attributes            
+            SetMachineAttributes();
+            SetProcessAttributes();
+            
+        }
+
+        /// <summary>
+        /// Set library attributes
+        /// </summary>
+        /// <param name="callingAssembly">Calling assembly</param>
+        private void SetLibraryAttributes(Assembly callingAssembly)
+        {
             //A unique identifier of a machine
             Attributes["guid"] = GenerateMachineId().ToString();
             //Base name of application generating the report
-            Attributes["application"] = report.CallingAssembly.GetName().Name;
+            Attributes["application"] = callingAssembly.GetName().Name;
             Attributes["lang.name"] = "C#";
 
-            SetDebuggerAttributes(report.CallingAssembly);
-            SetMachineAttributes();
-            SetProcessAttributes();
-            SetExceptionAttributes(report);
         }
 
         /// <summary>
@@ -58,7 +71,7 @@ namespace Backtrace.Model.JsonData
         {
             object[] attribs = callingAssembly.GetCustomAttributes(typeof(DebuggableAttribute), false);
             // If the 'DebuggableAttribute' is not found then it is definitely an OPTIMIZED build
-            if (attribs.Length == 0)
+            if (attribs == null || !attribs.Any())
             {
                 Attributes["build.debug"] = false;
                 Attributes["build.jit"] = true;
@@ -71,15 +84,14 @@ namespace Backtrace.Model.JsonData
             {
                 Attributes["build.debug"] = true;
                 Attributes["build.jit"] = !debuggableAttribute.IsJITOptimizerDisabled;
-                Attributes["build.type"] = debuggableAttribute.IsJITOptimizerDisabled ? "Debug" : "Release";
-
+                Attributes["build.type"] = debuggableAttribute.IsJITOptimizerDisabled 
+                    ? "Debug" : "Release";
                 // check for Debug Output "full" or "pdb-only"
                 Attributes["build.output"] = (debuggableAttribute.DebuggingFlags &
-                                DebuggableAttribute.DebuggingModes.Default) !=
-                                DebuggableAttribute.DebuggingModes.None
-                                ? "Full" : "pdb-only";
+                    DebuggableAttribute.DebuggingModes.Default) !=
+                    DebuggableAttribute.DebuggingModes.None
+                    ? "Full" : "pdb-only";
             }
-            Attributes["build.debug"] = false;
         }
 
         /// <summary>
@@ -104,8 +116,6 @@ namespace Backtrace.Model.JsonData
                 }
             }
         }
-
-
 
         /// <summary>
         /// Generate unique machine identifier. Value should be with guid key in Attributes dictionary. 
@@ -199,6 +209,10 @@ namespace Backtrace.Model.JsonData
                 {
                     Attributes["vm.vma.peak"] = peakVirtualMemorySize;
                 }
+            }
+            catch(PlatformNotSupportedException)
+            {
+                Trace.TraceWarning($"Cannot retrieve information about process memory - platform not supported");
             }
             catch (Exception exception)
             {

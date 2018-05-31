@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using Backtrace.Services;
 using Backtrace.Types;
+using Backtrace.Model.Database;
 #if !NET35
 using System.Threading.Tasks;
 #endif
@@ -16,7 +17,6 @@ namespace Backtrace.Base
     /// </summary>
     public class BacktraceBase<T>
     {
-
         /// <summary>
         /// Custom request handler for HTTP call to server
         /// </summary>
@@ -24,30 +24,13 @@ namespace Backtrace.Base
         {
             get
             {
-                return _backtraceApi.RequestHandler;
+                return BacktraceApi.RequestHandler;
             }
             set
             {
-                _backtraceApi.RequestHandler = value;
+                BacktraceApi.RequestHandler = value;
             }
         }
-
-        /// <summary>
-        /// Use asynchronous method to send report to server
-        /// </summary>
-        [Obsolete]
-        public bool AsyncRequest
-        {
-            get
-            {
-                return _backtraceApi.AsynchronousRequest;
-            }
-            set
-            {
-                _backtraceApi.AsynchronousRequest = value;
-            }
-        }
-
         /// <summary>
         /// Set an event executed when received bad request, unauthorize request or other information from server
         /// </summary>
@@ -55,11 +38,11 @@ namespace Backtrace.Base
         {
             get
             {
-                return _backtraceApi.OnServerError;
+                return BacktraceApi.OnServerError;
             }
             set
             {
-                _backtraceApi.OnServerError = value;
+                BacktraceApi.OnServerError = value;
             }
         }
 
@@ -70,14 +53,14 @@ namespace Backtrace.Base
         {
             get
             {
-                return _backtraceApi.OnServerResponse;
+                return BacktraceApi.OnServerResponse;
             }
             set
             {
-                _backtraceApi.OnServerResponse = value;
+                BacktraceApi.OnServerResponse = value;
             }
         }
-        
+
         /// <summary>
         /// Get or set minidump type
         /// </summary>
@@ -86,7 +69,13 @@ namespace Backtrace.Base
         /// <summary>
         /// Set event executed when client site report limit reached
         /// </summary>
-        public Action<BacktraceReport> OnClientReportLimitReached = null;
+        public Action<BacktraceReport> OnClientReportLimitReached
+        {
+            set
+            {
+                BacktraceApi.SetClientRateLimitEvent(value);
+            }
+        }
 
         /// <summary>
         /// Set event executed before sending data to Backtrace API
@@ -101,69 +90,64 @@ namespace Backtrace.Base
         /// <summary>
         /// Get custom client attributes. Every argument stored in dictionary will be send to Backtrace API
         /// </summary>
-        public Dictionary<string, T> Attributes
-        {
-            get
-            {
-                return _attributes;
-            }
-        }
-
-        /// <summary>
-        /// Client attributes
-        /// </summary>
-        protected Dictionary<string, T> _attributes;
-
-
-        /// <summary>
-        /// Instance of BacktraceApi that allows to send data to Backtrace API
-        /// </summary>
-        internal IBacktraceApi<T> _backtraceApi;
+        public readonly Dictionary<string, T> Attributes;
 
         /// <summary>
         /// Backtrace database instance that allows to manage minidump files 
         /// </summary>
-        internal IBacktraceDatabase<T> _database;
+        public IBacktraceDatabase<T> Database;
 
+        private IBacktraceApi<T> _backtraceApi;
         /// <summary>
-        /// Backtrace report watcher that controls number of request sending per minute
+        /// Instance of BacktraceApi that allows to send data to Backtrace API
         /// </summary>
-        internal ReportWatcher<T> _reportWatcher;
-
+        internal IBacktraceApi<T> BacktraceApi
+        {
+            get
+            {
+                return _backtraceApi;
+            }
+            set
+            {
+                _backtraceApi = value;
+                Database?.SetApi(_backtraceApi);
+            }
+        }
 
         /// <summary>
         /// Initialize new client instance with BacktraceCredentials
         /// </summary>
         /// <param name="backtraceCredentials">Backtrace credentials to access Backtrace API</param>
         /// <param name="attributes">Additional information about current application</param>
-        /// <param name="databaseDirectory">Database path</param>
+        /// <param name="databaseSettings">Backtrace database settings</param>
         /// <param name="reportPerMin">Number of reports sending per one minute. If value is equal to zero, there is no request sending to API. Value have to be greater than or equal to 0</param>
-        /// <param name="tlsLegacySupport">Set SSL and TLS flags for https request to Backtrace API</param>
         public BacktraceBase(
             BacktraceCredentials backtraceCredentials,
             Dictionary<string, T> attributes = null,
-            string databaseDirectory = "",
-            uint reportPerMin = 3,
-            bool tlsLegacySupport = false)
-        {
-            _attributes = attributes ?? new Dictionary<string, T>();
-            _database = new BacktraceDatabase<T>(databaseDirectory);
-            _backtraceApi = new BacktraceApi<T>(backtraceCredentials);
-            _reportWatcher = new ReportWatcher<T>(reportPerMin);
-            if (tlsLegacySupport)
-            {
-                _backtraceApi.SetTlsLegacy();
-            }
-        }
+            BacktraceDatabaseSettings databaseSettings = null,
+            uint reportPerMin = 3)
+            : this(backtraceCredentials, attributes, new BacktraceDatabase<T>(databaseSettings),
+                  reportPerMin)
+        { }
 
         /// <summary>
-        /// Change maximum number of reportrs sending per one minute
+        /// Initialize new client instance with BacktraceCredentials
         /// </summary>
+        /// <param name="backtraceCredentials">Backtrace credentials to access Backtrace API</param>
+        /// <param name="attributes">Additional information about current application</param>
+        /// <param name="databaseSettings">Backtrace database settings</param>
         /// <param name="reportPerMin">Number of reports sending per one minute. If value is equal to zero, there is no request sending to API. Value have to be greater than or equal to 0</param>
-        [Obsolete("This method has been deprecated, please use SetClientReportLimit instead.")]
-        public void ChangeRateLimiting(uint reportPerMin)
+        public BacktraceBase(
+            BacktraceCredentials backtraceCredentials,
+            Dictionary<string, T> attributes = null,
+            IBacktraceDatabase<T> database = null,
+            uint reportPerMin = 3)
         {
-            _reportWatcher.SetClientReportLimit(reportPerMin);
+            Attributes = attributes ?? new Dictionary<string, T>();
+            BacktraceApi = new BacktraceApi<T>(backtraceCredentials, reportPerMin);
+            Database = database ?? new BacktraceDatabase<T>();
+            Database.SetApi(BacktraceApi);
+            Database.Start();
         }
 
         /// <summary>
@@ -172,40 +156,46 @@ namespace Backtrace.Base
         /// <param name="reportPerMin">Number of reports sending per one minute. If value is equal to zero, there is no request sending to API. Value have to be greater than or equal to 0</param>
         public void SetClientReportLimit(uint reportPerMin)
         {
-            _reportWatcher.SetClientReportLimit(reportPerMin);
+            BacktraceApi.SetClientRateLimit(reportPerMin);
         }
-
 
         /// <summary>
         /// Send a report to Backtrace API
         /// </summary>
         /// <param name="report">Report to send</param>
+        [Obsolete("Send is obsolete, please use SendAsync instead if possible.")]
         public virtual BacktraceResult Send(BacktraceReportBase<T> report)
         {
-            //check rate limiting
-            bool watcherValidation = _reportWatcher.WatchReport(report);
-            if (!watcherValidation)
-            {
-                var resultReport = report as BacktraceReport;
-                OnClientReportLimitReached?.Invoke(resultReport);
-                return BacktraceResult.OnLimitReached(resultReport);
-            }
-            //generate minidump and add minidump to report 
-            string minidumpPath = _database.GenerateMiniDump(report, MiniDumpType);
-            if (!string.IsNullOrEmpty(minidumpPath))
-            {
-                report.SetMinidumpPath(minidumpPath);
-            }
+            var entry = Database.Add(report, Attributes, MiniDumpType);
             //create a JSON payload instance
-            var data = new BacktraceData<T>(report, Attributes);
-
+            var data = entry?.BacktraceData ?? report.ToBacktraceData(Attributes);
             //valid user custom events
             data = BeforeSend?.Invoke(data) ?? data;
-            var result = _backtraceApi.Send(data);
-
-            //clear minidumps generated by app
-            _database.ClearMiniDump(report.MinidumpFile);
+            var result = BacktraceApi.Send(data);
+            entry?.Dispose();
+            if (result.Status == BacktraceResultStatus.Ok)
+            {
+                Database.Delete(entry);
+            }
+            //check if there is more errors to send
+            //handle inner exception
+            result.InnerExceptionResult = HandleInnerException(report);
             return result;
+        }
+
+        /// <summary>
+        /// Handle inner exception in current backtrace report
+        /// if inner exception exists, client should send report twice - one with current exception, one with inner exception
+        /// </summary>
+        /// <param name="report">current report</param>
+        private BacktraceResult HandleInnerException(BacktraceReportBase<T> report)
+        {
+            var innerExceptionReport = CreateInnerReport(report);
+            if (innerExceptionReport == null)
+            {
+                return null;
+            }
+            return Send(innerExceptionReport);
         }
 #if !NET35
 
@@ -215,28 +205,36 @@ namespace Backtrace.Base
         /// <param name="report">Report to send</param>
         public virtual async Task<BacktraceResult> SendAsync(BacktraceReportBase<T> report)
         {
-            //check rate limiting
-            bool watcherValidation = _reportWatcher.WatchReport(report);
-            if (!watcherValidation)
-            {
-                var resultReport = report as BacktraceReport;
-                OnClientReportLimitReached?.Invoke(resultReport);
-                return BacktraceResult.OnLimitReached(resultReport);
-            }
-            //generate minidump and add minidump to report 
-            string minidumpPath = _database.GenerateMiniDump(report, MiniDumpType);
-            if (!string.IsNullOrEmpty(minidumpPath))
-            {
-                report.SetMinidumpPath(minidumpPath);
-            }
+            var entry = Database.Add(report, Attributes, MiniDumpType);
             //create a JSON payload instance
-            var data = new BacktraceData<T>(report, Attributes);
+            var data = entry?.BacktraceData ?? report.ToBacktraceData(Attributes);
             //valid user custom events
             data = BeforeSend?.Invoke(data) ?? data;
-            var result = await _backtraceApi.SendAsync(data);
-            //clear minidumps generated by app
-            _database.ClearMiniDump(report.MinidumpFile);
+            var result = await BacktraceApi.SendAsync(data);
+            entry?.Dispose();
+            if (result.Status == BacktraceResultStatus.Ok)
+            {
+                Database.Delete(entry);
+            }
+            //check if there is more errors to send
+            //handle inner exception
+            result.InnerExceptionResult = await HandleInnerExceptionAsync(report);
             return result;
+        }
+
+        /// <summary>
+        /// Handle inner exception in current backtrace report
+        /// if inner exception exists, client should send report twice - one with current exception, one with inner exception
+        /// </summary>
+        /// <param name="report">current report</param>
+        private async Task<BacktraceResult> HandleInnerExceptionAsync(BacktraceReportBase<T> report)
+        {
+            var innerExceptionReport = CreateInnerReport(report);
+            if (innerExceptionReport == null)
+            {
+                return null;
+            }
+            return await SendAsync(innerExceptionReport);
         }
 
         /// <summary>
@@ -256,6 +254,17 @@ namespace Backtrace.Base
             OnUnhandledApplicationException?.Invoke(e.Exception);
         }
 
+        //public virtual void HandleUnobservedTaskExceptions()
+        //{
+        //    TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+        //}
+
+        private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        {
+            SendAsync(new BacktraceReportBase<T>(e.Exception)).Wait();
+            OnUnhandledApplicationException?.Invoke(e.Exception);
+        }
+
         /// <summary>
         /// In most situation when application crash, main process wont wait till we prepare report and send it to API. 
         /// Method allows you to get all necessary data required by BacktraceClient and wait till report will be send on server
@@ -263,11 +272,23 @@ namespace Backtrace.Base
         /// we can handle request end
         /// </summary>
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-        { 
+        {
             var exception = e.ExceptionObject as Exception;
-            var result = SendAsync(new BacktraceReportBase<T>(exception)).Result;
+            Task.WaitAll(SendAsync(new BacktraceReportBase<T>(exception)));
             OnUnhandledApplicationException?.Invoke(exception);
         }
 #endif
+        private BacktraceReportBase<T> CreateInnerReport(BacktraceReportBase<T> report)
+        {
+            // there is no additional exception inside current exception
+            // or exception does not exists
+            if (!report.ExceptionTypeReport || report.Exception.InnerException == null)
+            {
+                return null;
+            }
+            //we have to create a copy of an inner exception report
+            //to have the same calling assembly property
+            return report.CreateInnerReport();
+        }
     }
 }

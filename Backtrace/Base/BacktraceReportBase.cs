@@ -1,11 +1,18 @@
 ﻿using Backtrace.Common;
 using Backtrace.Extensions;
+using Backtrace.Model;
 using Backtrace.Model.JsonData;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
+#if !NET35
+using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
+#endif
 using System.Text;
 
 namespace Backtrace.Base
@@ -13,73 +20,74 @@ namespace Backtrace.Base
     /// <summary>
     /// Capture application report
     /// </summary>
+    [Serializable]
     public class BacktraceReportBase<T>
     {
         /// <summary>
         /// 16 bytes of randomness in human readable UUID format
         /// server will reject request if uuid is already found
         /// </summary>s
-        public readonly Guid Uuid = Guid.NewGuid();
+        [JsonProperty(PropertyName = "uuid")]
+        public Guid Uuid { get; private set; } = Guid.NewGuid();
 
         /// <summary>
         /// UTC timestamp in seconds
         /// </summary>
-        public readonly long Timestamp = (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+        [JsonProperty(PropertyName = "timestamp")]
+        public long Timestamp { get; private set; } = (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
 
         /// <summary>
         /// Get information aboout report type. If value is true the BacktraceReport has an error information
         /// </summary>
-        public bool ExceptionTypeReport = false;
+        [JsonProperty(PropertyName = "reportType")]
+        public bool ExceptionTypeReport { get; private set; } = false;
 
         /// <summary>
         /// Get a report classification 
         /// </summary>
-        public string Classifier
-        {
-            get
-            {
-                if (ExceptionTypeReport)
-                {
-                    return Exception.GetType().Name;
-                }
-                return string.Empty;
-            }
-        }
+        [JsonProperty(PropertyName = "classifier")]
+        public string Classifier { get; set; } = string.Empty;
 
         /// <summary>
         /// Get an report attributes
         /// </summary>
+        [JsonProperty(PropertyName = "attributes")]
         public Dictionary<string, T> Attributes { get; private set; }
 
         /// <summary>
         /// Get a custom client message
         /// </summary>
-        public readonly string Message;
+        [JsonProperty(PropertyName = "message")]
+        public string Message { get; private set; }
 
         /// <summary>
         /// Get a report exception
         /// </summary>
-        public Exception Exception { get; set; }
+        [JsonProperty(PropertyName = "exception")]
+        public Exception Exception { get; private set; }
 
         /// <summary>
         /// Get all paths to attachments
         /// </summary>
+        [JsonProperty(PropertyName = "attachmentPaths")]
         public List<string> AttachmentPaths { get; set; }
 
         /// <summary>
         /// Get or set minidump attachment path
         /// </summary>
-        internal string MinidumpFile { get; set; }
+        [JsonProperty(PropertyName = "minidumpFile")]
+        internal string MinidumpFile { get; private set; }
 
         /// <summary>
         /// Get an assembly where report was created (or should be created)
         /// </summary>
-        internal Assembly CallingAssembly { get; set; }
+        internal Assembly CallingAssembly { get; private set; }
 
         /// <summary>
         /// Current report exception stack
         /// </summary>
-        public List<ExceptionStack> ExceptionStack { get; set; } = new List<ExceptionStack>();
+        [JsonProperty(PropertyName = "diagnosticStack")]
+        public List<DiagnosticStack> DiagnosticStack { get; private set; } = new List<DiagnosticStack>();
 
         /// <summary>
         /// Create new instance of Backtrace report to sending a report with custom client message
@@ -87,6 +95,7 @@ namespace Backtrace.Base
         /// <param name="message">Custom client message</param>
         /// <param name="attributes">Additional information about application state</param>
         /// <param name="attachmentPaths">Path to all report attachments</param>
+        [JsonConstructor]
         public BacktraceReportBase(
             string message,
             Dictionary<string, T> attributes = null,
@@ -114,7 +123,10 @@ namespace Backtrace.Base
             AttachmentPaths = attachmentPaths ?? new List<string>();
             Exception = exception;
             ExceptionTypeReport = Exception != null;
+            Classifier = ExceptionTypeReport ? Exception.GetType().Name : string.Empty;
+            CallingAssembly = exception.GetExceptionSourceAssembly();
             SetCallingAppInformation();
+
         }
 
         /// <summary>
@@ -129,6 +141,11 @@ namespace Backtrace.Base
             }
             MinidumpFile = minidumpPath;
             AttachmentPaths.Add(minidumpPath);
+        }
+
+        internal BacktraceData<T> ToBacktraceData(Dictionary<string, T> clientAttributes)
+        {
+            return new BacktraceData<T>(this, clientAttributes);
         }
 
         /// <summary>
@@ -148,48 +165,11 @@ namespace Backtrace.Base
             return reportAttributes.Merge(attributes);
         }
 
-        private void SetStacktraceInformation(StackFrame[] stackFrames, bool includeCallingAssembly, int startingIndex = 0)
-        {
-            var executedAssemblyName = Assembly.GetExecutingAssembly().FullName;
-            //if includeCallingAssembly is true, we dont need to found calling assembly in current stacktrace
-            bool callingAssemblyFound = !includeCallingAssembly;
-
-            foreach (var stackFrame in stackFrames)
-            {
-                if (stackFrame == null)
-                {
-                    //received invalid or unvailable stackframe
-                    continue;
-                }
-                Assembly assembly = stackFrame?.GetMethod()?.DeclaringType?.Assembly;
-                if (assembly == null)
-                {
-                    continue;
-                }
-                var assemblyName = assembly.FullName;
-                if (executedAssemblyName.Equals(assemblyName))
-                {
-                    // remove all system and microsoft stack frames 
-                    //if we add any stackframe to list this is mistake because we receive 
-                    //system or microsoft dll (for example async invoke)
-                    ExceptionStack.Clear();
-                    startingIndex = 0;
-                    continue;
-                }
-                ExceptionStack.Insert(startingIndex, Model.JsonData.ExceptionStack.Convert(stackFrame, assembly.GetName().Name, true));
-                startingIndex++;
-                if (!callingAssemblyFound && !(SystemHelper.SystemAssembly(assembly)))
-                {
-                    callingAssemblyFound = true;
-                    CallingAssembly = assembly;
-                }
-            }
-        }
         /// <summary>
-        /// Set Calling Assembly and Exception Stack property. 
+        /// Set Calling Assembly and current thread stack trace property. 
         /// CallingAssembly and StackTrace are necessary to prepare diagnostic JSON in BacktraceData class
         /// </summary>
-        private void SetCallingAppInformation()
+        internal void SetCallingAppInformation()
         {
             // generate stacktrace with file info
             // if assembly have pbd files, diagnostic JSON will contain information about 
@@ -202,17 +182,91 @@ namespace Backtrace.Base
             {
                 return;
             }
-            //Add to current stack trace, stackframes from current exception
-            //stacktrace from current thread and from current excetpion are diffrent
-            var exceptionStackTrace = new StackTrace(Exception, true);
-            var exceptionStackFrames = exceptionStackTrace.GetFrames();
-            if (exceptionStackFrames != null && exceptionStackFrames[0] != null
-                && ExceptionStack[0].ILOffset != exceptionStackFrames[0].GetILOffset()
-                && ExceptionStack[0].FunctionName != exceptionStackFrames[0].GetMethod()?.Name)
+            // add stack trace from exception
+            var head = DiagnosticStack.Any() ? DiagnosticStack[0] : null;
+            var generatedStack = Exception.GetExceptionStackFrames(head);
+            SetStacktraceInformation(generatedStack, false);
+
+            //Library didn't found Calling assembly
+            //The reason for this behaviour is because we throw exception from TaskScheduler
+            //or other method that don't generate valid stack trace
+            if(CallingAssembly == null)
             {
-                SetStacktraceInformation(exceptionStackFrames, false);
+                CallingAssembly = Assembly.GetExecutingAssembly();
             }
         }
 
+        private void SetStacktraceInformation(StackFrame[] stackFrames, bool includeCallingAssembly, int startingIndex = 0)
+        {
+            // check if stack frames exists
+            if (stackFrames == null)
+            {
+                return;
+            }
+            var executedAssemblyName = Assembly.GetExecutingAssembly().FullName;
+            //if callingAssemblyFound is true, we dont need to found calling assembly in current stacktrace
+            bool callingAssemblyFound = !includeCallingAssembly;
+
+            foreach (var stackFrame in stackFrames)
+            {
+                var method = stackFrame.GetMethod();
+                var declaringType = method?.DeclaringType;
+                if (declaringType == null)
+                {
+                    //received invalid or unvailable stackframe
+                    continue;
+                }
+                Assembly assembly = declaringType.Assembly;
+                if (assembly == null)
+                {
+                    continue;
+                }
+                var assemblyName = assembly.FullName;
+                if (executedAssemblyName.Equals(assemblyName))
+                {
+                    // remove all system and microsoft stack frames 
+                    //if we add any stackframe to list this is mistake because we receive 
+                    //system or microsoft dll (for example async invoke)
+                    DiagnosticStack.Clear();
+                    startingIndex = 0;
+                    continue;
+                }
+                if (!callingAssemblyFound && ((!(SystemHelper.SystemAssembly(assembly))) 
+                    || (CallingAssembly !=null && assembly?.FullName == CallingAssembly.FullName)))
+                {
+                    callingAssemblyFound = true;
+                    CallingAssembly = assembly;
+                }
+#if !NET35
+                //test if current stack frame is generated by async state machine
+                var declaringTypeInfo = declaringType.GetTypeInfo();
+                var stateMachineFrame = SystemHelper.StateMachineFrame(declaringTypeInfo);
+                if (stateMachineFrame)
+                {
+                    continue;
+                }
+#endif
+                if (!callingAssemblyFound)
+                {
+                    continue;
+                }
+                var diagnosticStack = Model.JsonData.DiagnosticStack.Convert(stackFrame, assembly.GetName().Name, true);
+                DiagnosticStack.Insert(startingIndex, diagnosticStack);
+                startingIndex++;
+            }
+        }
+
+        /// <summary>
+        /// create a copy of BacktraceReport for inner exception object inside exception
+        /// </summary>
+        /// <returns>BacktraceReport for InnerExceptionObject</returns>
+        internal BacktraceReportBase<T> CreateInnerReport()
+        {
+            var copy = (BacktraceReportBase<T>)this.MemberwiseClone();
+            copy.Exception = this.Exception.InnerException;
+            copy.SetCallingAppInformation();
+            copy.Classifier = copy.Exception.GetType().Name;
+            return copy;
+        }
     }
 }

@@ -29,7 +29,7 @@ namespace Backtrace.Model.JsonData
         /// <summary>
         /// Create instance of ThreadData class to collect information about used threads
         /// </summary>
-        internal ThreadData(Assembly callingAssembly, IEnumerable<ExceptionStack> exceptionStack)
+        internal ThreadData(Assembly callingAssembly, IEnumerable<DiagnosticStack> exceptionStack)
         {
 #if NET45
             //use available in .NET 4.5 api to find stack trace of all available managed threads
@@ -46,7 +46,7 @@ namespace Backtrace.Model.JsonData
         /// Generate information for current thread
         /// </summary>
         /// <param name="exceptionStack">Current BacktraceReport exception stack</param>
-        private void GenerateCurrentThreadInformation(IEnumerable<ExceptionStack> exceptionStack)
+        private void GenerateCurrentThreadInformation(IEnumerable<DiagnosticStack> exceptionStack)
         {
             var current = Thread.CurrentThread;
             //get current thread id
@@ -66,7 +66,7 @@ namespace Backtrace.Model.JsonData
             try
             {
                 currentThreads = Process.GetCurrentProcess().Threads;
-                if(currentThreads == null)
+                if (currentThreads == null)
                 {
                     return;
                 }
@@ -99,11 +99,20 @@ namespace Backtrace.Model.JsonData
             var mainThreadId = Thread.CurrentThread.ManagedThreadId;
             using (DataTarget target = DataTarget.AttachToProcess(Process.GetCurrentProcess().Id, 5000, AttachFlag.Passive))
             {
-                if(target.ClrVersions == null || !target.ClrVersions.Any())
+                if (target.ClrVersions == null || !target.ClrVersions.Any())
                 {
                     return;
                 }
-                ClrRuntime runtime = target.ClrVersions.First().CreateRuntime();
+                ClrRuntime runtime = null;
+                try
+                {
+                    runtime = target.ClrVersions.First().CreateRuntime();
+                }
+                catch (ClrDiagnosticsException)
+                {
+                    //we cannot create runtime for current applications state
+                    return;
+                }
                 foreach (ClrThread thread in runtime.Threads)
                 {
                     if (thread.ManagedThreadId == mainThreadId)
@@ -117,7 +126,7 @@ namespace Backtrace.Model.JsonData
                     {
                         threadName = thread.ManagedThreadId.ToString();
                     }
-                    var frames = ExceptionStack.Convert(thread.StackTrace);
+                    var frames = DiagnosticStack.Convert(thread.StackTrace);
                     ThreadInformations[threadName] = new ThreadInformation(threadName, false, frames);
                 }
             }

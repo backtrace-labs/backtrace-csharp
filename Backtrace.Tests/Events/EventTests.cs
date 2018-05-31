@@ -1,9 +1,12 @@
 ﻿using Backtrace.Base;
 using Backtrace.Interfaces;
 using Backtrace.Model;
+using Backtrace.Model.Database;
+using Backtrace.Services;
 using Backtrace.Types;
 using Moq;
 using NUnit.Framework;
+using RichardSzalay.MockHttp;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -30,28 +33,46 @@ namespace Backtrace.Tests.Events
         public void Setup()
         {
             //prepare mock object
+            var credentials = new BacktraceCredentials("https://validurl.com/", "validToken");
             //mock api
-            var api = new Mock<IBacktraceApi<object>>();
-            api.Setup(n => n.SendAsync(It.IsAny<BacktraceData<object>>())).Returns(Task.FromResult(new BacktraceResult()));
-            api.Setup(n => n.Send(It.IsAny<BacktraceData<object>>())).Returns(new BacktraceResult());
+            var serverUrl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
+
+            var mockHttp = new MockHttpMessageHandler();
+            mockHttp.When(serverUrl)
+                .Respond("application/json", "{'object' : 'aaa'}");
+
+            var api = new BacktraceApi<object>(credentials, 0)
+            {
+                HttpClient = mockHttp.ToHttpClient(),
+                //avoid real submission
+                RequestHandler = (string host, string boundaryId, BacktraceData<object> data) =>
+                {
+                    return new BacktraceResult();
+                }
+            };
 
             //mock database
             var database = new Mock<IBacktraceDatabase<object>>();
-            database.Setup(n => n.GenerateMiniDump(It.IsAny<BacktraceReportBase<object>>(), It.IsAny<MiniDumpType>()));
+            database.Setup(n =>
+                n.Add(It.IsAny<BacktraceReportBase<object>>(),
+                    It.IsAny<Dictionary<string, object>>(),
+                    It.IsAny<MiniDumpType>()));
+
+            database.Setup(n =>
+               n.Delete(It.IsAny<BacktraceDatabaseEntry<object>>()));
+
 
             //setup new client
-            var credentials = new BacktraceCredentials("https://validurl.com/", "validToken");
-            _backtraceClient = new BacktraceClient(credentials, reportPerMin: 0)
+            _backtraceClient = new BacktraceClient(credentials, database: database.Object, reportPerMin: 0)
             {
-                _backtraceApi = api.Object,
-                _database = database.Object
+                BacktraceApi = api
             };
         }
 
         [TestCase(5, 2)]
         [TestCase(15, 5)]
         [Test(Author = "Konrad Dysput", Description = "Test rate limiting and after send event")]
-        public async Task TestRateLimiting(int numberOfCycles, int rateLimit)
+        public async Task TestClientRateLimiting(int numberOfCycles, int rateLimit)
         {
             //we send reports by using Send method and SendAsync method - 8 per c
             int totalSendReport = numberOfCycles * 8;

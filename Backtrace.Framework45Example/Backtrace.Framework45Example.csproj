@@ -43,7 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApplicationCredentials.cs" />
+    <Compile Include="ApplicationSettings.cs" />
     <Compile Include="Model\Node.cs" />
     <Compile Include="Model\Tree.cs" />
     <Compile Include="Program.cs" />

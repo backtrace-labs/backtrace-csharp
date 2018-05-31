@@ -3,8 +3,8 @@ using Backtrace;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
+using Backtrace.Model.Database;
+using System.Net;
 
 namespace Backtrace.Framework35Example
 {
@@ -12,12 +12,29 @@ namespace Backtrace.Framework35Example
     {
         static void Main(string[] args)
         {
+            //setup tls support for tested server
+            ServicePointManager.SecurityProtocol =
+                    SecurityProtocolType.Tls
+                   | (SecurityProtocolType)0x00000300
+                   | (SecurityProtocolType)0x00000C00;
+
+            var credentials = new BacktraceCredentials(ApplicationSettings.Host, ApplicationSettings.Token);
+            // create Backtrace library configuration
+            var configuartion = new BacktraceClientConfiguration(credentials)
+            {
+                ReportPerMin = 0
+            };
+
             //initialize new BacktraceClient with custom configuration section readed from file App.config
             //Client will be initialized with values stored in default section name "BacktraceCredentials"
             BacktraceClient backtraceClientWithSectionCredentials = new BacktraceClient();
 
-            var credentials = new BacktraceCredentials(ApplicationCredentials.Host, ApplicationCredentials.Token);
-            var backtraceClient = new BacktraceClient(credentials, tlsLegacySupport: true);
+            //create new backtrace database settings
+            BacktraceDatabaseSettings databaseSettings = new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath);
+            //create Backtrace database
+            var database = new BacktraceDatabase<object>(databaseSettings);
+            //setup new client
+            var backtraceClient = new BacktraceClient(credentials, databaseSettings);
 
             //Add new scoped attributes
             backtraceClient.Attributes["ClientAttributeNumber"] = 1;
