@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 using System.Text;
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
@@ -82,7 +83,7 @@ namespace Backtrace.Model.Database
                 {
                     return Entry;
                 }
-                if(!Valid())
+                if (!Valid())
                 {
                     return null;
                 }
@@ -90,19 +91,28 @@ namespace Backtrace.Model.Database
                 using (var dataReader = new StreamReader(DiagnosticDataPath))
                 using (var reportReader = new StreamReader(ReportPath))
                 {
-                    //read report
-                    var reportJson = reportReader.ReadToEnd();
-                    var report = JsonConvert.DeserializeObject<BacktraceReportBase<T>>(reportJson);
-
                     //read diagnostic data
                     var diagnosticDataJson = dataReader.ReadToEnd();
-                    var diagnosticData = JsonConvert.DeserializeObject<BacktraceData<T>>(diagnosticDataJson);
-                    //add report to diagnostic data
-                    //we don't store report with diagnostic data in the same json
-                    //because we have easier way to serialize and deserialize data
-                    //and no problem/condition with serialization when BacktraceApi want to send diagnostic data to API
-                    diagnosticData.Report = report;
-                    return diagnosticData;
+                    //read report
+                    var reportJson = reportReader.ReadToEnd();
+
+                    //deserialize data - if deserialize fails, we receive invalid entry
+                    try
+                    {
+                        var diagnosticData = JsonConvert.DeserializeObject<BacktraceData<T>>(diagnosticDataJson);
+                        var report = JsonConvert.DeserializeObject<BacktraceReportBase<T>>(reportJson);
+                        //add report to diagnostic data
+                        //we don't store report with diagnostic data in the same json
+                        //because we have easier way to serialize and deserialize data
+                        //and no problem/condition with serialization when BacktraceApi want to send diagnostic data to API
+                        diagnosticData.Report = report;
+                        return diagnosticData;
+                    }
+                    catch (SerializationException)
+                    {
+                        //catch all exception caused by invalid serialization
+                        return null;
+                    }
                 }
             }
         }
@@ -125,7 +135,7 @@ namespace Backtrace.Model.Database
             Id = data.Uuid;
             Entry = data;
             _path = path;
-            EntryWriter = new BacktraceDatabaseEntryWriter(path);           
+            EntryWriter = new BacktraceDatabaseEntryWriter(path);
         }
 
         /// <summary>
@@ -172,7 +182,7 @@ namespace Backtrace.Model.Database
             Delete(MiniDumpPath);
             Delete(ReportPath);
             Delete(DiagnosticDataPath);
-            Delete(EntryPath);   
+            Delete(EntryPath);
         }
 
         /// <summary>

@@ -32,6 +32,10 @@ namespace Backtrace.Model.JsonData
         /// <param name="assembly">Current assembly</param>
         private void ReadDependencies(Assembly assembly)
         {
+            if(assembly == null)
+            {
+                return;
+            }
             AssemblyName[] referencedAssemblies = null;
             try
             {
