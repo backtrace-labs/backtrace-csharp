@@ -218,8 +218,15 @@ namespace Backtrace.Model.Database
             using (StreamReader streamReader = file.OpenText())
             {
                 var json = streamReader.ReadToEnd();
-                var entry = JsonConvert.DeserializeObject<BacktraceDatabaseEntry<T>>(json);
-                return entry;
+                try
+                {
+                    return JsonConvert.DeserializeObject<BacktraceDatabaseEntry<T>>(json);
+                }
+                catch (SerializationException)
+                {
+                    //handle invalid json 
+                    return null;
+                }
             }
         }
         #region dispose
