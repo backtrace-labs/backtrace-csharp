@@ -1,5 +1,8 @@
 ﻿# Backtrace C# Release Notes
 
+## Version 1.2.2 - 19.06.2018
+- Ignore exception object in BacktraceReport in serialization. Change exception conditions in BacktraceReport.
+
 ## Version 1.2.1 - 14.06.2018
 - Invalid serialization support.
 
