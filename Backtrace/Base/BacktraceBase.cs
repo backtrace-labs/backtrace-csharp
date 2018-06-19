@@ -190,7 +190,9 @@ namespace Backtrace.Base
         /// <param name="report">current report</param>
         private BacktraceResult HandleInnerException(BacktraceReportBase<T> report)
         {
-            var innerExceptionReport = CreateInnerReport(report);
+            //we have to create a copy of an inner exception report
+            //to have the same calling assembly property
+            var innerExceptionReport = report.CreateInnerReport();
             if (innerExceptionReport == null)
             {
                 return null;
@@ -229,7 +231,7 @@ namespace Backtrace.Base
         /// <param name="report">current report</param>
         private async Task<BacktraceResult> HandleInnerExceptionAsync(BacktraceReportBase<T> report)
         {
-            var innerExceptionReport = CreateInnerReport(report);
+            var innerExceptionReport = report.CreateInnerReport();
             if (innerExceptionReport == null)
             {
                 return null;
@@ -278,17 +280,5 @@ namespace Backtrace.Base
             OnUnhandledApplicationException?.Invoke(exception);
         }
 #endif
-        private BacktraceReportBase<T> CreateInnerReport(BacktraceReportBase<T> report)
-        {
-            // there is no additional exception inside current exception
-            // or exception does not exists
-            if (!report.ExceptionTypeReport || report.Exception.InnerException == null)
-            {
-                return null;
-            }
-            //we have to create a copy of an inner exception report
-            //to have the same calling assembly property
-            return report.CreateInnerReport();
-        }
     }
 }

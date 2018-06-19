@@ -6,14 +6,12 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 #if !NET35
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 #endif
-using System.Text;
 
 namespace Backtrace.Base
 {
@@ -63,7 +61,7 @@ namespace Backtrace.Base
         /// <summary>
         /// Get a report exception
         /// </summary>
-        [JsonProperty(PropertyName = "exception")]
+        [JsonIgnore]
         public Exception Exception { get; private set; }
 
         /// <summary>
@@ -122,8 +120,8 @@ namespace Backtrace.Base
             Attributes = attributes ?? new Dictionary<string, T>();
             AttachmentPaths = attachmentPaths ?? new List<string>();
             Exception = exception;
-            ExceptionTypeReport = Exception != null;
-            Classifier = ExceptionTypeReport ? Exception.GetType().Name : string.Empty;
+            ExceptionTypeReport = exception != null;
+            Classifier = ExceptionTypeReport ? exception.GetType().Name : string.Empty;
             CallingAssembly = exception.GetExceptionSourceAssembly();
             SetCallingAppInformation();
 
@@ -190,7 +188,7 @@ namespace Backtrace.Base
             //Library didn't found Calling assembly
             //The reason for this behaviour is because we throw exception from TaskScheduler
             //or other method that don't generate valid stack trace
-            if(CallingAssembly == null)
+            if (CallingAssembly == null)
             {
                 CallingAssembly = Assembly.GetExecutingAssembly();
             }
@@ -231,8 +229,8 @@ namespace Backtrace.Base
                     startingIndex = 0;
                     continue;
                 }
-                if (!callingAssemblyFound && ((!(SystemHelper.SystemAssembly(assembly))) 
-                    || (CallingAssembly !=null && assembly?.FullName == CallingAssembly.FullName)))
+                if (!callingAssemblyFound && ((!(SystemHelper.SystemAssembly(assembly)))
+                    || (CallingAssembly != null && assembly?.FullName == CallingAssembly.FullName)))
                 {
                     callingAssemblyFound = true;
                     CallingAssembly = assembly;
@@ -262,6 +260,12 @@ namespace Backtrace.Base
         /// <returns>BacktraceReport for InnerExceptionObject</returns>
         internal BacktraceReportBase<T> CreateInnerReport()
         {
+            // there is no additional exception inside current exception
+            // or exception does not exists
+            if (!ExceptionTypeReport || Exception.InnerException == null)
+            {
+                return null;
+            }
             var copy = (BacktraceReportBase<T>)this.MemberwiseClone();
             copy.Exception = this.Exception.InnerException;
             copy.SetCallingAppInformation();
