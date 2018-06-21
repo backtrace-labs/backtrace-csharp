@@ -1,5 +1,8 @@
 ﻿# Backtrace C# Release Notes
 
+## Version 1.2.3 - 21.06.2018
+- Enum is now available as a primitive value in BacktraceAttributes
+
 ## Version 1.2.2 - 19.06.2018
 - Ignore exception object in BacktraceReport in serialization. Change exception conditions in BacktraceReport.
 
