@@ -106,7 +106,7 @@ namespace Backtrace.Model.JsonData
             foreach (var attribute in attributes)
             {
                 var type = attribute.Value.GetType();
-                if (type.IsPrimitive || type == typeof(string))
+                if (type.IsPrimitive || type == typeof(string) || type.IsEnum)
                 {
                     Attributes.Add(attribute.Key, attribute.Value);
                 }
