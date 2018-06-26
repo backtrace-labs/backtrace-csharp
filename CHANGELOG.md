@@ -1,5 +1,8 @@
 ﻿# Backtrace C# Release Notes
 
+## Version 1.3 - 26.06.2018
+- Attributes dictionary now use an `object` type instead of a generic type for better flexibility
+
 ## Version 1.2.3 - 21.06.2018
 - Enum is now available as a primitive value in BacktraceAttributes
 
