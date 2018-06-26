@@ -340,10 +340,10 @@ You can extend `BacktraceReportBase` and `BacktraceBase` to create your own Back
 # Architecture  <a name="architecture"></a>
 
 ## BacktraceReport  <a name="architecture-BacktraceReport"></a>
-**`BacktraceReport`** is a class that describe a single error report that extends `BacktraceReportBase` generic class. Argument `T` is value type of `Attribute` dictionary. Keep in mind that `BacktraceClient` uses `CallingAssembly` method to retrieve information about your application.  
+**`BacktraceReport`** is a class that describe a single error report that extends `BacktraceReportBase` class. Keep in mind that `BacktraceClient` uses `CallingAssembly` method to retrieve information about your application.  
 
 ## BacktraceClient  <a name="architecture-BacktraceClient"></a>
-**`BacktraceClient`** is a class that allows you to instantiate a client instance that interacts with `BacktraceApi`. This class sets up connection to the Backtrace endpoint and manages error reporting behavior (for example, saving minidump files on your local hard drive and limiting the number of error reports per minute). `BacktraceClient` extends `BacktraceBase` generic class. `T` argument is a value type in `Attribute` dictionary.
+**`BacktraceClient`** is a class that allows you to instantiate a client instance that interacts with `BacktraceApi`. This class sets up connection to the Backtrace endpoint and manages error reporting behavior (for example, saving minidump files on your local hard drive and limiting the number of error reports per minute). `BacktraceClient` extends `BacktraceBase` class.
 
 `BacktraceClient` takes a `BacktraceClientConfiguration` parameter, which has the following properties:
 - `Credentials` - the `BacktraceCredentials` object to use for connection to the Backtrace server.
@@ -352,7 +352,7 @@ You can extend `BacktraceReportBase` and `BacktraceBase` to create your own Back
 
 
 ## BacktraceData  <a name="architecture-BacktraceData"></a>
-**`BacktraceData`** is a generic, serializable class that holds the data to create a diagnostic JSON to be sent to the Backtrace endpoint via `BacktraceApi`. You can add additional pre-processors for `BacktraceData` by attaching an event handler to the `BacktraceClient.BeforeSend` event. `BacktraceData` require `BacktraceReport` and `BacktraceClient` client attributes.
+**`BacktraceData`** is a serializable base class that holds the data to create a diagnostic JSON to be sent to the Backtrace endpoint via `BacktraceApi`. You can add additional pre-processors for `BacktraceData` by attaching an event handler to the `BacktraceClient.BeforeSend` event. `BacktraceData` require `BacktraceReport` and `BacktraceClient` client attributes.
 
 ## BacktraceApi  <a name="architecture-BacktraceApi"></a>
 **`BacktraceApi`** is a class that sends diagnostic JSON to the Backtrace endpoint. `BacktraceApi` is instantiated when the `BacktraceClient` constructor is called. You use the following event handlers in `BacktraceApi` to customize how you want to handle JSON data:
