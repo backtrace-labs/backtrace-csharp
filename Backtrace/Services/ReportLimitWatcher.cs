@@ -16,7 +16,7 @@ namespace Backtrace.Services
         /// <summary>
         /// Set event executed when client site report limit reached
         /// </summary>
-        internal Action<BacktraceReport> OnClientReportLimitReached = null;
+        internal Action<BacktraceReportBase> OnClientReportLimitReached = null;
 
         internal readonly Queue<long> _reportQue;
 
@@ -63,7 +63,7 @@ namespace Backtrace.Services
             Clear();
             if (_reportQue.Count + 1 > _reportPerSec)
             {
-                OnClientReportLimitReached?.Invoke(report as BacktraceReport);
+                OnClientReportLimitReached?.Invoke(report);
                 return false;
             }
             _reportQue.Enqueue(report.Timestamp);

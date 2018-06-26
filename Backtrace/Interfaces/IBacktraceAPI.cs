@@ -1,4 +1,5 @@
-﻿using Backtrace.Model;
+﻿using Backtrace.Base;
+using Backtrace.Model;
 using System;
 
 namespace Backtrace.Interfaces
@@ -36,7 +37,7 @@ namespace Backtrace.Interfaces
         /// </summary>
         Func<string, string, BacktraceData, BacktraceResult> RequestHandler { get; set; }
 
-        void SetClientRateLimitEvent(Action<BacktraceReport> onClientReportLimitReached);
+        void SetClientRateLimitEvent(Action<BacktraceReportBase> onClientReportLimitReached);
 
         void SetClientRateLimit(uint rateLimit);
     }

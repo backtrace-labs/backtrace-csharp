@@ -258,7 +258,7 @@ namespace Backtrace
                 {
                     //send entry from database to API
                     var result = await BacktraceApi.SendAsync(backtraceData);
-                        if (result.Status == BacktraceResultStatus.Ok)
+                    if (result.Status == BacktraceResultStatus.Ok)
                     {
                         Delete(entry);
                     }

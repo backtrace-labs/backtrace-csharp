@@ -70,7 +70,7 @@ namespace Backtrace.Services
             bool watcherValidation = reportLimitWatcher.WatchReport(data.Report);
             if (!watcherValidation)
             {
-                return BacktraceResult.OnLimitReached(data.Report as BacktraceReport);
+                return BacktraceResult.OnLimitReached(data.Report);
             }
             // execute user custom request handler
             if (RequestHandler != null)
@@ -79,10 +79,10 @@ namespace Backtrace.Services
             }
             //get a json from diagnostic object
             var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
-            return await SendAsync(Guid.NewGuid(), json, data.Attachments, data.Report as BacktraceReport);
+            return await SendAsync(Guid.NewGuid(), json, data.Attachments, data.Report);
         }
 
-        internal async Task<BacktraceResult> SendAsync(Guid requestId, string json, List<string> attachments, BacktraceReport report)
+        internal async Task<BacktraceResult> SendAsync(Guid requestId, string json, List<string> attachments, BacktraceReportBase report)
         {
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
             string boundary = FormDataHelper.GetBoundary(requestId);
@@ -139,7 +139,7 @@ namespace Backtrace.Services
             bool watcherValidation = reportLimitWatcher.WatchReport(data.Report);
             if (!watcherValidation)
             {
-                return BacktraceResult.OnLimitReached(data.Report as BacktraceReport);
+                return BacktraceResult.OnLimitReached(data.Report);
             }
             // execute user custom request handler
             if (RequestHandler != null)
@@ -148,11 +148,10 @@ namespace Backtrace.Services
             }
             //set submission data
             string json = JsonConvert.SerializeObject(data);
-            var report = data.Report as BacktraceReport;
-            return Send(Guid.NewGuid(), json, report?.AttachmentPaths ?? new List<string>(), report);
+            return Send(Guid.NewGuid(), json, data.Report?.AttachmentPaths ?? new List<string>(), data.Report);
         }
 
-        private BacktraceResult Send(Guid requestId, string json, List<string> attachments, BacktraceReport report)
+        private BacktraceResult Send(Guid requestId, string json, List<string> attachments, BacktraceReportBase report)
         {
             var formData = FormDataHelper.GetFormData(json, attachments, requestId);
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
@@ -183,7 +182,7 @@ namespace Backtrace.Services
         /// Handle server respond for synchronous request
         /// </summary>
         /// <param name="request">Current HttpWebRequest</param>
-        private BacktraceResult ReadServerResponse(HttpWebRequest request, BacktraceReport report)
+        private BacktraceResult ReadServerResponse(HttpWebRequest request, BacktraceReportBase report)
         {
             using (WebResponse webResponse = request.GetResponse() as HttpWebResponse)
             {
@@ -233,7 +232,7 @@ namespace Backtrace.Services
         }
 #endregion
 
-        public void SetClientRateLimitEvent(Action<BacktraceReport> onClientReportLimitReached)
+        public void SetClientRateLimitEvent(Action<BacktraceReportBase> onClientReportLimitReached)
         {
             reportLimitWatcher.OnClientReportLimitReached = onClientReportLimitReached;
         }

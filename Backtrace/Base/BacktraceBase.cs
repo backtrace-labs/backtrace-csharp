@@ -69,7 +69,7 @@ namespace Backtrace.Base
         /// <summary>
         /// Set event executed when client site report limit reached
         /// </summary>
-        public Action<BacktraceReport> OnClientReportLimitReached
+        public Action<BacktraceReportBase> OnClientReportLimitReached
         {
             set
             {

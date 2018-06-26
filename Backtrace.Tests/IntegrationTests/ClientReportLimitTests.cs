@@ -74,7 +74,7 @@ namespace Backtrace.Tests.IntegrationTests
                 {"Google url" , new Uri("http://google.com") }
             };
             //to check if client report limit reached use OnClientReportLimitReached 
-            _backtraceClient.OnClientReportLimitReached = (BacktraceReport report) =>
+            _backtraceClient.OnClientReportLimitReached = (BacktraceReportBase report) =>
             {
                 clientReportLimitReached = true;
             };
@@ -179,7 +179,7 @@ namespace Backtrace.Tests.IntegrationTests
             int totalNumberOfDropsOnEvents = 0;
 
             //set backtrace events
-            _backtraceClient.OnClientReportLimitReached = (BacktraceReport report) =>
+            _backtraceClient.OnClientReportLimitReached = (BacktraceReportBase report) =>
             {
                 totalDrop++;
                 clientReportLimitReached = true;
