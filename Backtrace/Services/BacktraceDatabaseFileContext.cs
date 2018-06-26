@@ -11,7 +11,7 @@ namespace Backtrace.Services
     /// <summary>
     /// BacktraceDatabase class for file collection operations
     /// </summary>
-    public class BacktraceDatabaseFileContext<T> : IBacktraceDatabaseFileContext<T>
+    public class BacktraceDatabaseFileContext : IBacktraceDatabaseFileContext
     {
         /// <summary>
         /// Database directory path
@@ -59,7 +59,7 @@ namespace Backtrace.Services
         /// <summary>
         /// Remove orphaned files existing in database directory
         /// </summary>
-        public void RemoveOrphaned(IEnumerable<BacktraceDatabaseEntry<T>> existingEntries)
+        public void RemoveOrphaned(IEnumerable<BacktraceDatabaseEntry> existingEntries)
         {
             IEnumerable<string> entryStringIds = existingEntries.Select(n => n.Id.ToString());
             var files = GetAll();

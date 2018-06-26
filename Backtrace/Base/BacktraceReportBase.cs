@@ -19,7 +19,7 @@ namespace Backtrace.Base
     /// Capture application report
     /// </summary>
     [Serializable]
-    public class BacktraceReportBase<T>
+    public class BacktraceReportBase
     {
         /// <summary>
         /// 16 bytes of randomness in human readable UUID format
@@ -50,7 +50,7 @@ namespace Backtrace.Base
         /// Get an report attributes
         /// </summary>
         [JsonProperty(PropertyName = "attributes")]
-        public Dictionary<string, T> Attributes { get; private set; }
+        public Dictionary<string, object> Attributes { get; private set; }
 
         /// <summary>
         /// Get a custom client message
@@ -96,11 +96,11 @@ namespace Backtrace.Base
         [JsonConstructor]
         public BacktraceReportBase(
             string message,
-            Dictionary<string, T> attributes = null,
+            Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null)
         {
             Message = message;
-            Attributes = attributes ?? new Dictionary<string, T>();
+            Attributes = attributes ?? new Dictionary<string, object>();
             AttachmentPaths = attachmentPaths ?? new List<string>();
             SetCallingAppInformation();
         }
@@ -114,10 +114,10 @@ namespace Backtrace.Base
         /// <param name="attachmentPaths">Path to all report attachments</param>
         public BacktraceReportBase(
             Exception exception,
-            Dictionary<string, T> attributes = null,
+            Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null)
         {
-            Attributes = attributes ?? new Dictionary<string, T>();
+            Attributes = attributes ?? new Dictionary<string, object>();
             AttachmentPaths = attachmentPaths ?? new List<string>();
             Exception = exception;
             ExceptionTypeReport = exception != null;
@@ -141,9 +141,9 @@ namespace Backtrace.Base
             AttachmentPaths.Add(minidumpPath);
         }
 
-        internal BacktraceData<T> ToBacktraceData(Dictionary<string, T> clientAttributes)
+        internal BacktraceData ToBacktraceData(Dictionary<string, object> clientAttributes)
         {
-            return new BacktraceData<T>(this, clientAttributes);
+            return new BacktraceData(this, clientAttributes);
         }
 
         /// <summary>
@@ -152,8 +152,8 @@ namespace Backtrace.Base
         /// <param name="report">Current report</param>
         /// <param name="attributes">Attributes to concatenate</param>
         /// <returns></returns>
-        internal static Dictionary<string, T> ConcatAttributes(
-            BacktraceReportBase<T> report, Dictionary<string, T> attributes)
+        internal static Dictionary<string, object> ConcatAttributes(
+            BacktraceReportBase report, Dictionary<string, object> attributes)
         {
             var reportAttributes = report.Attributes;
             if (attributes == null)
@@ -258,7 +258,7 @@ namespace Backtrace.Base
         /// create a copy of BacktraceReport for inner exception object inside exception
         /// </summary>
         /// <returns>BacktraceReport for InnerExceptionObject</returns>
-        internal BacktraceReportBase<T> CreateInnerReport()
+        internal BacktraceReportBase CreateInnerReport()
         {
             // there is no additional exception inside current exception
             // or exception does not exists
@@ -266,7 +266,7 @@ namespace Backtrace.Base
             {
                 return null;
             }
-            var copy = (BacktraceReportBase<T>)this.MemberwiseClone();
+            var copy = (BacktraceReportBase)this.MemberwiseClone();
             copy.Exception = this.Exception.InnerException;
             copy.SetCallingAppInformation();
             copy.Classifier = copy.Exception.GetType().Name;

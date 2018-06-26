@@ -11,7 +11,7 @@ namespace Backtrace.Services
     /// <summary>
     /// Report watcher class. Watcher controls number of reports sending per one minute. If value reportPerMin is equal to zero, there is no request sending to API. Value has to be greater than or equal to 0
     /// </summary>
-    internal class ReportLimitWatcher<T>
+    internal class ReportLimitWatcher
     {
         /// <summary>
         /// Set event executed when client site report limit reached
@@ -53,7 +53,7 @@ namespace Backtrace.Services
         /// </summary>
         /// <param name="report">Current report</param>
         /// <returns>true if user can add a new report</returns>
-        public bool WatchReport(BacktraceReportBase<T> report)
+        public bool WatchReport(BacktraceReportBase report)
         {
             if (!_watcherEnable)
             {

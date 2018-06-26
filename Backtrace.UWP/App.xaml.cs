@@ -48,7 +48,7 @@ namespace Backtrace.UWP
         /// </summary>
         private static void StartJob()
         {
-            Task.Run(() => CalculateDifference(-12)).Wait();
+            Task.Run(() => CalculateDifference(-11)).Wait();
         }
         /// <summary>
         /// Sample method that generate exception
@@ -90,7 +90,7 @@ namespace Backtrace.UWP
             //Client configuration
             var config = new BacktraceClientConfiguration(credentials);
             //database instance
-            var database = new BacktraceDatabase<object>(localFolder.Path);
+            var database = new BacktraceDatabase(localFolder.Path);
             //client initialization
             backtraceClient = new BacktraceClient(config, database);
 

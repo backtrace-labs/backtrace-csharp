@@ -155,7 +155,7 @@ namespace Backtrace.Core
                 ReportPerMin = 0
             };
             //create Backtrace database
-            var database = new BacktraceDatabase<object>(databaseSettings);
+            var database = new BacktraceDatabase(databaseSettings);
             //setup new client
             backtraceClient = new BacktraceClient(configuartion, database);
 
@@ -177,7 +177,7 @@ namespace Backtrace.Core
 
             //Add your own handler to client API
             backtraceClient.BeforeSend =
-               (BacktraceData<object> model) =>
+               (BacktraceData model) =>
                {
                    var data = model;
                    data.Attributes.Add("eventAtrtibute", "EventAttributeValue");

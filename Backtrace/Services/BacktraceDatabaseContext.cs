@@ -13,12 +13,12 @@ namespace Backtrace.Services
     /// <summary>
     /// Backtrace Database Context
     /// </summary>
-    internal class BacktraceDatabaseContext<T> : IBacktraceDatabaseContext<T>
+    internal class BacktraceDatabaseContext : IBacktraceDatabaseContext
     {
         /// <summary>
         /// Database cache
         /// </summary>
-        internal Dictionary<int, List<BacktraceDatabaseEntry<T>>> BatchRetry = new Dictionary<int, List<BacktraceDatabaseEntry<T>>>();
+        internal Dictionary<int, List<BacktraceDatabaseEntry>> BatchRetry = new Dictionary<int, List<BacktraceDatabaseEntry>>();
 
         /// <summary>
         /// Total entries in BacktraceDatabase
@@ -65,7 +65,7 @@ namespace Backtrace.Services
             }
             for (int i = 0; i < _retryNumber; i++)
             {
-                BatchRetry[i] = new List<BacktraceDatabaseEntry<T>>();
+                BatchRetry[i] = new List<BacktraceDatabaseEntry>();
             }
         }
 
@@ -74,10 +74,10 @@ namespace Backtrace.Services
         /// </summary>
         /// <param name="backtraceData">Diagnostic data that should be stored in database</param>
         /// <returns>New instance of DatabaseEntry</returns>
-        public virtual BacktraceDatabaseEntry<T> Add(BacktraceData<T> backtraceData)
+        public virtual BacktraceDatabaseEntry Add(BacktraceData backtraceData)
         {
-            if (backtraceData == null) throw new NullReferenceException(nameof(BacktraceData<T>));
-            var entry = new BacktraceDatabaseEntry<T>(backtraceData, _path);
+            if (backtraceData == null) throw new NullReferenceException(nameof(BacktraceData));
+            var entry = new BacktraceDatabaseEntry(backtraceData, _path);
             entry.Save();
             return Add(entry);
         }
@@ -86,9 +86,9 @@ namespace Backtrace.Services
         /// Add existing entry to database
         /// </summary>
         /// <param name="backtraceEntry">Database entry</param>
-        public BacktraceDatabaseEntry<T> Add(BacktraceDatabaseEntry<T> backtraceEntry)
+        public BacktraceDatabaseEntry Add(BacktraceDatabaseEntry backtraceEntry)
         {
-            if (backtraceEntry == null) throw new NullReferenceException(nameof(BacktraceDatabaseEntry<T>));
+            if (backtraceEntry == null) throw new NullReferenceException(nameof(BacktraceDatabaseEntry));
             backtraceEntry.Locked = true;
             BatchRetry[0].Add(backtraceEntry);
             TotalEntries++;
@@ -100,7 +100,7 @@ namespace Backtrace.Services
         /// </summary>
         /// <param name="entry"></param>
         /// <returns></returns>
-        public bool Any(BacktraceDatabaseEntry<T> entry)
+        public bool Any(BacktraceDatabaseEntry entry)
         {
             return BatchRetry.SelectMany(n => n.Value).Any(n => n.Id == entry.Id);
         }
@@ -117,7 +117,7 @@ namespace Backtrace.Services
         /// Delete existing entry from database
         /// </summary>
         /// <param name="entry">Database entry to delete</param>
-        public virtual void Delete(BacktraceDatabaseEntry<T> entry)
+        public virtual void Delete(BacktraceDatabaseEntry entry)
         {
             if (entry == null)
             {
@@ -156,7 +156,7 @@ namespace Backtrace.Services
             for (int i = _retryNumber - 2; i >= 0; i--)
             {
                 var temp = BatchRetry[i];
-                BatchRetry[i] = new List<BacktraceDatabaseEntry<T>>();
+                BatchRetry[i] = new List<BacktraceDatabaseEntry>();
                 BatchRetry[i + 1] = temp;
             }
         }
@@ -180,7 +180,7 @@ namespace Backtrace.Services
         /// Get all database entryes
         /// </summary>
         /// <returns>all existing database entries</returns>
-        public IEnumerable<BacktraceDatabaseEntry<T>> Get()
+        public IEnumerable<BacktraceDatabaseEntry> Get()
         {
             return BatchRetry.SelectMany(n => n.Value);
         }
@@ -222,7 +222,7 @@ namespace Backtrace.Services
         /// Get last exising database entry. Method returns entry based on order in Database
         /// </summary>
         /// <returns>First Backtrace database entry</returns>
-        public BacktraceDatabaseEntry<T> LastOrDefault()
+        public BacktraceDatabaseEntry LastOrDefault()
         {
             return RetryOrder == RetryOrder.Stack
                     ? GetLastEntry()
@@ -233,7 +233,7 @@ namespace Backtrace.Services
         /// Get first exising database entry. Method returns entry based on order in Database
         /// </summary>
         /// <returns>First Backtrace database entry</returns>
-        public BacktraceDatabaseEntry<T> FirstOrDefault()
+        public BacktraceDatabaseEntry FirstOrDefault()
         {
             return RetryOrder == RetryOrder.Queue
                     ? GetFirstEntry()
@@ -244,7 +244,7 @@ namespace Backtrace.Services
         /// Get first entry in in-cache BacktraceDatabase
         /// </summary>
         /// <returns>First database entry</returns>
-        private BacktraceDatabaseEntry<T> GetFirstEntry()
+        private BacktraceDatabaseEntry GetFirstEntry()
         {
             //get all batches (from the beginning)
             for (int i = 0; i < _retryNumber - 1; i++)
@@ -266,7 +266,7 @@ namespace Backtrace.Services
         /// Get last entry in in-cache BacktraceDatabase
         /// </summary>
         /// <returns>Last database entry</returns>
-        private BacktraceDatabaseEntry<T> GetLastEntry()
+        private BacktraceDatabaseEntry GetLastEntry()
         {
             for (int i = _retryNumber - 1; i >= 0; i--)
             {

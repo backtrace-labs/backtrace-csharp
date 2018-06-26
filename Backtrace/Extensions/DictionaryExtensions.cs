@@ -17,8 +17,8 @@ namespace Backtrace.Extensions
         /// <param name="source">Source dictionary (dictionary from report)</param>
         /// <param name="toMerge">merged dictionary (</param>
         /// <returns>Merged dictionary</returns>
-        internal static Dictionary<string, T> Merge<T>(
-            this Dictionary<string, T> source, Dictionary<string, T> toMerge)
+        internal static Dictionary<string, object> Merge(
+            this Dictionary<string, object> source, Dictionary<string, object> toMerge)
         {
             if(source == null)
             {
@@ -28,7 +28,7 @@ namespace Backtrace.Extensions
             {
                 throw new ArgumentException(nameof(toMerge));
             }
-            var result = new Dictionary<string, T>(source);
+            var result = new Dictionary<string, object>(source);
             foreach (var record in toMerge)
             {
                 if (!result.ContainsKey(record.Key))

@@ -29,7 +29,7 @@ namespace Backtrace.Tests.IntegrationTests
         /// <summary>
         /// Last database entry
         /// </summary>
-        BacktraceDatabaseEntry<object> _lastEntry;
+        BacktraceDatabaseEntry _lastEntry;
 
         /// <summary>
         /// Enable hard drive write errors
@@ -42,10 +42,10 @@ namespace Backtrace.Tests.IntegrationTests
         /// Get new database entry 
         /// </summary>
         /// <returns>Database entry mock</returns>
-        protected BacktraceDatabaseEntry<object> GetEntry()
+        protected BacktraceDatabaseEntry GetEntry()
         {
             //mock single entry
-            var mockEntry = new Mock<BacktraceDatabaseEntry<object>>();
+            var mockEntry = new Mock<BacktraceDatabaseEntry>();
             mockEntry.Setup(n => n.Delete());
             mockEntry.SetupProperty(n => n.Entry, null);
 
@@ -72,21 +72,21 @@ namespace Backtrace.Tests.IntegrationTests
             var mockHttp = new MockHttpMessageHandler();
             mockHttp.When(serverUrl)
                 .Respond("application/json", "{'object' : 'aaa'}");
-            var api = new BacktraceApi<object>(credentials, 0)
+            var api = new BacktraceApi(credentials, 0)
             {
                 HttpClient = mockHttp.ToHttpClient()
             };
 
             //mock file context
-            var mockFileContext = new Mock<IBacktraceDatabaseFileContext<object>>();
+            var mockFileContext = new Mock<IBacktraceDatabaseFileContext>();
             mockFileContext.Setup(n => n.GetEntries())
                 .Returns(new List<FileInfo>());
-            mockFileContext.Setup(n => n.RemoveOrphaned(It.IsAny<IEnumerable<BacktraceDatabaseEntry<object>>>()));
+            mockFileContext.Setup(n => n.RemoveOrphaned(It.IsAny<IEnumerable<BacktraceDatabaseEntry>>()));
 
             //mock cache
-            var mockCacheContext = new Mock<IBacktraceDatabaseContext<object>>();
+            var mockCacheContext = new Mock<IBacktraceDatabaseContext>();
 
-            mockCacheContext.Setup(n => n.Add(It.IsAny<BacktraceData<object>>()))
+            mockCacheContext.Setup(n => n.Add(It.IsAny<BacktraceData>()))
                 .Callback(() =>
                 {
                     mockCacheContext.Object.Add(_lastEntry);
@@ -95,7 +95,7 @@ namespace Backtrace.Tests.IntegrationTests
                 .Returns(_lastEntry);
 
 
-            var database = new BacktraceDatabase<object>(new BacktraceDatabaseSettings(projectPath) { RetryBehavior = RetryBehavior.NoRetry })
+            var database = new BacktraceDatabase(new BacktraceDatabaseSettings(projectPath) { RetryBehavior = RetryBehavior.NoRetry })
             {
                 BacktraceDatabaseContext = mockCacheContext.Object,
                 BacktraceDatabaseFileContext = mockFileContext.Object,
@@ -173,7 +173,7 @@ namespace Backtrace.Tests.IntegrationTests
                 totalIgnoredReports++;
             };
             int totalAttemps = 0;
-            _backtraceClient.BeforeSend = (BacktraceData<object> data) =>
+            _backtraceClient.BeforeSend = (BacktraceData data) =>
             {
                 totalAttemps++;
                 return data;
@@ -229,7 +229,7 @@ namespace Backtrace.Tests.IntegrationTests
                 totalIgnoredReports++;
             };
             int totalAttemps = 0;
-            _backtraceClient.BeforeSend = (BacktraceData<object> data) =>
+            _backtraceClient.BeforeSend = (BacktraceData data) =>
             {
                 totalAttemps++;
                 return data;

@@ -14,8 +14,7 @@ namespace Backtrace.Model.Database
     /// <summary>
     /// Single entry in BacktraceDatabase
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class BacktraceDatabaseEntry<T> : IDisposable
+    public class BacktraceDatabaseEntry: IDisposable
     {
         /// <summary>
         /// Entry Id
@@ -57,7 +56,7 @@ namespace Backtrace.Model.Database
         /// Stored entry
         /// </summary>
         [JsonIgnore]
-        internal virtual BacktraceData<T> Entry { get; set; }
+        internal virtual BacktraceData Entry { get; set; }
 
         /// <summary>
         /// Path to database directory
@@ -75,7 +74,7 @@ namespace Backtrace.Model.Database
         /// Get valid BacktraceData from current entry
         /// </summary>
         [JsonIgnore]
-        public virtual BacktraceData<T> BacktraceData
+        public virtual BacktraceData BacktraceData
         {
             get
             {
@@ -99,8 +98,8 @@ namespace Backtrace.Model.Database
                     //deserialize data - if deserialize fails, we receive invalid entry
                     try
                     {
-                        var diagnosticData = JsonConvert.DeserializeObject<BacktraceData<T>>(diagnosticDataJson);
-                        var report = JsonConvert.DeserializeObject<BacktraceReportBase<T>>(reportJson);
+                        var diagnosticData = JsonConvert.DeserializeObject<BacktraceData>(diagnosticDataJson);
+                        var report = JsonConvert.DeserializeObject<BacktraceReportBase>(reportJson);
                         //add report to diagnostic data
                         //we don't store report with diagnostic data in the same json
                         //because we have easier way to serialize and deserialize data
@@ -130,7 +129,7 @@ namespace Backtrace.Model.Database
         /// </summary>
         /// <param name="data">Diagnostic data</param>
         /// <param name="path">database path</param>
-        public BacktraceDatabaseEntry(BacktraceData<T> data, string path)
+        public BacktraceDatabaseEntry(BacktraceData data, string path)
         {
             Id = data.Uuid;
             Entry = data;
@@ -213,14 +212,14 @@ namespace Backtrace.Model.Database
         /// </summary>
         /// <param name="file">Current file</param>
         /// <returns>Saved database entry</returns>
-        internal static BacktraceDatabaseEntry<T> ReadFromFile(FileInfo file)
+        internal static BacktraceDatabaseEntry ReadFromFile(FileInfo file)
         {
             using (StreamReader streamReader = file.OpenText())
             {
                 var json = streamReader.ReadToEnd();
                 try
                 {
-                    return JsonConvert.DeserializeObject<BacktraceDatabaseEntry<T>>(json);
+                    return JsonConvert.DeserializeObject<BacktraceDatabaseEntry>(json);
                 }
                 catch (SerializationException)
                 {

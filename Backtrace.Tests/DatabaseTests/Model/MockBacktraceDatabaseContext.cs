@@ -13,7 +13,7 @@ namespace Backtrace.Tests.DatabaseTests.Model
     /// <summary>
     /// Class created for testing purpose
     /// </summary>
-    internal class MockBacktraceDatabaseContext : BacktraceDatabaseContext<object>
+    internal class MockBacktraceDatabaseContext : BacktraceDatabaseContext
     {
         public MockBacktraceDatabaseContext(string path, uint retryNumber, RetryOrder retryOrder)
             : base(path, retryNumber, retryOrder)

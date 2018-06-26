@@ -60,6 +60,19 @@ namespace Backtrace.Model
                 Status = BacktraceResultStatus.Ok;
             }
         }
+        /// <summary>
+        /// Backtrace APi can return _rxid instead of ObjectId. 
+        /// Use this setter to set _object field correctly for both answers
+        /// </summary>
+        [JsonProperty(PropertyName = "_rxid")]
+        public string RxId
+        {
+            set
+            {
+                _object = value;
+                Status = BacktraceResultStatus.Ok;
+            }
+        }
 
 
         /// <summary>

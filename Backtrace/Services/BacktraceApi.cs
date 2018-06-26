@@ -19,12 +19,12 @@ namespace Backtrace.Services
     /// <summary>
     /// Backtrace Api class that allows to send a diagnostic data to server
     /// </summary>
-    internal class BacktraceApi<T> : IBacktraceApi<T>
+    internal class BacktraceApi : IBacktraceApi
     {
         /// <summary>
         /// User custom request method
         /// </summary>
-        public Func<string, string, BacktraceData<T>, BacktraceResult> RequestHandler { get; set; } = null;
+        public Func<string, string, BacktraceData, BacktraceResult> RequestHandler { get; set; } = null;
 
         /// <summary>
         /// Event triggered when server is unvailable
@@ -36,7 +36,7 @@ namespace Backtrace.Services
         /// </summary>
         public Action<BacktraceResult> OnServerResponse { get; set; }
 
-        internal readonly ReportLimitWatcher<T> reportLimitWatcher;
+        internal readonly ReportLimitWatcher reportLimitWatcher;
 
         /// <summary>
         /// Url to server
@@ -54,7 +54,7 @@ namespace Backtrace.Services
                 throw new ArgumentException($"{nameof(BacktraceCredentials)} cannot be null");
             }
             _serverurl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
-            reportLimitWatcher = new ReportLimitWatcher<T>(reportPerMin);
+            reportLimitWatcher = new ReportLimitWatcher(reportPerMin);
         }
         #region asyncRequest
 #if !NET35
@@ -64,7 +64,7 @@ namespace Backtrace.Services
         /// </summary>
         internal HttpClient HttpClient = new HttpClient();
 
-        public async Task<BacktraceResult> SendAsync(BacktraceData<T> data)
+        public async Task<BacktraceResult> SendAsync(BacktraceData data)
         {
             //check rate limiting
             bool watcherValidation = reportLimitWatcher.WatchReport(data.Report);
@@ -130,7 +130,7 @@ namespace Backtrace.Services
         /// </summary>
         /// <param name="data">Diagnostic data</param>
         /// <returns>Server response</returns>
-        public BacktraceResult Send(BacktraceData<T> data)
+        public BacktraceResult Send(BacktraceData data)
         {
 #if !NET35
             return Task.Run(() => SendAsync(data)).Result;
