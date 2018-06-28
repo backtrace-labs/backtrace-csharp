@@ -29,7 +29,7 @@ namespace Backtrace.Tests.IntegrationTests
         /// <summary>
         /// Last database record
         /// </summary>
-        BacktraceDatabaseRecord<object> _lastRecord;
+        BacktraceDatabaseRecord _lastRecord;
 
         /// <summary>
         /// Enable hard drive write errors
@@ -42,10 +42,10 @@ namespace Backtrace.Tests.IntegrationTests
         /// Get new database record 
         /// </summary>
         /// <returns>Database record mock</returns>
-        protected BacktraceDatabaseRecord<object> GetRecord()
+        protected BacktraceDatabaseRecord GetRecord()
         {
             //mock single record
-            var mockRecord = new Mock<BacktraceDatabaseRecord<object>>();
+            var mockRecord = new Mock<BacktraceDatabaseRecord>();
             mockRecord.Setup(n => n.Delete());
             mockRecord.SetupProperty(n => n.Record, null);
 
@@ -72,21 +72,21 @@ namespace Backtrace.Tests.IntegrationTests
             var mockHttp = new MockHttpMessageHandler();
             mockHttp.When(serverUrl)
                 .Respond("application/json", "{'object' : 'aaa'}");
-            var api = new BacktraceApi<object>(credentials, 0)
+            var api = new BacktraceApi(credentials, 0)
             {
                 HttpClient = mockHttp.ToHttpClient()
             };
 
             //mock file context
-            var mockFileContext = new Mock<IBacktraceDatabaseFileContext<object>>();
+            var mockFileContext = new Mock<IBacktraceDatabaseFileContext>();
             mockFileContext.Setup(n => n.GetRecords())
                 .Returns(new List<FileInfo>());
-            mockFileContext.Setup(n => n.RemoveOrphaned(It.IsAny<IEnumerable<BacktraceDatabaseRecord<object>>>()));
+            mockFileContext.Setup(n => n.RemoveOrphaned(It.IsAny<IEnumerable<BacktraceDatabaseRecord>>()));
 
             //mock cache
-            var mockCacheContext = new Mock<IBacktraceDatabaseContext<object>>();
+            var mockCacheContext = new Mock<IBacktraceDatabaseContext>();
 
-            mockCacheContext.Setup(n => n.Add(It.IsAny<BacktraceData<object>>()))
+            mockCacheContext.Setup(n => n.Add(It.IsAny<BacktraceData>()))
                 .Callback(() =>
                 {
                     mockCacheContext.Object.Add(_lastRecord);
@@ -95,7 +95,7 @@ namespace Backtrace.Tests.IntegrationTests
                 .Returns(_lastRecord);
 
 
-            var database = new BacktraceDatabase<object>(new BacktraceDatabaseSettings(projectPath) { RetryBehavior = RetryBehavior.NoRetry })
+            var database = new BacktraceDatabase(new BacktraceDatabaseSettings(projectPath) { RetryBehavior = RetryBehavior.NoRetry })
             {
                 BacktraceDatabaseContext = mockCacheContext.Object,
                 BacktraceDatabaseFileContext = mockFileContext.Object,
@@ -168,12 +168,12 @@ namespace Backtrace.Tests.IntegrationTests
             _backtraceClient.BacktraceApi.SetClientRateLimit(Convert.ToUInt32(limit));
             //total ignored reports removed by ReportWatcher
             int totalIgnoredReports = 0;
-            _backtraceClient.OnClientReportLimitReached = (BacktraceReport report) =>
+            _backtraceClient.OnClientReportLimitReached = (BacktraceReportBase report) =>
             {
                 totalIgnoredReports++;
             };
             int totalAttemps = 0;
-            _backtraceClient.BeforeSend = (BacktraceData<object> data) =>
+            _backtraceClient.BeforeSend = (BacktraceData data) =>
             {
                 totalAttemps++;
                 return data;
@@ -224,12 +224,12 @@ namespace Backtrace.Tests.IntegrationTests
             _backtraceClient.BacktraceApi.SetClientRateLimit(Convert.ToUInt32(limit));
             //total ignored reports removed by ReportWatcher
             int totalIgnoredReports = 0;
-            _backtraceClient.OnClientReportLimitReached = (BacktraceReport report) =>
+            _backtraceClient.OnClientReportLimitReached = (BacktraceReportBase report) =>
             {
                 totalIgnoredReports++;
             };
             int totalAttemps = 0;
-            _backtraceClient.BeforeSend = (BacktraceData<object> data) =>
+            _backtraceClient.BeforeSend = (BacktraceData data) =>
             {
                 totalAttemps++;
                 return data;

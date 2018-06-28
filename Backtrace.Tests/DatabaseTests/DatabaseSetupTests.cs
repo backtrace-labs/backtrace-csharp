@@ -28,27 +28,27 @@ namespace Backtrace.Tests.DatabaseTests
             //initialize disabled database
             Assert.DoesNotThrow(() =>
             {
-                var database = new BacktraceDatabase<object>();
+                var database = new BacktraceDatabase();
                 database.Start();
             });
             Assert.DoesNotThrow(() =>
             {
-                var database = new BacktraceDatabase<object>(new BacktraceDatabaseSettings(string.Empty));
+                var database = new BacktraceDatabase(new BacktraceDatabaseSettings(string.Empty));
                 database.Start();
             });
 
             //initialize database with invalid arguments
-            Assert.Throws<ArgumentException>(() => new BacktraceDatabase<object>(new BacktraceDatabaseSettings("not existing directory")));
-            Assert.Throws<ArgumentException>(() => new BacktraceDatabase<object>(new BacktraceDatabaseSettings(_projectDirectory) { RetryLimit = 0 }));
+            Assert.Throws<ArgumentException>(() => new BacktraceDatabase(new BacktraceDatabaseSettings("not existing directory")));
+            Assert.Throws<ArgumentException>(() => new BacktraceDatabase(new BacktraceDatabaseSettings(_projectDirectory) { RetryLimit = 0 }));
 
             //initialize database with valid settings
-            Assert.DoesNotThrow(() => new BacktraceDatabase<object>(new BacktraceDatabaseSettings(_projectDirectory)));
+            Assert.DoesNotThrow(() => new BacktraceDatabase(new BacktraceDatabaseSettings(_projectDirectory)));
         }
 
         [Test(Author = "Konrad Dysput", Description = "Test uninitialized database")]
         public void TestUninitializedDatabase()
         {
-            var database = new BacktraceDatabase<object>(new BacktraceDatabaseSettings(_projectDirectory));
+            var database = new BacktraceDatabase(new BacktraceDatabaseSettings(_projectDirectory));
             var report = (new Exception("test excetpion")).ToBacktraceReport();
             Assert.DoesNotThrow(() => database.Add(null, null));
             Assert.AreEqual(null, database.Add(report, new Dictionary<string, object>()));
@@ -56,7 +56,7 @@ namespace Backtrace.Tests.DatabaseTests
             Assert.DoesNotThrow(() => database.Count());
 
             //mock deleting
-            var mockRecord = new Mock<BacktraceDatabaseRecord<object>>();
+            var mockRecord = new Mock<BacktraceDatabaseRecord>();
             mockRecord.Setup(n => n.Delete());
             Assert.DoesNotThrow(() => database.Delete(mockRecord.Object));
             Assert.DoesNotThrow(() => database.Delete(null));
@@ -66,7 +66,7 @@ namespace Backtrace.Tests.DatabaseTests
             Assert.ThrowsAsync<ArgumentException>(() => database.FlushAsync());
 
             //mock api
-            database.SetApi(new BacktraceApi<object>(new BacktraceCredentials("https://www.backtrace.io", "123123")));
+            database.SetApi(new BacktraceApi(new BacktraceCredentials("https://www.backtrace.io", "123123")));
             Assert.DoesNotThrow(() => database.Flush());
             Assert.DoesNotThrowAsync(() => database.FlushAsync());
         }

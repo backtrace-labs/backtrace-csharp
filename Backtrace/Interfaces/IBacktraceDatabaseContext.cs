@@ -8,48 +8,48 @@ using System.Text;
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("DynamicProxyGenAssembly2")]
 namespace Backtrace.Interfaces
 {
-    internal interface IBacktraceDatabaseContext<T> : IDisposable
+    internal interface IBacktraceDatabaseContext : IDisposable
     {
         /// <summary>
         /// Add new record to Database
         /// </summary>
         /// <param name="backtraceData">Diagnostic data</param>
-        BacktraceDatabaseRecord<T> Add(BacktraceData<T> backtraceData);
+        BacktraceDatabaseRecord Add(BacktraceData backtraceData);
 
         /// <summary>
         /// Add new data to database
         /// </summary>
         /// <param name="backtraceDatabaseRecord">Database record</param>
-        BacktraceDatabaseRecord<T> Add(BacktraceDatabaseRecord<T> backtraceDatabaseRecord);
+        BacktraceDatabaseRecord Add(BacktraceDatabaseRecord backtraceDatabaseRecord);
 
         /// <summary>
         /// Get first record or null
         /// </summary>
         /// <returns>First existing record in database store</returns>
-        BacktraceDatabaseRecord<T> FirstOrDefault();
+        BacktraceDatabaseRecord FirstOrDefault();
 
         /// <summary>
         /// Get last record or null
         /// </summary>
         /// <returns>Last existing record in database store</returns>
-        BacktraceDatabaseRecord<T> LastOrDefault();
+        BacktraceDatabaseRecord LastOrDefault();
 
         /// <summary>
         /// Get all records stored in Database
         /// </summary>
-        IEnumerable<BacktraceDatabaseRecord<T>> Get();
+        IEnumerable<BacktraceDatabaseRecord> Get();
 
         /// <summary>
         /// Delete database record by using BacktraceDatabaseRecord
         /// </summary>
         /// <param name="record">Database record</param>
-        void Delete(BacktraceDatabaseRecord<T> record);
+        void Delete(BacktraceDatabaseRecord record);
 
         /// <summary>
         /// Check if any similar record exists
         /// </summary>
         /// <param name="n">Compared record</param>
-        bool Any(BacktraceDatabaseRecord<T> n);
+        bool Any(BacktraceDatabaseRecord n);
 
         /// <summary>
         /// Check if any similar record exists
@@ -87,7 +87,7 @@ namespace Backtrace.Interfaces
         /// <summary>
         /// Get all repots stored in Database
         /// </summary>
-        //IEnumerable<BacktraceReportBase<T>> Get(Func<BacktraceReportBase<T>,IEnumerable<BacktraceReportBase<T>) filter);
+        //IEnumerable<BacktraceReportBase> Get(Func<BacktraceReportBase,IEnumerable<BacktraceReportBase) filter);
 
     }
 }

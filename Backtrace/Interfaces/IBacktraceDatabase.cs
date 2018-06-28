@@ -16,7 +16,7 @@ namespace Backtrace.Interfaces
     /// Backtrace Database Interface
     /// Before start: Be sure that used directory is empty!
     /// </summary>
-    public interface IBacktraceDatabase<T> : IDisposable
+    public interface IBacktraceDatabase : IDisposable
     {
         /// <summary>
         /// Start all database tasks - data storage, timers, file loading
@@ -34,7 +34,7 @@ namespace Backtrace.Interfaces
         /// </summary>
         Task FlushAsync();
 #endif
-        void SetApi(IBacktraceApi<T> backtraceApi);
+        void SetApi(IBacktraceApi backtraceApi);
 
         /// <summary>
         /// Remove all existing reports in BacktraceDatabase
@@ -50,18 +50,18 @@ namespace Backtrace.Interfaces
         /// <summary>
         /// Add new report to Database
         /// </summary>
-        BacktraceDatabaseRecord<T> Add(BacktraceReportBase<T> backtraceReport, Dictionary<string, T> attributes, MiniDumpType miniDumpType = MiniDumpType.Normal);
+        BacktraceDatabaseRecord Add(BacktraceReportBase backtraceReport, Dictionary<string, object> attributes, MiniDumpType miniDumpType = MiniDumpType.Normal);
 
         /// <summary>
         /// Get all records stored in Database
         /// </summary>
-        IEnumerable<BacktraceDatabaseRecord<T>> Get();
+        IEnumerable<BacktraceDatabaseRecord> Get();
         
         /// <summary>
         /// Delete database record by using BacktraceDatabaseRecord
         /// </summary>
         /// <param name="record">Database record</param>
-        void Delete(BacktraceDatabaseRecord<T> record);
+        void Delete(BacktraceDatabaseRecord record);
 
         /// <summary>
         /// Get database settings

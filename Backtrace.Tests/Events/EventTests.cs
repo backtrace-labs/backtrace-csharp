@@ -41,25 +41,25 @@ namespace Backtrace.Tests.Events
             mockHttp.When(serverUrl)
                 .Respond("application/json", "{'object' : 'aaa'}");
 
-            var api = new BacktraceApi<object>(credentials, 0)
+            var api = new BacktraceApi(credentials, 0)
             {
                 HttpClient = mockHttp.ToHttpClient(),
                 //avoid real submission
-                RequestHandler = (string host, string boundaryId, BacktraceData<object> data) =>
+                RequestHandler = (string host, string boundaryId, BacktraceData data) =>
                 {
                     return new BacktraceResult();
                 }
             };
 
             //mock database
-            var database = new Mock<IBacktraceDatabase<object>>();
+            var database = new Mock<IBacktraceDatabase>();
             database.Setup(n =>
-                n.Add(It.IsAny<BacktraceReportBase<object>>(),
+                n.Add(It.IsAny<BacktraceReportBase>(),
                     It.IsAny<Dictionary<string, object>>(),
                     It.IsAny<MiniDumpType>()));
 
             database.Setup(n =>
-               n.Delete(It.IsAny<BacktraceDatabaseRecord<object>>()));
+               n.Delete(It.IsAny<BacktraceDatabaseRecord>()));
 
 
             //setup new client
@@ -80,7 +80,7 @@ namespace Backtrace.Tests.Events
             int totalNumberOfReports = 0;
             bool eventTrigger = false;
 
-            _backtraceClient.OnClientReportLimitReached = (BacktraceReport report) =>
+            _backtraceClient.OnClientReportLimitReached = (BacktraceReportBase report) =>
             {
                 eventTrigger = true;
             };
@@ -136,7 +136,7 @@ namespace Backtrace.Tests.Events
             {
                 totalStart++;
             };
-            _backtraceClient.BeforeSend = (BacktraceData<object> data) =>
+            _backtraceClient.BeforeSend = (BacktraceData data) =>
             {
                 totalBeforeSennd++;
                 return data;

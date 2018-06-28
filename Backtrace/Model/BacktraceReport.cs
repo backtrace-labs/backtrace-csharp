@@ -14,7 +14,7 @@ namespace Backtrace.Model
     /// <summary>
     /// Capture a report of an application
     /// </summary>
-    public class BacktraceReport : BacktraceReportBase<object>
+    public class BacktraceReport : BacktraceReportBase
     {
         /// <summary>
         /// Sending a report with custom message

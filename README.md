@@ -19,28 +19,42 @@ catch(Exception exception){
 ```
 
 # Table of contents
-1. [Supported .NET Frameworks](#supported-frameworks)
-2. [Installation](#installation)
+1. [Features Summary](#features-summary)
+2. [Supported .NET Frameworks](#supported-frameworks)
+3. [Installation](#installation)
     1. [Prerequisites](#installation-before-start)
     2. [NuGet installation](#installation-nuget)
-3. [Running sample application](#sample-app)
+4. [Running sample application](#sample-app)
     1. [Visual Studio](#sample-app-vs)
     2. [.NET Core CLI](#sample-app-cli)
     3. [Visual Studio for Mac](#sample-app-vs-mac)
-4. [Documentation](#documentation)
+5. [Documentation](#documentation)
     1. [Initialize new BacktraceClient](#documentation-initialization)
+        * [Database Initialization](#documentation-database-initialization)
     2. [Sending a report](#documentation-sending-report)
     3. [Events](#documentation-events)
     4. [Customization](#documentation-customization)
-5. [Architecture](#architecture)
+6. [Architecture](#architecture)
     1. [BacktraceReport](#architecture-BacktraceReport)
     2. [BacktraceClient](#architecture-BacktraceClient)
     3. [BacktraceData](#architecture-BacktraceData)
     4. [BacktraceApi](#architecture-BacktraceApi)
     5. [BacktraceDatabase](#architecture-BacktraceDatabase)
     6. [ReportWatcher](#architecture-ReportWatcher)
-6. [Good to know](#good-to-know)
-7. [Release Notes](#changelog)
+7. [Good to know](#good-to-know)
+8. [Release Notes](#changelog)
+
+
+# Features Summary <a name="features-summary"></a>
+* Light-weight C# client library that quickly submits C#/.NET exceptions and crashes to your Backtrace dashboard
+  * Can include callstack, system metadata, custom metadata, and file attachments (e.g. minidump) if needed.
+* Supports a wide range of .NET versions such as .NET Framework, .NET Core, Mono, Xamarin and Unity. Read more [here](#supported-frameworks)
+* Supports both CLI and IDE work environments
+* Supports asynchronous Tasks in .NET 4.5+
+* Supports offline database for error report storage and re-submission in case of network outage
+* Fully customizable and extendable event handlers and base classes for custom implementations
+* Available as a [NuGet Package](https://www.nuget.org/packages/Backtrace/) as well as a fully open-sourced [Github Release](https://github.com/backtrace-labs/backtrace-csharp/).
+
 
 # Supported .NET Frameworks <a name="supported-frameworks"></a>
 * .NET Framework 3.5 +
@@ -58,13 +72,13 @@ catch(Exception exception){
 ## Prerequisites <a name="installation-before-start"></a>
 
 ### Development Environment
-- On `Windows`, we recommend `Visual Studio 2017` or above for IDE. You can download and install `Visual Studio` [here](https://www.visualstudio.com/downloads/). As an alternative to `Visual Studio` you can use .NET Core command line interface, see installation guide [here](https://docs.microsoft.com/en-us/dotnet/core/windows-prerequisites?tabs=netcore2x)
-- On `Mac OS X`, you can download and install `Visual Studio` [here](https://www.visualstudio.com/downloads/) if you prefer using an IDE. For command line, you should to download and install [.NET Core 2.0 or above](https://www.microsoft.com/net/download/macos).  
-- On `Linux`, [Visual Studio Code](https://code.visualstudio.com/) is available as a light-weight IDE. Similarly, you can use .NET Core command line interface, see instruction for `Linux` [here](https://docs.microsoft.com/en-US/dotnet/core/linux-prerequisites?tabs=netcore2x)
+- On **Windows**, we recommend **Visual Studio 2017** or above for IDE. You can download and install **Visual Studio** [here](https://www.visualstudio.com/downloads/). As an alternative to `Visual Studio` you can use .NET Core command line interface, see installation guide [here](https://docs.microsoft.com/en-us/dotnet/core/windows-prerequisites?tabs=netcore2x)
+- On **Mac OS X**, you can download and install **Visual Studio** [here](https://www.visualstudio.com/downloads/) if you prefer using an IDE. For command line, you should to download and install [.NET Core 2.0 or above](https://www.microsoft.com/net/download/macos).  
+- On **Linux**, [Visual Studio Code](https://code.visualstudio.com/) is available as a light-weight IDE. Similarly, you can use .NET Core command line interface, see instruction for **Linux** [here](https://docs.microsoft.com/en-US/dotnet/core/linux-prerequisites?tabs=netcore2x)
 
 ### NuGet  
 
-The `Backtrace` library is available via NuGet. You can read more about NuGet and how to download the packages [here](https://docs.microsoft.com/en-us/nuget/)
+The [**Backtrace** library](https://www.nuget.org/packages/Backtrace/) is available on NuGet. You can read more about NuGet and how to download the packages [here](https://docs.microsoft.com/en-us/nuget/)
 
 ## Installing Backtrace via NuGet <a name="installation-nuget"></a>
 
@@ -85,8 +99,8 @@ dotnet add package Backtrace
 ## Visual Studio <a name="sample-app-vs"></a>
 
 Visual Studio allows you to build a project and run all available samples (includes support for .NET Core, .NET Framework 4.5, .NET Framework 3.5). 
-- Double click `.sln` file or `open` project directory in Visual Studio.
-- In `Solution Explorer` navigate to directory `Sample` and set preferred project (.NET Core/Framework) as startup project.
+- Double click `.sln` file or **open** project directory in Visual Studio.
+- In **Solution Explorer** navigate to directory `Sample` and set preferred project (.NET Core/Framework) as startup project.
 
 ![Visual Studio](https://github.com/backtrace-labs/backtrace-csharp/raw/master/Backtrace/Documents/Images/VisualStudio.PNG)
 
@@ -155,6 +169,7 @@ var backtraceClient = new BacktraceClient(credentials);
 For more advanced usage of `BacktraceClient`, you can supply `BacktraceClientConfiguration` as a parameter. See the following example:
 
 ```csharp
+var credentials = new BacktraceCredentials("backtrace_endpoint_url", "token");
 var configuration = new BacktraceClientConfiguration(credentials){
     ClientAttributes = new Dictionary<string, object>() { 
         { "attribute_name", "attribute_value" } },
@@ -167,11 +182,34 @@ For more information on `BacktraceClientConfiguration` parameters please see <a 
 
 Notes:
 - If parameter `reportPerMin` is equal to 0, there is no limit on the number of error reports per minute. When the `reportPerMin` cap is reached, `BacktraceClient.Send` method will return false.
+
+
+#### Database initialization <a name="documentation-database-initialization"></a>
+
+`BacktraceClient` allows you to customize the initialization of `BacktraceDatabase` for local storage of error reports by supplying a `BacktraceDatabaseSettings` parameter, as follows:
+
+```csharp
+var dbSettings = new BacktraceDatabaseSettings("databaseDirectory"){
+    MaxRecordCount = 100,
+    MaxDatabaseSize = 1000,
+    AutoSendMode = true,
+    RetryBehavior = Backtrace.Types.RetryBehavior.ByInterval
+};
+var database = new BacktraceDatabase<object>(dbSettings);
+var credentials = new BacktraceCredentials("backtrace_endpoint_url", "token");
+var configuration = new BacktraceClientConfiguration(credentials);
+var backtraceClient = new BacktraceClient(configuration, database);
+```
+
+Notes:
+- If a valid `databaseDirectory` directory is supplied, the Backtrace library will generate and attach a minidump to each error report automatically. Otherwise, `BacktraceDatabase` will be disabled.
+
+
 #### TLS/SSL Support
 
 For .NET Standard 2.0 and .NET Framework 4.6+, TLS 1.2 support is built-in.
 
-For .NET Framework 4.5 (and below) as well as .NET Standard 2.0 (and below), TLS 1.2 support may not be available, but you can use still enable lower TLS/SSL support by adding the following code **before** `BacktraceClient` initialization.
+For .NET Framework 4.5 (and below) as well as .NET Standard 2.0 (and below), TLS 1.2 support may not be available, therefore **we recommend submitting errors using the plain HTTP listener URL**. But if you wish to use lower versions of TLS/SSL, you can use still enable lower TLS/SSL support by adding the following code **before** `BacktraceClient` initialization.
 
 ```csharp
 ServicePointManager.SecurityProtocol =
@@ -183,25 +221,6 @@ ServicePointManager.ServerCertificateValidationCallback
     += (sender, certificate, chain, errors) => true;
 ```
 
-
-#### Database initialization
-
-`BacktraceClient` allows you to customize the initialization of `BacktraceDatabase` for local storage of error reports by supplying a `BacktraceDatabaseSettings` parameter, as follows:
-
-```csharp
-var dbSettings = new BacktraceDatabaseSettings("databaseDirectory"){
-    MaxRecordCount = 100,
-    MaxDatabaseSize = 1000,
-    AutoSendMode = true,
-    RetryBehavior = RetryBehavior.ByInterval,
-};
-var database = new BacktraceDatabase<object>(dbSettings);
-var configuration = BacktraceClientConfiguration(credentials);
-var backtraceClient = new BacktraceClient(configuration, database);
-```
-
-Notes:
-- If a valid `databaseDirectory` directory is supplied, the Backtrace library will generate and attach a minidump to each error report automatically. Otherwise, `BacktraceDatabase` will be disabled.
 
 
 ## Sending an error report <a name="documentation-sending-report"></a>
@@ -321,10 +340,10 @@ You can extend `BacktraceReportBase` and `BacktraceBase` to create your own Back
 # Architecture  <a name="architecture"></a>
 
 ## BacktraceReport  <a name="architecture-BacktraceReport"></a>
-**`BacktraceReport`** is a class that describe a single error report that extends `BacktraceReportBase` generic class. Argument `T` is value type of `Attribute` dictionary. Keep in mind that `BacktraceClient` uses `CallingAssembly` method to retrieve information about your application.  
+**`BacktraceReport`** is a class that describe a single error report that extends `BacktraceReportBase` class. Keep in mind that `BacktraceClient` uses `CallingAssembly` method to retrieve information about your application.  
 
 ## BacktraceClient  <a name="architecture-BacktraceClient"></a>
-**`BacktraceClient`** is a class that allows you to instantiate a client instance that interacts with `BacktraceApi`. This class sets up connection to the Backtrace endpoint and manages error reporting behavior (for example, saving minidump files on your local hard drive and limiting the number of error reports per minute). `BacktraceClient` extends `BacktraceBase` generic class. `T` argument is a value type in `Attribute` dictionary.
+**`BacktraceClient`** is a class that allows you to instantiate a client instance that interacts with `BacktraceApi`. This class sets up connection to the Backtrace endpoint and manages error reporting behavior (for example, saving minidump files on your local hard drive and limiting the number of error reports per minute). `BacktraceClient` extends `BacktraceBase` class.
 
 `BacktraceClient` takes a `BacktraceClientConfiguration` parameter, which has the following properties:
 - `Credentials` - the `BacktraceCredentials` object to use for connection to the Backtrace server.
@@ -333,7 +352,7 @@ You can extend `BacktraceReportBase` and `BacktraceBase` to create your own Back
 
 
 ## BacktraceData  <a name="architecture-BacktraceData"></a>
-**`BacktraceData`** is a generic, serializable class that holds the data to create a diagnostic JSON to be sent to the Backtrace endpoint via `BacktraceApi`. You can add additional pre-processors for `BacktraceData` by attaching an event handler to the `BacktraceClient.BeforeSend` event. `BacktraceData` require `BacktraceReport` and `BacktraceClient` client attributes.
+**`BacktraceData`** is a serializable class that holds the data to create a diagnostic JSON to be sent to the Backtrace endpoint via `BacktraceApi`. You can add additional pre-processors for `BacktraceData` by attaching an event handler to the `BacktraceClient.BeforeSend` event. `BacktraceData` require `BacktraceReport` and `BacktraceClient` client attributes.
 
 ## BacktraceApi  <a name="architecture-BacktraceApi"></a>
 **`BacktraceApi`** is a class that sends diagnostic JSON to the Backtrace endpoint. `BacktraceApi` is instantiated when the `BacktraceClient` constructor is called. You use the following event handlers in `BacktraceApi` to customize how you want to handle JSON data:

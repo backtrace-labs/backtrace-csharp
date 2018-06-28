@@ -16,7 +16,7 @@ namespace Backtrace.Model.JsonData
     /// <summary>
     /// Class instance to get a built-in attributes from current application
     /// </summary>
-    public class BacktraceAttributes<T>
+    public class BacktraceAttributes
     {
         /// <summary>
         /// Get built-in primitive attributes
@@ -34,7 +34,7 @@ namespace Backtrace.Model.JsonData
         /// <param name="report">Received report</param>
         /// <param name="clientAttributes">Client's attributes (report and client)</param>
         [JsonConstructor]
-        public BacktraceAttributes(BacktraceReportBase<T> report, Dictionary<string, T> clientAttributes)
+        public BacktraceAttributes(BacktraceReportBase report, Dictionary<string, object> clientAttributes)
         {
             if(report != null)
             {
@@ -100,13 +100,13 @@ namespace Backtrace.Model.JsonData
         /// <param name="report">Received report</param>
         /// <param name="clientAttributes">Client's attributes (report and client)</param>
         /// <returns>Dictionary of custom user attributes </returns>
-        private void ConvertAttributes(BacktraceReportBase<T> report, Dictionary<string, T> clientAttributes)
+        private void ConvertAttributes(BacktraceReportBase report, Dictionary<string, object> clientAttributes)
         {
-            var attributes = BacktraceReportBase<T>.ConcatAttributes(report, clientAttributes);
+            var attributes = BacktraceReportBase.ConcatAttributes(report, clientAttributes);
             foreach (var attribute in attributes)
             {
                 var type = attribute.Value.GetType();
-                if (type.IsPrimitive || type == typeof(string))
+                if (type.IsPrimitive || type == typeof(string) || type.IsEnum)
                 {
                     Attributes.Add(attribute.Key, attribute.Value);
                 }
@@ -143,7 +143,7 @@ namespace Backtrace.Model.JsonData
         /// <summary>
         /// Set attributes from exception
         /// </summary>
-        internal void SetExceptionAttributes(BacktraceReportBase<T> report)
+        internal void SetExceptionAttributes(BacktraceReportBase report)
         {
             //there is no information to analyse
             if (report == null)

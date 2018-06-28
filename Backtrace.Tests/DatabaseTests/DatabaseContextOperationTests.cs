@@ -77,7 +77,7 @@ namespace Backtrace.Tests.DatabaseTests
         {
             _database.Clear();
             ChangeRetryOrder(RetryOrder.Queue);
-            var records = new List<BacktraceDatabaseRecord<object>>();
+            var records = new List<BacktraceDatabaseRecord>();
             for (int i = 0; i < totalNumberOfRecords; i++)
             {
                 var record = GetRecord();
@@ -122,7 +122,7 @@ namespace Backtrace.Tests.DatabaseTests
         {
             _database.Clear();
             ChangeRetryOrder(RetryOrder.Stack);
-            var records = new List<BacktraceDatabaseRecord<object>>();
+            var records = new List<BacktraceDatabaseRecord>();
             for (int i = 0; i < totalNumberOfRecords; i++)
             {
                 var record = GetRecord();

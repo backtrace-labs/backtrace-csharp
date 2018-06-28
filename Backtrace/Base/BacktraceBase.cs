@@ -15,12 +15,12 @@ namespace Backtrace.Base
     /// <summary>
     /// Base Backtrace .NET Client 
     /// </summary>
-    public class BacktraceBase<T>
+    public class BacktraceBase
     {
         /// <summary>
         /// Custom request handler for HTTP call to server
         /// </summary>
-        public Func<string, string, BacktraceData<T>, BacktraceResult> RequestHandler
+        public Func<string, string, BacktraceData, BacktraceResult> RequestHandler
         {
             get
             {
@@ -69,7 +69,7 @@ namespace Backtrace.Base
         /// <summary>
         /// Set event executed when client site report limit reached
         /// </summary>
-        public Action<BacktraceReport> OnClientReportLimitReached
+        public Action<BacktraceReportBase> OnClientReportLimitReached
         {
             set
             {
@@ -80,7 +80,7 @@ namespace Backtrace.Base
         /// <summary>
         /// Set event executed before sending data to Backtrace API
         /// </summary>
-        public Func<BacktraceData<T>, BacktraceData<T>> BeforeSend = null;
+        public Func<BacktraceData, BacktraceData> BeforeSend = null;
 
         /// <summary>
         /// Set event executed when unhandled application exception event catch exception
@@ -90,18 +90,18 @@ namespace Backtrace.Base
         /// <summary>
         /// Get custom client attributes. Every argument stored in dictionary will be send to Backtrace API
         /// </summary>
-        public readonly Dictionary<string, T> Attributes;
+        public readonly Dictionary<string, object> Attributes;
 
         /// <summary>
         /// Backtrace database instance that allows to manage minidump files 
         /// </summary>
-        public IBacktraceDatabase<T> Database;
+        public IBacktraceDatabase Database;
 
-        private IBacktraceApi<T> _backtraceApi;
+        private IBacktraceApi _backtraceApi;
         /// <summary>
         /// Instance of BacktraceApi that allows to send data to Backtrace API
         /// </summary>
-        internal IBacktraceApi<T> BacktraceApi
+        internal IBacktraceApi BacktraceApi
         {
             get
             {
@@ -123,10 +123,10 @@ namespace Backtrace.Base
         /// <param name="reportPerMin">Number of reports sending per one minute. If value is equal to zero, there is no request sending to API. Value have to be greater than or equal to 0</param>
         public BacktraceBase(
             BacktraceCredentials backtraceCredentials,
-            Dictionary<string, T> attributes = null,
+            Dictionary<string, object> attributes = null,
             BacktraceDatabaseSettings databaseSettings = null,
             uint reportPerMin = 3)
-            : this(backtraceCredentials, attributes, new BacktraceDatabase<T>(databaseSettings),
+            : this(backtraceCredentials, attributes, new BacktraceDatabase(databaseSettings),
                   reportPerMin)
         { }
 
@@ -139,13 +139,13 @@ namespace Backtrace.Base
         /// <param name="reportPerMin">Number of reports sending per one minute. If value is equal to zero, there is no request sending to API. Value have to be greater than or equal to 0</param>
         public BacktraceBase(
             BacktraceCredentials backtraceCredentials,
-            Dictionary<string, T> attributes = null,
-            IBacktraceDatabase<T> database = null,
+            Dictionary<string, object> attributes = null,
+            IBacktraceDatabase database = null,
             uint reportPerMin = 3)
         {
-            Attributes = attributes ?? new Dictionary<string, T>();
-            BacktraceApi = new BacktraceApi<T>(backtraceCredentials, reportPerMin);
-            Database = database ?? new BacktraceDatabase<T>();
+            Attributes = attributes ?? new Dictionary<string, object>();
+            BacktraceApi = new BacktraceApi(backtraceCredentials, reportPerMin);
+            Database = database ?? new BacktraceDatabase();
             Database.SetApi(BacktraceApi);
             Database.Start();
         }
@@ -164,7 +164,7 @@ namespace Backtrace.Base
         /// </summary>
         /// <param name="report">Report to send</param>
         [Obsolete("Send is obsolete, please use SendAsync instead if possible.")]
-        public virtual BacktraceResult Send(BacktraceReportBase<T> report)
+        public virtual BacktraceResult Send(BacktraceReportBase report)
         {
             var record = Database.Add(report, Attributes, MiniDumpType);
             //create a JSON payload instance
@@ -188,9 +188,11 @@ namespace Backtrace.Base
         /// if inner exception exists, client should send report twice - one with current exception, one with inner exception
         /// </summary>
         /// <param name="report">current report</param>
-        private BacktraceResult HandleInnerException(BacktraceReportBase<T> report)
+        private BacktraceResult HandleInnerException(BacktraceReportBase report)
         {
-            var innerExceptionReport = CreateInnerReport(report);
+            //we have to create a copy of an inner exception report
+            //to have the same calling assembly property
+            var innerExceptionReport = report.CreateInnerReport();
             if (innerExceptionReport == null)
             {
                 return null;
@@ -203,7 +205,7 @@ namespace Backtrace.Base
         /// Send asynchronous report to Backtrace API
         /// </summary>
         /// <param name="report">Report to send</param>
-        public virtual async Task<BacktraceResult> SendAsync(BacktraceReportBase<T> report)
+        public virtual async Task<BacktraceResult> SendAsync(BacktraceReportBase report)
         {
             var record = Database.Add(report, Attributes, MiniDumpType);
             //create a JSON payload instance
@@ -227,9 +229,9 @@ namespace Backtrace.Base
         /// if inner exception exists, client should send report twice - one with current exception, one with inner exception
         /// </summary>
         /// <param name="report">current report</param>
-        private async Task<BacktraceResult> HandleInnerExceptionAsync(BacktraceReportBase<T> report)
+        private async Task<BacktraceResult> HandleInnerExceptionAsync(BacktraceReportBase report)
         {
-            var innerExceptionReport = CreateInnerReport(report);
+            var innerExceptionReport = report.CreateInnerReport();
             if (innerExceptionReport == null)
             {
                 return null;
@@ -250,7 +252,7 @@ namespace Backtrace.Base
         /// </summary>
         public virtual void HandleApplicationThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
         {
-            SendAsync(new BacktraceReportBase<T>(e.Exception)).Wait();
+            SendAsync(new BacktraceReportBase(e.Exception)).Wait();
             OnUnhandledApplicationException?.Invoke(e.Exception);
         }
 
@@ -261,7 +263,7 @@ namespace Backtrace.Base
 
         private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
-            SendAsync(new BacktraceReportBase<T>(e.Exception)).Wait();
+            SendAsync(new BacktraceReportBase(e.Exception)).Wait();
             OnUnhandledApplicationException?.Invoke(e.Exception);
         }
 
@@ -274,21 +276,9 @@ namespace Backtrace.Base
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var exception = e.ExceptionObject as Exception;
-            Task.WaitAll(SendAsync(new BacktraceReportBase<T>(exception)));
+            Task.WaitAll(SendAsync(new BacktraceReportBase(exception)));
             OnUnhandledApplicationException?.Invoke(exception);
         }
 #endif
-        private BacktraceReportBase<T> CreateInnerReport(BacktraceReportBase<T> report)
-        {
-            // there is no additional exception inside current exception
-            // or exception does not exists
-            if (!report.ExceptionTypeReport || report.Exception.InnerException == null)
-            {
-                return null;
-            }
-            //we have to create a copy of an inner exception report
-            //to have the same calling assembly property
-            return report.CreateInnerReport();
-        }
     }
 }

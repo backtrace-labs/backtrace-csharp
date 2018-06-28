@@ -12,7 +12,7 @@ namespace Backtrace.Services
     /// <summary>
     /// BacktraceDatabase class for file collection operations
     /// </summary>
-    public class BacktraceDatabaseFileContext<T> : IBacktraceDatabaseFileContext<T>
+    public class BacktraceDatabaseFileContext : IBacktraceDatabaseFileContext
     {
         /// <summary>
         /// Database directory path
@@ -72,7 +72,7 @@ namespace Backtrace.Services
         /// <summary>
         /// Remove orphaned files existing in database directory
         /// </summary>
-        public void RemoveOrphaned(IEnumerable<BacktraceDatabaseRecord<T>> existingRecords)
+        public void RemoveOrphaned(IEnumerable<BacktraceDatabaseRecord> existingRecords)
         {
             IEnumerable<string> recordStringIds = existingRecords.Select(n => n.Id.ToString());
             var files = GetAll();

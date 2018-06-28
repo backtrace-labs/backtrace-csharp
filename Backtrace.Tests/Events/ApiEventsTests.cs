@@ -37,26 +37,26 @@ namespace Backtrace.Tests.Events
 
             mockHttp.When(invalidUrl)
                 .Respond("application/json", "{'message': 'invalid data'}");
-            var api = new BacktraceApi<object>(credentials, 0)
+            var api = new BacktraceApi(credentials, 0)
             {
                 HttpClient = mockHttp.ToHttpClient()
             };
 
-            var apiWithInvalidUrl = new BacktraceApi<object>(invalidCredentials, 100)
+            var apiWithInvalidUrl = new BacktraceApi(invalidCredentials, 100)
             {
                 HttpClient = mockHttp.ToHttpClient()
             };
 
 
             //mock database
-            var database = new Mock<IBacktraceDatabase<object>>();
+            var database = new Mock<IBacktraceDatabase>();
             database.Setup(n =>
-                n.Add(It.IsAny<BacktraceReportBase<object>>(),
+                n.Add(It.IsAny<BacktraceReportBase>(),
                     It.IsAny<Dictionary<string, object>>(),
                     It.IsAny<MiniDumpType>()));
 
             database.Setup(n =>
-               n.Delete(It.IsAny<BacktraceDatabaseRecord<object>>()));
+               n.Delete(It.IsAny<BacktraceDatabaseRecord>()));
 
             //setup new client
             _backtraceClient = new BacktraceClient(credentials, database: database.Object, reportPerMin: 0)

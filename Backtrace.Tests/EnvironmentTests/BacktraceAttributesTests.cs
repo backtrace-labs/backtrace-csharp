@@ -17,20 +17,20 @@ namespace Backtrace.Tests.EnvironmentTests
         [Test]
         public void TestAttributesCreation()
         {
-            var report = new BacktraceReportBase<string>("testMessage");
+            var report = new BacktraceReportBase("testMessage");
             //test object creation
-            Assert.DoesNotThrow(() => new BacktraceAttributes<string>(report, null));
+            Assert.DoesNotThrow(() => new BacktraceAttributes(report, null));
 
             //test empty exception
             Assert.DoesNotThrow(() =>
             {
-                var backtraceAttributes = new BacktraceAttributes<string>(report,new Dictionary<string, string>());
-                backtraceAttributes.SetExceptionAttributes(new BacktraceReportBase<string>("message"));
+                var backtraceAttributes = new BacktraceAttributes(report,new Dictionary<string, object>());
+                backtraceAttributes.SetExceptionAttributes(new BacktraceReportBase("message"));
             });
             //test null
             Assert.DoesNotThrow(() =>
             {
-                var backtraceAttributes = new BacktraceAttributes<string>(report,new Dictionary<string, string>());
+                var backtraceAttributes = new BacktraceAttributes(report,new Dictionary<string, object>());
                 backtraceAttributes.SetExceptionAttributes(null);
             });
         }

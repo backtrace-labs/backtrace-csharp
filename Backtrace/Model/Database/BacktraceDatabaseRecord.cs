@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 using System.Text;
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
@@ -13,8 +14,7 @@ namespace Backtrace.Model.Database
     /// <summary>
     /// Single record in BacktraceDatabase
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class BacktraceDatabaseRecord<T> : IDisposable
+    public class BacktraceDatabaseRecord : IDisposable
     {
         /// <summary>
         /// Id
@@ -62,7 +62,7 @@ namespace Backtrace.Model.Database
         /// Stored record
         /// </summary>
         [JsonIgnore]
-        internal virtual BacktraceData<T> Record { get; set; }
+        internal virtual BacktraceData Record { get; set; }
 
         /// <summary>
         /// Path to database directory
@@ -80,7 +80,7 @@ namespace Backtrace.Model.Database
         /// Get valid BacktraceData from current record
         /// </summary>
         [JsonIgnore]
-        public virtual BacktraceData<T> BacktraceData
+        public virtual BacktraceData BacktraceData
         {
             get
             {
@@ -96,19 +96,28 @@ namespace Backtrace.Model.Database
                 using (var dataReader = new StreamReader(DiagnosticDataPath))
                 using (var reportReader = new StreamReader(ReportPath))
                 {
-                    //read report
-                    var reportJson = reportReader.ReadToEnd();
-                    var report = JsonConvert.DeserializeObject<BacktraceReportBase<T>>(reportJson);
-
                     //read diagnostic data
                     var diagnosticDataJson = dataReader.ReadToEnd();
-                    var diagnosticData = JsonConvert.DeserializeObject<BacktraceData<T>>(diagnosticDataJson);
-                    //add report to diagnostic data
-                    //we don't store report with diagnostic data in the same json
-                    //because we have easier way to serialize and deserialize data
-                    //and no problem/condition with serialization when BacktraceApi want to send diagnostic data to API
-                    diagnosticData.Report = report;
-                    return diagnosticData;
+                    //read report
+                    var reportJson = reportReader.ReadToEnd();
+
+                    //deserialize data - if deserialize fails, we receive invalid entry
+                    try
+                    {
+                        var diagnosticData = JsonConvert.DeserializeObject<BacktraceData>(diagnosticDataJson);
+                        var report = JsonConvert.DeserializeObject<BacktraceReportBase>(reportJson);
+                        //add report to diagnostic data
+                        //we don't store report with diagnostic data in the same json
+                        //because we have easier way to serialize and deserialize data
+                        //and no problem/condition with serialization when BacktraceApi want to send diagnostic data to API
+                        diagnosticData.Report = report;
+                        return diagnosticData;
+                    }
+                    catch (SerializationException)
+                    {
+                        //catch all exception caused by invalid serialization
+                        return null;
+                    }
                 }
             }
         }
@@ -126,7 +135,7 @@ namespace Backtrace.Model.Database
         /// </summary>
         /// <param name="data">Diagnostic data</param>
         /// <param name="path">database path</param>
-        public BacktraceDatabaseRecord(BacktraceData<T> data, string path)
+        public BacktraceDatabaseRecord(BacktraceData data, string path)
         {
             Id = data.Uuid;
             Record = data;
@@ -238,13 +247,20 @@ namespace Backtrace.Model.Database
         /// </summary>
         /// <param name="file">Current file</param>
         /// <returns>Saved database record</returns>
-        internal static BacktraceDatabaseRecord<T> ReadFromFile(FileInfo file)
+        internal static BacktraceDatabaseRecord ReadFromFile(FileInfo file)
         {
             using (StreamReader streamReader = file.OpenText())
             {
                 var json = streamReader.ReadToEnd();
-                var record = JsonConvert.DeserializeObject<BacktraceDatabaseRecord<T>>(json);
-                return record;
+                try
+                {
+                    return JsonConvert.DeserializeObject<BacktraceDatabaseRecord>(json);
+                }
+                catch (SerializationException)
+                {
+                    //handle invalid json 
+                    return null;
+                }
             }
         }
         #region dispose

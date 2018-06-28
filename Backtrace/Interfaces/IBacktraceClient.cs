@@ -9,7 +9,7 @@ namespace Backtrace.Interfaces
     /// <summary>
     /// Backtrace client interface. Use this interface with dependency injection features
     /// </summary>
-    public interface IBacktraceClient<T>
+    public interface IBacktraceClient
     {
         /// <summary>
         /// Send a new report to a Backtrace API

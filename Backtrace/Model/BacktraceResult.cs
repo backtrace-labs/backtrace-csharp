@@ -1,4 +1,5 @@
-﻿using Backtrace.Types;
+﻿using Backtrace.Base;
+using Backtrace.Types;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace Backtrace.Model
         /// <summary>
         /// Current report
         /// </summary>
-        public BacktraceReport BacktraceReport { get; set; }
+        public BacktraceReportBase BacktraceReport { get; set; }
 
         /// <summary>
         /// Inner exception Backtrace status
@@ -60,6 +61,19 @@ namespace Backtrace.Model
                 Status = BacktraceResultStatus.Ok;
             }
         }
+        /// <summary>
+        /// Backtrace APi can return _rxid instead of ObjectId. 
+        /// Use this setter to set _object field correctly for both answers
+        /// </summary>
+        [JsonProperty(PropertyName = "_rxid")]
+        public string RxId
+        {
+            set
+            {
+                _object = value;
+                Status = BacktraceResultStatus.Ok;
+            }
+        }
 
 
         /// <summary>
@@ -67,7 +81,7 @@ namespace Backtrace.Model
         /// </summary>
         /// <param name="report">Executed report</param>
         /// <returns>BacktraceResult with limit reached information</returns>
-        internal static BacktraceResult OnLimitReached(BacktraceReport report)
+        internal static BacktraceResult OnLimitReached(BacktraceReportBase report)
         {
             return new BacktraceResult()
             {
@@ -83,7 +97,7 @@ namespace Backtrace.Model
         /// <param name="report">Executed report</param>
         /// <param name="exception">Exception</param>
         /// <returns>BacktraceResult with exception information</returns>
-        internal static BacktraceResult OnError(BacktraceReport report, Exception exception)
+        internal static BacktraceResult OnError(BacktraceReportBase report, Exception exception)
         {
             return new BacktraceResult()
             {

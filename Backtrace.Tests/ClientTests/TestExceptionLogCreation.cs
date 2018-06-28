@@ -36,7 +36,7 @@ namespace Backtrace.Tests.ClientTests
         {
             Dictionary<string, object> currentAttributes = new Dictionary<string, object>();
             _backtraceClient.BeforeSend =
-                (BacktraceData<object> model) =>
+                (BacktraceData model) =>
                 {
                     currentAttributes = model.Attributes;
                     return model;

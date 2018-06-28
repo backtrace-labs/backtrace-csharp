@@ -24,7 +24,7 @@ namespace Backtrace.Tests.DatabaseTests.Model
         /// <summary>
         /// Database
         /// </summary>
-        protected BacktraceDatabase<object> _database;
+        protected BacktraceDatabase _database;
 
         [SetUp]
         public virtual void Setup()
@@ -33,18 +33,18 @@ namespace Backtrace.Tests.DatabaseTests.Model
             string projectPath = Environment.CurrentDirectory;
 
             //mock api
-            var mockApi = new Mock<IBacktraceApi<object>>();
-            mockApi.Setup(n => n.Send(It.IsAny<BacktraceData<object>>()))
+            var mockApi = new Mock<IBacktraceApi>();
+            mockApi.Setup(n => n.Send(It.IsAny<BacktraceData>()))
                 .Returns(new BacktraceResult());
 
             //mock file context
-            var mockFileContext = new Mock<IBacktraceDatabaseFileContext<object>>();
+            var mockFileContext = new Mock<IBacktraceDatabaseFileContext>();
             mockFileContext.Setup(n => n.GetRecords())
                 .Returns(new List<FileInfo>());
 
             //mock cache
-            var mockCacheContext = new Mock<IBacktraceDatabaseContext<object>>();
-            mockFileContext.Setup(n => n.RemoveOrphaned(It.IsAny<IEnumerable<BacktraceDatabaseRecord<object>>>()));
+            var mockCacheContext = new Mock<IBacktraceDatabaseContext>();
+            mockFileContext.Setup(n => n.RemoveOrphaned(It.IsAny<IEnumerable<BacktraceDatabaseRecord>>()));
 
             var settings = new BacktraceDatabaseSettings(projectPath)
             {
@@ -52,7 +52,7 @@ namespace Backtrace.Tests.DatabaseTests.Model
                 MaxRecordCount = 100,
                 RetryLimit = 3 
             };
-            _database = new BacktraceDatabase<object>(settings)
+            _database = new BacktraceDatabase(settings)
             {
                 BacktraceDatabaseContext = new MockBacktraceDatabaseContext(projectPath, 3, RetryOrder.Stack),
                 BacktraceDatabaseFileContext = mockFileContext.Object,
@@ -70,21 +70,21 @@ namespace Backtrace.Tests.DatabaseTests.Model
 
         protected void ChangeRetryOrder(RetryOrder @newOrder)
         {
-            ((BacktraceDatabaseContext<object>)_database.BacktraceDatabaseContext).RetryOrder = newOrder;
+            ((BacktraceDatabaseContext)_database.BacktraceDatabaseContext).RetryOrder = newOrder;
         }
 
         /// <summary>
         /// Get new database record
         /// </summary>
         /// <returns>Database record mock</returns>
-        protected BacktraceDatabaseRecord<object> GetRecord()
+        protected BacktraceDatabaseRecord GetRecord()
         {
             //mock single record
-            var mockRecord = new Mock<BacktraceDatabaseRecord<object>>();
+            var mockRecord = new Mock<BacktraceDatabaseRecord>();
             mockRecord.Setup(n => n.Delete());
             mockRecord.Setup(n => n.BacktraceData)
-                .Returns(new BacktraceData<object>(It.IsAny<BacktraceReportBase<object>>(), It.IsAny<Dictionary<string, object>>()));
-            var data = new BacktraceData<object>(null, new Dictionary<string, object>());
+                .Returns(new BacktraceData(It.IsAny<BacktraceReportBase>(), It.IsAny<Dictionary<string, object>>()));
+            var data = new BacktraceData(null, new Dictionary<string, object>());
             mockRecord.SetupProperty(n => n.Record, data);
 
             mockRecord.Object.RecordWriter = new MockBacktraceDatabaseWriter();

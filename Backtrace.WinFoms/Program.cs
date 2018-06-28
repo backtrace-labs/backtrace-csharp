@@ -15,12 +15,12 @@ namespace Backtrace.WinFoms
         /// <summary>
         /// Credentials
         /// </summary>
-        private static BacktraceCredentials credentials = new BacktraceCredentials(ApplicationSettings.Host, ApplicationSettings.Token);
+        private static readonly BacktraceCredentials credentials = new BacktraceCredentials(ApplicationSettings.Host, ApplicationSettings.Token);
 
         /// <summary>
         /// Database settings
         /// </summary>
-        private static BacktraceDatabaseSettings databaseSettings = new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath);
+        private static readonly BacktraceDatabaseSettings databaseSettings = new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath);
 
         /// <summary>
         /// New instance of BacktraceClient. Check SetupBacktraceLibrary method for intiailization example
@@ -39,7 +39,7 @@ namespace Backtrace.WinFoms
                 ReportPerMin = 0
             };
             //create Backtrace -
-            var database = new BacktraceDatabase<object>(databaseSettings);
+            var database = new BacktraceDatabase(databaseSettings);
             //initialize new BacktraceClient 
             backtraceClient = new BacktraceClient(configuartion, database);
             //Setting application exceptions

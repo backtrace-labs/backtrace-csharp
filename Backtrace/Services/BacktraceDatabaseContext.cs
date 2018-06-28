@@ -13,12 +13,12 @@ namespace Backtrace.Services
     /// <summary>
     /// Backtrace Database Context
     /// </summary>
-    internal class BacktraceDatabaseContext<T> : IBacktraceDatabaseContext<T>
+    internal class BacktraceDatabaseContext : IBacktraceDatabaseContext
     {
         /// <summary>
         /// Database cache
         /// </summary>
-        internal Dictionary<int, List<BacktraceDatabaseRecord<T>>> BatchRetry = new Dictionary<int, List<BacktraceDatabaseRecord<T>>>();
+        internal Dictionary<int, List<BacktraceDatabaseRecord>> BatchRetry = new Dictionary<int, List<BacktraceDatabaseRecord>>();
 
         /// <summary>
         /// Total database size on hard drive
@@ -70,7 +70,7 @@ namespace Backtrace.Services
             }
             for (int i = 0; i < _retryNumber; i++)
             {
-                BatchRetry[i] = new List<BacktraceDatabaseRecord<T>>();
+                BatchRetry[i] = new List<BacktraceDatabaseRecord>();
             }
         }
 
@@ -79,9 +79,9 @@ namespace Backtrace.Services
         /// </summary>
         /// <param name="backtraceData">Diagnostic data that should be stored in database</param>
         /// <returns>New instance of DatabaseRecordy</returns>
-        public virtual BacktraceDatabaseRecord<T> Add(BacktraceData<T> backtraceData)
+        public virtual BacktraceDatabaseRecord Add(BacktraceData backtraceData)
         {
-            if (backtraceData == null) throw new NullReferenceException(nameof(BacktraceData<T>));
+            if (backtraceData == null) throw new NullReferenceException(nameof(backtraceData));
             //create new record and save it on hard drive
             var record = new BacktraceDatabaseRecord<T>(backtraceData, _path);
             record.Save();
@@ -93,9 +93,9 @@ namespace Backtrace.Services
         /// Add existing record to database
         /// </summary>
         /// <param name="backtraceRecord">Database record</param>
-        public BacktraceDatabaseRecord<T> Add(BacktraceDatabaseRecord<T> backtraceRecord)
+        public BacktraceDatabaseRecord<T> Add(BacktraceDatabaseRecord backtraceRecord)
         {
-            if (backtraceRecord == null) throw new NullReferenceException(nameof(BacktraceDatabaseRecord<T>));
+            if (backtraceRecord == null) throw new NullReferenceException(nameof(BacktraceDatabaseRecord));
             //lock record, because Add method returns record
             backtraceRecord.Locked = true;
             //increment total size of database
@@ -112,7 +112,7 @@ namespace Backtrace.Services
         /// </summary>
         /// <param name="record"></param>
         /// <returns></returns>
-        public bool Any(BacktraceDatabaseRecord<T> record)
+        public bool Any(BacktraceDatabaseRecord record)
         {
             return BatchRetry.SelectMany(n => n.Value).Any(n => n.Id == record.Id);
         }
@@ -129,7 +129,7 @@ namespace Backtrace.Services
         /// Delete existing record from database
         /// </summary>
         /// <param name="record">Database records to delete</param>
-        public virtual void Delete(BacktraceDatabaseRecord<T> record)
+        public virtual void Delete(BacktraceDatabaseRecord record)
         {
             if (record == null)
             {
@@ -173,7 +173,7 @@ namespace Backtrace.Services
             for (int i = _retryNumber - 2; i >= 0; i--)
             {
                 var temp = BatchRetry[i];
-                BatchRetry[i] = new List<BacktraceDatabaseRecord<T>>();
+                BatchRetry[i] = new List<BacktraceDatabaseRecord>();
                 BatchRetry[i + 1] = temp;
             }
         }
@@ -199,7 +199,7 @@ namespace Backtrace.Services
         /// Get all database records
         /// </summary>
         /// <returns>all existing database records</returns>
-        public IEnumerable<BacktraceDatabaseRecord<T>> Get()
+        public IEnumerable<BacktraceDatabaseRecord> Get()
         {
             return BatchRetry.SelectMany(n => n.Value);
         }
@@ -242,7 +242,7 @@ namespace Backtrace.Services
         /// Get last exising database record. Method returns record based on order in Database
         /// </summary>
         /// <returns>First Backtrace database record</returns>
-        public BacktraceDatabaseRecord<T> LastOrDefault()
+        public BacktraceDatabaseRecord LastOrDefault()
         {
             return RetryOrder == RetryOrder.Stack
                     ? GetLastRecord()
@@ -253,7 +253,7 @@ namespace Backtrace.Services
         /// Get first exising database record. Method returns record based on order in Database
         /// </summary>
         /// <returns>First Backtrace database record</returns>
-        public BacktraceDatabaseRecord<T> FirstOrDefault()
+        public BacktraceDatabaseRecord FirstOrDefault()
         {
             return RetryOrder == RetryOrder.Queue
                     ? GetFirstRecord()
@@ -264,7 +264,7 @@ namespace Backtrace.Services
         /// Get first record in in-cache BacktraceDatabase
         /// </summary>
         /// <returns>First database record</returns>
-        private BacktraceDatabaseRecord<T> GetFirstRecord()
+        private BacktraceDatabaseRecord GetFirstRecord()
         {
             //get all batches (from the beginning)
             for (int i = 0; i < _retryNumber - 1; i++)
@@ -286,7 +286,7 @@ namespace Backtrace.Services
         /// Get last record in in-cache BacktraceDatabase
         /// </summary>
         /// <returns>Last database record</returns>
-        private BacktraceDatabaseRecord<T> GetLastRecord()
+        private BacktraceDatabaseRecord GetLastRecord()
         {
             for (int i = _retryNumber - 1; i >= 0; i--)
             {
