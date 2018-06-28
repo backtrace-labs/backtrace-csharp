@@ -1,5 +1,8 @@
 ﻿# Backtrace C# Release Notes
 
+## Version 1.3.1 - 28.06.2018
+- Fixed a double-dispose bug in BacktraceApi
+
 ## Version 1.3 - 26.06.2018
 - Attributes dictionary now use an `object` type instead of a generic type for better flexibility,
 - `OnClientReportLimitReached` use `BacktraceReportBase` instead of `BacktraceReport`,
