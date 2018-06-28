@@ -83,7 +83,7 @@ namespace Backtrace.Services
         {
             if (backtraceData == null) throw new NullReferenceException(nameof(backtraceData));
             //create new record and save it on hard drive
-            var record = new BacktraceDatabaseRecord<T>(backtraceData, _path);
+            var record = new BacktraceDatabaseRecord(backtraceData, _path);
             record.Save();
             //add record to database context
             return Add(record);
@@ -93,7 +93,7 @@ namespace Backtrace.Services
         /// Add existing record to database
         /// </summary>
         /// <param name="backtraceRecord">Database record</param>
-        public BacktraceDatabaseRecord<T> Add(BacktraceDatabaseRecord backtraceRecord)
+        public BacktraceDatabaseRecord Add(BacktraceDatabaseRecord backtraceRecord)
         {
             if (backtraceRecord == null) throw new NullReferenceException(nameof(BacktraceDatabaseRecord));
             //lock record, because Add method returns record

@@ -86,7 +86,7 @@ namespace Backtrace
             }
             DatabaseSettings = databaseSettings;
             BacktraceDatabaseContext = new BacktraceDatabaseContext(DatabasePath, DatabaseSettings.RetryLimit, DatabaseSettings.RetryOrder);
-            BacktraceDatabaseFileContext = new BacktraceDatabaseFileContext(DatabasePath);
+            BacktraceDatabaseFileContext = new BacktraceDatabaseFileContext(DatabasePath, DatabaseSettings.MaxDatabaseSize, DatabaseSettings.MaxRecordCount);
         }
 
         /// <summary>
