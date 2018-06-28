@@ -87,9 +87,9 @@ namespace Backtrace.Services
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
             string boundary = FormDataHelper.GetBoundary(requestId);
 
-            using (var request = new HttpRequestMessage(HttpMethod.Post, _serverurl))
             using (var content = new MultipartFormDataContent(boundary))
             {
+                var request = new HttpRequestMessage(HttpMethod.Post, _serverurl);
                 content.AddJson("upload_file.json", json);
                 content.AddFiles(attachments);
 
@@ -194,7 +194,7 @@ namespace Backtrace.Services
                 return response;
             }
         }
-#endregion
+        #endregion
         /// <summary>
         /// Get serialization settings
         /// </summary>
@@ -204,7 +204,7 @@ namespace Backtrace.Services
             NullValueHandling = NullValueHandling.Ignore,
             DefaultValueHandling = DefaultValueHandling.Ignore
         };
-#region dispose
+        #region dispose
         private bool _disposed = false; // To detect redundant calls
         public void Dispose()
         {
@@ -230,7 +230,7 @@ namespace Backtrace.Services
         {
             Dispose(false);
         }
-#endregion
+        #endregion
 
         public void SetClientRateLimitEvent(Action<BacktraceReportBase> onClientReportLimitReached)
         {
