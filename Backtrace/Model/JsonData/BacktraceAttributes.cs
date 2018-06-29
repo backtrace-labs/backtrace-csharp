@@ -36,7 +36,7 @@ namespace Backtrace.Model.JsonData
         [JsonConstructor]
         public BacktraceAttributes(BacktraceReportBase report, Dictionary<string, object> clientAttributes)
         {
-            if(report != null)
+            if (report != null)
             {
                 ConvertAttributes(report, clientAttributes);
                 SetLibraryAttributes(report.CallingAssembly);
@@ -46,7 +46,7 @@ namespace Backtrace.Model.JsonData
             //Environment attributes override user attributes            
             SetMachineAttributes();
             SetProcessAttributes();
-            
+
         }
 
         /// <summary>
@@ -60,7 +60,14 @@ namespace Backtrace.Model.JsonData
             //Base name of application generating the report
             Attributes["application"] = callingAssembly.GetName().Name;
             Attributes["lang.name"] = "C#";
-
+            Attributes["location"] = callingAssembly.Location;
+            Attributes["version"] = FileVersionInfo.GetVersionInfo(callingAssembly.Location);
+            Attributes["culture"] = callingAssembly.GetName().CultureInfo.Name;
+            
+#if !NET35
+            Attributes["dynamic"] = callingAssembly.IsDynamic;
+            Attributes["trusted"] = callingAssembly.IsFullyTrusted;
+#endif
         }
 
         /// <summary>
@@ -84,7 +91,7 @@ namespace Backtrace.Model.JsonData
             {
                 Attributes["build.debug"] = true;
                 Attributes["build.jit"] = !debuggableAttribute.IsJITOptimizerDisabled;
-                Attributes["build.type"] = debuggableAttribute.IsJITOptimizerDisabled 
+                Attributes["build.type"] = debuggableAttribute.IsJITOptimizerDisabled
                     ? "Debug" : "Release";
                 // check for Debug Output "full" or "pdb-only"
                 Attributes["build.output"] = (debuggableAttribute.DebuggingFlags &
@@ -210,7 +217,7 @@ namespace Backtrace.Model.JsonData
                     Attributes["vm.vma.peak"] = peakVirtualMemorySize;
                 }
             }
-            catch(PlatformNotSupportedException)
+            catch (PlatformNotSupportedException)
             {
                 Trace.TraceWarning($"Cannot retrieve information about process memory - platform not supported");
             }
