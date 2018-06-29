@@ -93,11 +93,11 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json">
-      <Version>11.0.1</Version>
+      <Version>11.0.2</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Backtrace\Backtrace.csproj">
+    <ProjectReference Include="..\..\Backtrace\Backtrace.csproj">
       <Project>{c347c139-1a03-4ac7-998a-8687401536d5}</Project>
       <Name>Backtrace</Name>
     </ProjectReference>
