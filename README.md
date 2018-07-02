@@ -14,7 +14,7 @@ try{
     //throw exception here
 }
 catch(Exception exception){
-    backtraceClient.Send(new BacktraceReport(exception));
+    await backtraceClient.SendAsync(new BacktraceReport(exception));
 }
 ```
 
@@ -181,7 +181,7 @@ For more information on `BacktraceClientConfiguration` parameters please see <a 
 
 
 Notes:
-- If parameter `reportPerMin` is equal to 0, there is no limit on the number of error reports per minute. When the `reportPerMin` cap is reached, `BacktraceClient.Send` method will return false.
+- If parameter `reportPerMin` is equal to 0, there is no limit on the number of error reports per minute. When the `reportPerMin` cap is reached, `BacktraceClient.Send/BacktraceClient.SendAsync` method will return false.
 
 
 #### Database initialization <a name="documentation-database-initialization"></a>
@@ -202,7 +202,8 @@ var backtraceClient = new BacktraceClient(configuration, database);
 ```
 
 Notes:
-- If a valid `databaseDirectory` directory is supplied, the Backtrace library will generate and attach a minidump to each error report automatically. Otherwise, `BacktraceDatabase` will be disabled.
+- If a valid `databaseDirectory` directory is supplied, the Backtrace library will generate and attach a minidump to each error report automatically. Otherwise, `BacktraceDatabase` will be disabled,
+- You can set `backtraceClient.MiniDumpType` to `MiniDumpType.None` if you don't want to generate minidump files.
 
 
 #### TLS/SSL Support
@@ -225,7 +226,7 @@ ServicePointManager.ServerCertificateValidationCallback
 
 ## Sending an error report <a name="documentation-sending-report"></a>
 
-`BacktraceClient.Send` method will send an error report to the Backtrace endpoint specified. There `Send` method is overloaded, see examples below:
+`BacktraceClient.Send/BacktraceClient.SendAsync` method will send an error report to the Backtrace endpoint specified. There `Send` method is overloaded, see examples below:
 
 ### Using BacktraceReport
 
