@@ -158,6 +158,7 @@ namespace Backtrace.Core
             var database = new BacktraceDatabase(databaseSettings);
             //setup new client
             backtraceClient = new BacktraceClient(configuartion, database);
+            backtraceClient.MiniDumpType = Types.MiniDumpType.None;
 
             //handle all unhandled application exceptions
             backtraceClient.HandleApplicationException();

@@ -128,5 +128,20 @@ namespace Backtrace.Services
             }
             return true;
         }
+
+        /// <summary>
+        /// Remove all files from database directory
+        /// </summary>
+        public void Clear()
+        {
+            // Get array of all files
+            FileInfo[] files = _databaseDirectoryInfo.GetFiles();
+            for (int i = 0; i < files.Length; i++)
+            {
+                var file = files[i];
+                file.Delete();
+            }
+
+        }
     }
 }

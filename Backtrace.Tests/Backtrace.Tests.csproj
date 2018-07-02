@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net45;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net45</TargetFrameworks>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -14,14 +14,13 @@
     <PackageReference Include="NUnit3TestAdapter" Version="3.9.0" />
     <PackageReference Include="RichardSzalay.MockHttp" Version="3.3.0" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Backtrace\Backtrace.csproj" />
-  </ItemGroup>
   <ItemGroup>
     <None Remove="IntegrationTests\Template.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="IntegrationTests\Template.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Backtrace\Backtrace.csproj" />
   </ItemGroup>
 </Project>

@@ -48,7 +48,12 @@ namespace Backtrace.Tests.DatabaseTests
         [Test(Author = "Konrad Dysput", Description = "Test uninitialized database")]
         public void TestUninitializedDatabase()
         {
-            var database = new BacktraceDatabase(new BacktraceDatabaseSettings(_projectDirectory));
+            var mockFileContext = new Mock<IBacktraceDatabaseFileContext>();
+            mockFileContext.Setup(n => n.Clear());
+            var database = new BacktraceDatabase(new BacktraceDatabaseSettings(_projectDirectory))
+            {
+                BacktraceDatabaseFileContext = mockFileContext.Object
+            };
             var report = (new Exception("test excetpion")).ToBacktraceReport();
             Assert.DoesNotThrow(() => database.Add(null, null));
             Assert.AreEqual(null, database.Add(report, new Dictionary<string, object>()));

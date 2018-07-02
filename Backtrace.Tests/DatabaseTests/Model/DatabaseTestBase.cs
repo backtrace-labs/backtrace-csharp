@@ -45,6 +45,7 @@ namespace Backtrace.Tests.DatabaseTests.Model
             //mock cache
             var mockCacheContext = new Mock<IBacktraceDatabaseContext>();
             mockFileContext.Setup(n => n.RemoveOrphaned(It.IsAny<IEnumerable<BacktraceDatabaseRecord>>()));
+            mockFileContext.Setup(n => n.Clear());
 
             var settings = new BacktraceDatabaseSettings(projectPath)
             {

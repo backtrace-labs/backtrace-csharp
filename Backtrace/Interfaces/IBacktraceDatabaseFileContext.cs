@@ -30,5 +30,10 @@ namespace Backtrace.Interfaces
         /// </summary>
         /// <param name="existingRecords">Existing entries in BacktraceDatabaseContext</param>
         void RemoveOrphaned(IEnumerable<BacktraceDatabaseRecord> existingRecords);
+
+        /// <summary>
+        /// Remove all files from database directory
+        /// </summary>
+        void Clear();
     }
 }

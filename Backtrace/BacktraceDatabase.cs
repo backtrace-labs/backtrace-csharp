@@ -158,6 +158,7 @@ namespace Backtrace
         public void Clear()
         {
             BacktraceDatabaseContext?.Clear();
+            BacktraceDatabaseFileContext?.Clear();
         }
 
         /// <summary>
@@ -173,7 +174,7 @@ namespace Backtrace
             {
                 throw new ArgumentException("Maximum number of records available in BacktraceDatabase");
             }
-            if (BacktraceDatabaseContext.GetSize() > DatabaseSettings.MaxDatabaseSize)
+            if (BacktraceDatabaseContext.GetSize() > DatabaseSettings.MaxDatabaseSize && DatabaseSettings.MaxDatabaseSize != 0)
             {
                 throw new ArgumentException("You don't have enought space in database for more records");
             }
@@ -377,15 +378,21 @@ namespace Backtrace
                     continue;
                 }
                 BacktraceDatabaseContext.Add(record);
-                if (BacktraceDatabaseContext.GetSize() > DatabaseSettings.MaxDatabaseSize
-                    || BacktraceDatabaseContext.GetTotalNumberOfRecords() > DatabaseSettings.MaxRecordCount)
+                if (!CheckDatabseSize())
                 {
                     throw new ArgumentException("Database directory has too many records or database size is bigger than in option declaration.");
                 }
-                //max number of records / maximum database size
-                //throw exception? break 
                 record.Dispose();
             }
+        }
+        /// <summary>
+        /// Check current size of database
+        /// </summary>
+        /// <returns>False if BacktraceDatabase doesn't have more free space</returns>
+        private bool CheckDatabseSize()
+        {
+            return ((BacktraceDatabaseContext.GetSize() > DatabaseSettings.MaxDatabaseSize || DatabaseSettings.MaxDatabaseSize == 0)
+                || (BacktraceDatabaseContext.GetTotalNumberOfRecords() > DatabaseSettings.MaxRecordCount || DatabaseSettings.MaxDatabaseSize == 0));
         }
 
         /// <summary>
