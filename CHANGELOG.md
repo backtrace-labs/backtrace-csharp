@@ -1,5 +1,9 @@
 ﻿# Backtrace C# Release Notes
 
+
+## Version 1.3.2 - 03.07.2018
+- Fixed a invalid type for process.age attribute 
+
 ## Version 1.3.1 - 28.06.2018
 - Fixed a double-dispose bug in BacktraceApi
 
