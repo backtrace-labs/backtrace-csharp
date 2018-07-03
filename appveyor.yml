@@ -1,0 +1,20 @@
+version: 1.0.{build}
+image: Visual Studio 2017
+branches:
+    only:
+    - /master
+init:
+  # Good practise, because Windows line endings are different from Unix/Linux ones
+    - cmd: git config --global core.autocrlf true
+before_build:
+    # Display .NET version
+    - cmd: dotnet --version
+    # Display minimal restore text
+    - cmd: dotnet restore ./src/src.csproj --verbosity m
+build_script:
+    - ps: dotnet build .\Backtrace\Backtrace.csproj
+test_script:
+    - ps: dotnet test .\Backtrace.Tests\ -f netcoreapp2.0
+deploy: off
+on_finish:
+    - ps echo "Build finished successfully"

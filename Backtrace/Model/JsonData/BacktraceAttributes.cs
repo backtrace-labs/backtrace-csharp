@@ -62,8 +62,12 @@ namespace Backtrace.Model.JsonData
             Attributes["lang.name"] = "C#";
             Attributes["location"] = callingAssembly.Location;
             Attributes["version"] = FileVersionInfo.GetVersionInfo(callingAssembly.Location);
-            Attributes["culture"] = callingAssembly.GetName().CultureInfo.Name;
-            
+            var culture = callingAssembly.GetName().CultureInfo.Name;
+            if (!string.IsNullOrEmpty(culture))
+            {
+                Attributes["culture"] = callingAssembly.GetName().CultureInfo.Name;
+            }
+
 #if !NET35
             Attributes["dynamic"] = callingAssembly.IsDynamic;
             Attributes["trusted"] = callingAssembly.IsFullyTrusted;

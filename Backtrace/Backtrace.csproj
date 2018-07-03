@@ -13,6 +13,11 @@
     <RepositoryUrl>https://github.com/backtrace-labs/backtrace-csharp</RepositoryUrl>
     <NeutralLanguage>en</NeutralLanguage>
     <Version>1.3.1</Version>
+    <Copyright>Backtrace I/O</Copyright>
+    <Authors>Backtrace I/O</Authors>
+    <Company>Backtrace I/O</Company>
+    <AssemblyVersion>1.3.2.0</AssemblyVersion>
+    <FileVersion>1.3.2.0</FileVersion>
   </PropertyGroup>
   
   <ItemGroup>
