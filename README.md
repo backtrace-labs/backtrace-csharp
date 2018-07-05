@@ -1,7 +1,16 @@
 # Backtrace
+[![Backtrace@release](https://img.shields.io/badge/Backtrace%40master-1.3.3-blue.svg)](https://www.nuget.org/packages/Backtrace)
+[![Build status](https://ci.appveyor.com/api/projects/status/o0n9sp0ydgxb3ktu?svg=true)](https://ci.appveyor.com/project/konraddysput/backtrace-csharp)
+
+[![Backtrace@pre-release](https://img.shields.io/badge/Backtrace%40master-1.3.4-blue.svg)](https://www.nuget.org/packages/Backtrace)
+[![Build status](https://ci.appveyor.com/api/projects/status/o0n9sp0ydgxb3ktu/branch/dev?svg=true)](https://ci.appveyor.com/project/konraddysput/backtrace-csharp/branch/dev)
+
+
 
 [Backtrace](http://backtrace.io/)'s integration with C# applications allows customers to capture and report handled and unhandled C# exceptions to their Backtrace instance, instantly offering the ability to prioritize and debug software errors.
 
+ 
+[Github Release]:(https://github.com/backtrace-labs/backtrace-csharp/)
 ## Usage
 
 ```csharp
