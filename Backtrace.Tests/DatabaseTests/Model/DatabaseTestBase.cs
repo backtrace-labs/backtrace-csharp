@@ -39,12 +39,13 @@ namespace Backtrace.Tests.DatabaseTests.Model
 
             //mock file context
             var mockFileContext = new Mock<IBacktraceDatabaseFileContext>();
-            mockFileContext.Setup(n => n.GetEntries())
+            mockFileContext.Setup(n => n.GetRecords())
                 .Returns(new List<FileInfo>());
 
             //mock cache
             var mockCacheContext = new Mock<IBacktraceDatabaseContext>();
-            mockFileContext.Setup(n => n.RemoveOrphaned(It.IsAny<IEnumerable<BacktraceDatabaseEntry>>()));
+            mockFileContext.Setup(n => n.RemoveOrphaned(It.IsAny<IEnumerable<BacktraceDatabaseRecord>>()));
+            mockFileContext.Setup(n => n.Clear());
 
             var settings = new BacktraceDatabaseSettings(projectPath)
             {
@@ -61,9 +62,9 @@ namespace Backtrace.Tests.DatabaseTests.Model
         }
 
         /// <summary>
-        /// Dispose all entries in memory cache. Use this method only for testing purpose!
+        /// Dispose all records in memory cache. Use this method only for testing purpose!
         /// </summary>
-        protected void DisposeEntries()
+        protected void DisposeRecords()
         {
             ((MockBacktraceDatabaseContext)_database.BacktraceDatabaseContext).DisposeUsedFiles();
         }
@@ -74,21 +75,21 @@ namespace Backtrace.Tests.DatabaseTests.Model
         }
 
         /// <summary>
-        /// Get new database entry 
+        /// Get new database record
         /// </summary>
-        /// <returns>Database entry mock</returns>
-        protected BacktraceDatabaseEntry GetEntry()
+        /// <returns>Database record mock</returns>
+        protected BacktraceDatabaseRecord GetRecord()
         {
-            //mock single entry
-            var mockEntry = new Mock<BacktraceDatabaseEntry>();
-            mockEntry.Setup(n => n.Delete());
-            mockEntry.Setup(n => n.BacktraceData)
+            //mock single record
+            var mockRecord = new Mock<BacktraceDatabaseRecord>();
+            mockRecord.Setup(n => n.Delete());
+            mockRecord.Setup(n => n.BacktraceData)
                 .Returns(new BacktraceData(It.IsAny<BacktraceReportBase>(), It.IsAny<Dictionary<string, object>>()));
-            var entry = new BacktraceData(null, new Dictionary<string, object>());
-            mockEntry.SetupProperty(n => n.Entry, entry);
+            var data = new BacktraceData(null, new Dictionary<string, object>());
+            mockRecord.SetupProperty(n => n.Record, data);
 
-            mockEntry.Object.EntryWriter = new MockBacktraceDatabaseWriter();
-            return mockEntry.Object;
+            mockRecord.Object.RecordWriter = new MockBacktraceDatabaseWriter();
+            return mockRecord.Object;
         }
     }
 }

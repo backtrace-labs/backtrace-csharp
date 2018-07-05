@@ -42,25 +42,36 @@ namespace Backtrace.Interfaces
         void Clear();
 
         /// <summary>
-        /// Add new report to Database
+        /// Check all database consistency requirements
         /// </summary>
-        BacktraceDatabaseEntry Add(BacktraceReportBase backtraceReport, Dictionary<string, object> attributes, MiniDumpType miniDumpType = MiniDumpType.Normal);
+        /// <returns>True - if database has valid consistency requirements</returns>
+        bool ValidConsistency();
 
         /// <summary>
-        /// Get all repots stored in Database
+        /// Add new report to Database
         /// </summary>
-        IEnumerable<BacktraceDatabaseEntry> Get();
+        BacktraceDatabaseRecord Add(BacktraceReportBase backtraceReport, Dictionary<string, object> attributes, MiniDumpType miniDumpType = MiniDumpType.Normal);
+
+        /// <summary>
+        /// Get all records stored in Database
+        /// </summary>
+        IEnumerable<BacktraceDatabaseRecord> Get();
         
         /// <summary>
-        /// Delete database entry by using BacktraceDatabaseEntry
+        /// Delete database record by using BacktraceDatabaseRecord
         /// </summary>
-        /// <param name="entry">Database entry</param>
-        void Delete(BacktraceDatabaseEntry entry);
+        /// <param name="record">Database record</param>
+        void Delete(BacktraceDatabaseRecord record);
 
         /// <summary>
         /// Get database settings
         /// </summary>
         /// <returns></returns>
         BacktraceDatabaseSettings GetSettings();
+
+        /// <summary>
+        /// Get database size
+        /// </summary>
+        long GetDatabaseSize();
     }
 }

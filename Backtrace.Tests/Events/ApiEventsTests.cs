@@ -56,7 +56,7 @@ namespace Backtrace.Tests.Events
                     It.IsAny<MiniDumpType>()));
 
             database.Setup(n =>
-               n.Delete(It.IsAny<BacktraceDatabaseEntry>()));
+               n.Delete(It.IsAny<BacktraceDatabaseRecord>()));
 
             //setup new client
             _backtraceClient = new BacktraceClient(credentials, database: database.Object, reportPerMin: 0)

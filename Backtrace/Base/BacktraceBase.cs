@@ -166,16 +166,16 @@ namespace Backtrace.Base
         [Obsolete("Send is obsolete, please use SendAsync instead if possible.")]
         public virtual BacktraceResult Send(BacktraceReportBase report)
         {
-            var entry = Database.Add(report, Attributes, MiniDumpType);
+            var record = Database.Add(report, Attributes, MiniDumpType);
             //create a JSON payload instance
-            var data = entry?.BacktraceData ?? report.ToBacktraceData(Attributes);
+            var data = record?.BacktraceData ?? report.ToBacktraceData(Attributes);
             //valid user custom events
             data = BeforeSend?.Invoke(data) ?? data;
             var result = BacktraceApi.Send(data);
-            entry?.Dispose();
+            record?.Dispose();
             if (result.Status == BacktraceResultStatus.Ok)
             {
-                Database.Delete(entry);
+                Database.Delete(record);
             }
             //check if there is more errors to send
             //handle inner exception
@@ -207,16 +207,16 @@ namespace Backtrace.Base
         /// <param name="report">Report to send</param>
         public virtual async Task<BacktraceResult> SendAsync(BacktraceReportBase report)
         {
-            var entry = Database.Add(report, Attributes, MiniDumpType);
+            var record = Database.Add(report, Attributes, MiniDumpType);
             //create a JSON payload instance
-            var data = entry?.BacktraceData ?? report.ToBacktraceData(Attributes);
+            var data = record?.BacktraceData ?? report.ToBacktraceData(Attributes);
             //valid user custom events
             data = BeforeSend?.Invoke(data) ?? data;
             var result = await BacktraceApi.SendAsync(data);
-            entry?.Dispose();
+            record?.Dispose();
             if (result.Status == BacktraceResultStatus.Ok)
             {
-                Database.Delete(entry);
+                Database.Delete(record);
             }
             //check if there is more errors to send
             //handle inner exception

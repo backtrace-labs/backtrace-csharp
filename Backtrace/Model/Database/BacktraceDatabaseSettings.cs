@@ -25,9 +25,25 @@ namespace Backtrace.Model.Database
         public uint MaxRecordCount { get; set; } = 0;
 
         /// <summary>
+        /// Database size in MB
+        /// </summary>
+        private long _maxDatabaseSize = 0;
+
+        /// <summary>
         /// Maximum database size in MB. If value is equal to zero, then size is unlimited
         /// </summary>
-        public long MaxDatabaseSize { get; set; } = 0;
+        public long MaxDatabaseSize
+        {
+            get
+            {
+                //convert megabyte to bytes
+                return _maxDatabaseSize * 1000 * 1000;
+            }
+            set
+            {
+                _maxDatabaseSize = value;
+            }
+        }
 
         /// <summary>
         /// Resend report when http client throw exception

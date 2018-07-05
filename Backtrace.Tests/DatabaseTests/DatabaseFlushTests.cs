@@ -25,36 +25,36 @@ namespace Backtrace.Tests.DatabaseTests
         [TestCase(1)]
         [TestCase(20)]
         [Test(Author = "Konrad Dysput", Description = "Test database flush method")]
-        public void TestSyncFlushMethod(int expectedNumberOfEntries)
+        public void TestSyncFlushMethod(int expectedNumberOfRecords)
         {
             _database.Clear();
-            for (int i = 0; i < expectedNumberOfEntries; i++)
+            for (int i = 0; i < expectedNumberOfRecords; i++)
             {
-                _database.BacktraceDatabaseContext.Add(GetEntry());
+                _database.BacktraceDatabaseContext.Add(GetRecord());
             }
-            DisposeEntries();
+            DisposeRecords();
 
-            Assert.AreEqual(expectedNumberOfEntries, _database.Count());
+            Assert.AreEqual(expectedNumberOfRecords, _database.Count());
             _database.Flush();
-            Assert.AreNotEqual(expectedNumberOfEntries, _database.Count());
+            Assert.AreNotEqual(expectedNumberOfRecords, _database.Count());
             Assert.AreEqual(_database.Count(), 0);
         }
 
         [TestCase(1)]
         [TestCase(20)]
         [Test(Author = "Konrad Dysput", Description = "Test database flush async method")]
-        public async Task TestFlushAsyncMethods(int expectedNumberOfEntries)
+        public async Task TestFlushAsyncMethods(int expectedNumberOfRecords)
         {
             _database.Clear();
-            for (int i = 0; i < expectedNumberOfEntries; i++)
+            for (int i = 0; i < expectedNumberOfRecords; i++)
             {
-                _database.BacktraceDatabaseContext.Add(GetEntry());
+                _database.BacktraceDatabaseContext.Add(GetRecord());
             }
-            DisposeEntries();
+            DisposeRecords();
 
-            Assert.AreEqual(expectedNumberOfEntries, _database.Count());
+            Assert.AreEqual(expectedNumberOfRecords, _database.Count());
             await _database.FlushAsync();
-            Assert.AreNotEqual(expectedNumberOfEntries, _database.Count());
+            Assert.AreNotEqual(expectedNumberOfRecords, _database.Count());
             Assert.AreEqual(_database.Count(), 0);
         }
     }

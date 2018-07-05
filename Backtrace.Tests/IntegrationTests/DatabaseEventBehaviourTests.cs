@@ -31,23 +31,23 @@ namespace Backtrace.Tests.DatabaseTests
         private BacktraceDatabase _backtraceDatabase;
 
         /// <summary>
-        /// Last database entry
+        /// Last database record
         /// </summary>
-        BacktraceDatabaseEntry _lastEntry;
+        BacktraceDatabaseRecord _lastEntry;
 
         /// <summary>
         /// Get new database entry 
         /// </summary>
         /// <returns>Database entry mock</returns>
-        protected BacktraceDatabaseEntry GetEntry()
+        protected BacktraceDatabaseRecord GetEntry()
         {
             //mock single entry
-            var mockEntry = new Mock<BacktraceDatabaseEntry>();
+            var mockEntry = new Mock<BacktraceDatabaseRecord>();
             mockEntry.Setup(n => n.Delete());
-            mockEntry.SetupProperty(n => n.Entry, null);
+            mockEntry.SetupProperty(n => n.Record, null);
 
             //mock entry writer
-            mockEntry.Object.EntryWriter = new MockBacktraceDatabaseWriter();
+            mockEntry.Object.RecordWriter = new MockBacktraceDatabaseWriter();
             return mockEntry.Object;
         }
 
@@ -71,9 +71,9 @@ namespace Backtrace.Tests.DatabaseTests
 
             //mock file context
             var mockFileContext = new Mock<IBacktraceDatabaseFileContext>();
-            mockFileContext.Setup(n => n.GetEntries())
+            mockFileContext.Setup(n => n.GetRecords())
                 .Returns(new List<FileInfo>());
-            mockFileContext.Setup(n => n.RemoveOrphaned(It.IsAny<IEnumerable<BacktraceDatabaseEntry>>()));
+            mockFileContext.Setup(n => n.RemoveOrphaned(It.IsAny<IEnumerable<BacktraceDatabaseRecord>>()));
 
             _backtraceDatabase = new BacktraceDatabase(new BacktraceDatabaseSettings(projectPath)
             {

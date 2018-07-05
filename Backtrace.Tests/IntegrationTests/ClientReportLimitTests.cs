@@ -40,7 +40,7 @@ namespace Backtrace.Tests.IntegrationTests
                     It.IsAny<MiniDumpType>()));
 
             database.Setup(n =>
-               n.Delete(It.IsAny<BacktraceDatabaseEntry>()));
+               n.Delete(It.IsAny<BacktraceDatabaseRecord>()));
 
             var credentials = new BacktraceCredentials("https://validurl.com/", "validToken");
 

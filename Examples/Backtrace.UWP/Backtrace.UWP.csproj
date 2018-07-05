@@ -132,7 +132,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Backtrace\Backtrace.csproj">
+    <ProjectReference Include="..\..\Backtrace\Backtrace.csproj">
       <Project>{c347c139-1a03-4ac7-998a-8687401536d5}</Project>
       <Name>Backtrace</Name>
     </ProjectReference>

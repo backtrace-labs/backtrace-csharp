@@ -60,7 +60,18 @@ namespace Backtrace.Model.JsonData
             //Base name of application generating the report
             Attributes["application"] = callingAssembly.GetName().Name;
             Attributes["lang.name"] = "C#";
+            Attributes["location"] = callingAssembly.Location;
+            Attributes["version"] = FileVersionInfo.GetVersionInfo(callingAssembly.Location);
+            var culture = callingAssembly.GetName().CultureInfo.Name;
+            if (!string.IsNullOrEmpty(culture))
+            {
+                Attributes["culture"] = callingAssembly.GetName().CultureInfo.Name;
+            }
 
+#if !NET35
+            Attributes["dynamic"] = callingAssembly.IsDynamic;
+            Attributes["trusted"] = callingAssembly.IsFullyTrusted;
+#endif
         }
 
         /// <summary>
