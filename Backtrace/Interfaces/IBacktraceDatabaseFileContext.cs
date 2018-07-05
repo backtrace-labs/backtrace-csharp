@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Backtrace.Interfaces
 {
-    internal interface IBacktraceDatabaseFileContext<T>
+    internal interface IBacktraceDatabaseFileContext
     {
         /// <summary>
         /// Get all valid physical entries stored in database directory
@@ -24,6 +24,6 @@ namespace Backtrace.Interfaces
         /// Remove orphaned files existing in database directory
         /// </summary>
         /// <param name="existingEntries">Existing entries in BacktraceDatabaseContext</param>
-        void RemoveOrphaned(IEnumerable<BacktraceDatabaseEntry<T>> existingEntries);
+        void RemoveOrphaned(IEnumerable<BacktraceDatabaseEntry> existingEntries);
     }
 }

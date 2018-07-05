@@ -19,12 +19,12 @@ namespace Backtrace.Services
     /// <summary>
     /// Backtrace Api class that allows to send a diagnostic data to server
     /// </summary>
-    internal class BacktraceApi<T> : IBacktraceApi<T>
+    internal class BacktraceApi : IBacktraceApi
     {
         /// <summary>
         /// User custom request method
         /// </summary>
-        public Func<string, string, BacktraceData<T>, BacktraceResult> RequestHandler { get; set; } = null;
+        public Func<string, string, BacktraceData, BacktraceResult> RequestHandler { get; set; } = null;
 
         /// <summary>
         /// Event triggered when server is unvailable
@@ -36,7 +36,7 @@ namespace Backtrace.Services
         /// </summary>
         public Action<BacktraceResult> OnServerResponse { get; set; }
 
-        internal readonly ReportLimitWatcher<T> reportLimitWatcher;
+        internal readonly ReportLimitWatcher reportLimitWatcher;
 
         /// <summary>
         /// Url to server
@@ -54,7 +54,7 @@ namespace Backtrace.Services
                 throw new ArgumentException($"{nameof(BacktraceCredentials)} cannot be null");
             }
             _serverurl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
-            reportLimitWatcher = new ReportLimitWatcher<T>(reportPerMin);
+            reportLimitWatcher = new ReportLimitWatcher(reportPerMin);
         }
         #region asyncRequest
 #if !NET35
@@ -64,13 +64,13 @@ namespace Backtrace.Services
         /// </summary>
         internal HttpClient HttpClient = new HttpClient();
 
-        public async Task<BacktraceResult> SendAsync(BacktraceData<T> data)
+        public async Task<BacktraceResult> SendAsync(BacktraceData data)
         {
             //check rate limiting
             bool watcherValidation = reportLimitWatcher.WatchReport(data.Report);
             if (!watcherValidation)
             {
-                return BacktraceResult.OnLimitReached(data.Report as BacktraceReport);
+                return BacktraceResult.OnLimitReached(data.Report);
             }
             // execute user custom request handler
             if (RequestHandler != null)
@@ -79,17 +79,17 @@ namespace Backtrace.Services
             }
             //get a json from diagnostic object
             var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
-            return await SendAsync(Guid.NewGuid(), json, data.Attachments, data.Report as BacktraceReport);
+            return await SendAsync(Guid.NewGuid(), json, data.Attachments, data.Report);
         }
 
-        internal async Task<BacktraceResult> SendAsync(Guid requestId, string json, List<string> attachments, BacktraceReport report)
+        internal async Task<BacktraceResult> SendAsync(Guid requestId, string json, List<string> attachments, BacktraceReportBase report)
         {
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
             string boundary = FormDataHelper.GetBoundary(requestId);
 
-            using (var request = new HttpRequestMessage(HttpMethod.Post, _serverurl))
             using (var content = new MultipartFormDataContent(boundary))
             {
+                var request = new HttpRequestMessage(HttpMethod.Post, _serverurl);
                 content.AddJson("upload_file.json", json);
                 content.AddFiles(attachments);
 
@@ -130,7 +130,7 @@ namespace Backtrace.Services
         /// </summary>
         /// <param name="data">Diagnostic data</param>
         /// <returns>Server response</returns>
-        public BacktraceResult Send(BacktraceData<T> data)
+        public BacktraceResult Send(BacktraceData data)
         {
 #if !NET35
             return Task.Run(() => SendAsync(data)).Result;
@@ -139,7 +139,7 @@ namespace Backtrace.Services
             bool watcherValidation = reportLimitWatcher.WatchReport(data.Report);
             if (!watcherValidation)
             {
-                return BacktraceResult.OnLimitReached(data.Report as BacktraceReport);
+                return BacktraceResult.OnLimitReached(data.Report);
             }
             // execute user custom request handler
             if (RequestHandler != null)
@@ -148,11 +148,10 @@ namespace Backtrace.Services
             }
             //set submission data
             string json = JsonConvert.SerializeObject(data);
-            var report = data.Report as BacktraceReport;
-            return Send(Guid.NewGuid(), json, report?.AttachmentPaths ?? new List<string>(), report);
+            return Send(Guid.NewGuid(), json, data.Report?.AttachmentPaths ?? new List<string>(), data.Report);
         }
 
-        private BacktraceResult Send(Guid requestId, string json, List<string> attachments, BacktraceReport report)
+        private BacktraceResult Send(Guid requestId, string json, List<string> attachments, BacktraceReportBase report)
         {
             var formData = FormDataHelper.GetFormData(json, attachments, requestId);
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
@@ -183,7 +182,7 @@ namespace Backtrace.Services
         /// Handle server respond for synchronous request
         /// </summary>
         /// <param name="request">Current HttpWebRequest</param>
-        private BacktraceResult ReadServerResponse(HttpWebRequest request, BacktraceReport report)
+        private BacktraceResult ReadServerResponse(HttpWebRequest request, BacktraceReportBase report)
         {
             using (WebResponse webResponse = request.GetResponse() as HttpWebResponse)
             {
@@ -195,7 +194,7 @@ namespace Backtrace.Services
                 return response;
             }
         }
-#endregion
+        #endregion
         /// <summary>
         /// Get serialization settings
         /// </summary>
@@ -205,7 +204,7 @@ namespace Backtrace.Services
             NullValueHandling = NullValueHandling.Ignore,
             DefaultValueHandling = DefaultValueHandling.Ignore
         };
-#region dispose
+        #region dispose
         private bool _disposed = false; // To detect redundant calls
         public void Dispose()
         {
@@ -231,9 +230,9 @@ namespace Backtrace.Services
         {
             Dispose(false);
         }
-#endregion
+        #endregion
 
-        public void SetClientRateLimitEvent(Action<BacktraceReport> onClientReportLimitReached)
+        public void SetClientRateLimitEvent(Action<BacktraceReportBase> onClientReportLimitReached)
         {
             reportLimitWatcher.OnClientReportLimitReached = onClientReportLimitReached;
         }

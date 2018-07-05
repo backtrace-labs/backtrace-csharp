@@ -28,21 +28,21 @@ namespace Backtrace.Tests.DatabaseTests
         /// <summary>
         /// Backtrace database
         /// </summary>
-        private BacktraceDatabase<object> _backtraceDatabase;
+        private BacktraceDatabase _backtraceDatabase;
 
         /// <summary>
         /// Last database entry
         /// </summary>
-        BacktraceDatabaseEntry<object> _lastEntry;
+        BacktraceDatabaseEntry _lastEntry;
 
         /// <summary>
         /// Get new database entry 
         /// </summary>
         /// <returns>Database entry mock</returns>
-        protected BacktraceDatabaseEntry<object> GetEntry()
+        protected BacktraceDatabaseEntry GetEntry()
         {
             //mock single entry
-            var mockEntry = new Mock<BacktraceDatabaseEntry<object>>();
+            var mockEntry = new Mock<BacktraceDatabaseEntry>();
             mockEntry.Setup(n => n.Delete());
             mockEntry.SetupProperty(n => n.Entry, null);
 
@@ -64,18 +64,18 @@ namespace Backtrace.Tests.DatabaseTests
             var mockHttp = new MockHttpMessageHandler();
             mockHttp.When(serverUrl)
                 .Respond("application/json", "{'object' : 'aaa'}");
-            var api = new BacktraceApi<object>(credentials, 0)
+            var api = new BacktraceApi(credentials, 0)
             {
                 HttpClient = mockHttp.ToHttpClient()
             };
 
             //mock file context
-            var mockFileContext = new Mock<IBacktraceDatabaseFileContext<object>>();
+            var mockFileContext = new Mock<IBacktraceDatabaseFileContext>();
             mockFileContext.Setup(n => n.GetEntries())
                 .Returns(new List<FileInfo>());
-            mockFileContext.Setup(n => n.RemoveOrphaned(It.IsAny<IEnumerable<BacktraceDatabaseEntry<object>>>()));
+            mockFileContext.Setup(n => n.RemoveOrphaned(It.IsAny<IEnumerable<BacktraceDatabaseEntry>>()));
 
-            _backtraceDatabase = new BacktraceDatabase<object>(new BacktraceDatabaseSettings(projectPath)
+            _backtraceDatabase = new BacktraceDatabase(new BacktraceDatabaseSettings(projectPath)
             {
                 AutoSendMode = true,
                 RetryBehavior = RetryBehavior.ByInterval
@@ -98,7 +98,7 @@ namespace Backtrace.Tests.DatabaseTests
             // BacktraceClient triggers BeforeSend event after retrieving entry from database
             // in this case entry should be locked
             // BacktraceDatabase shouldn't try to send report from timer event because, all entries all in use (1)
-            _backtraceClient.BeforeSend = (BacktraceData<object> data) =>
+            _backtraceClient.BeforeSend = (BacktraceData data) =>
             {
                 var dbEntries = _backtraceDatabase.BacktraceDatabaseContext.FirstOrDefault();
                 Assert.IsNull(dbEntries);

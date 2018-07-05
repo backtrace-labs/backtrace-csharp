@@ -12,7 +12,7 @@ namespace Backtrace.Model
     /// <summary>
     /// Serializable Backtrace API data object
     /// </summary>
-    public class BacktraceData<T>
+    public class BacktraceData
     {
         /// <summary>
         /// 16 bytes of randomness in human readable UUID format
@@ -100,7 +100,7 @@ namespace Backtrace.Model
         /// <summary>
         /// Current BacktraceReport
         /// </summary>
-        internal BacktraceReportBase<T> Report { get; set; }
+        internal BacktraceReportBase Report { get; set; }
 
         /// <summary>
         /// Create instance of report data
@@ -108,7 +108,7 @@ namespace Backtrace.Model
         /// <param name="report">Current report</param>
         /// <param name="clientAttributes">BacktraceClient's attributes</param>
         [JsonConstructor]
-        public BacktraceData(BacktraceReportBase<T> report, Dictionary<string, T> clientAttributes)
+        public BacktraceData(BacktraceReportBase report, Dictionary<string, object> clientAttributes)
         {
             if (report == null)
             {
@@ -130,9 +130,9 @@ namespace Backtrace.Model
             SourceCode = sourceCodeData.data.Any() ? sourceCodeData.data : null;
         }
 
-        private void SetAttributes(Dictionary<string, T> clientAttributes)
+        private void SetAttributes(Dictionary<string, object> clientAttributes)
         {
-            var backtraceAttributes = new BacktraceAttributes<T>(Report, clientAttributes);
+            var backtraceAttributes = new BacktraceAttributes(Report, clientAttributes);
             Attributes = backtraceAttributes.Attributes;
             Annotations = new Annotations(Report.CallingAssembly, backtraceAttributes.ComplexAttributes);
         }

@@ -33,14 +33,14 @@ namespace Backtrace.Tests.IntegrationTests
         {
             //prepare mock object
             //mock database
-            var database = new Mock<IBacktraceDatabase<object>>();
+            var database = new Mock<IBacktraceDatabase>();
             database.Setup(n =>
-                n.Add(It.IsAny<BacktraceReportBase<object>>(),
+                n.Add(It.IsAny<BacktraceReportBase>(),
                     It.IsAny<Dictionary<string, object>>(),
                     It.IsAny<MiniDumpType>()));
 
             database.Setup(n =>
-               n.Delete(It.IsAny<BacktraceDatabaseEntry<object>>()));
+               n.Delete(It.IsAny<BacktraceDatabaseEntry>()));
 
             var credentials = new BacktraceCredentials("https://validurl.com/", "validToken");
 
@@ -49,7 +49,7 @@ namespace Backtrace.Tests.IntegrationTests
             var mockHttp = new MockHttpMessageHandler();
             mockHttp.When(serverUrl)
                 .Respond("application/json", "{'object' : 'aaa'}");
-            var api = new BacktraceApi<object>(credentials, 0)
+            var api = new BacktraceApi(credentials, 0)
             {
                 HttpClient = mockHttp.ToHttpClient()
             };
@@ -74,7 +74,7 @@ namespace Backtrace.Tests.IntegrationTests
                 {"Google url" , new Uri("http://google.com") }
             };
             //to check if client report limit reached use OnClientReportLimitReached 
-            _backtraceClient.OnClientReportLimitReached = (BacktraceReport report) =>
+            _backtraceClient.OnClientReportLimitReached = (BacktraceReportBase report) =>
             {
                 clientReportLimitReached = true;
             };
@@ -179,7 +179,7 @@ namespace Backtrace.Tests.IntegrationTests
             int totalNumberOfDropsOnEvents = 0;
 
             //set backtrace events
-            _backtraceClient.OnClientReportLimitReached = (BacktraceReport report) =>
+            _backtraceClient.OnClientReportLimitReached = (BacktraceReportBase report) =>
             {
                 totalDrop++;
                 clientReportLimitReached = true;

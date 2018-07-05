@@ -13,7 +13,7 @@ namespace Backtrace
     /// <summary>
     /// Backtrace .NET Client 
     /// </summary>
-    public class BacktraceClient : BacktraceBase<object>, IBacktraceClient<object>
+    public class BacktraceClient : BacktraceBase, IBacktraceClient
     {
         /// <summary>
         /// Set an event executed before sending data to Backtrace API
@@ -40,7 +40,7 @@ namespace Backtrace
             Dictionary<string, object> attributes = null,
             uint reportPerMin = 3)
             : this(BacktraceCredentials.ReadConfigurationSection(sectionName),
-                attributes, new BacktraceDatabase<object>(new BacktraceDatabaseSettings(databasePath)),
+                attributes, new BacktraceDatabase(new BacktraceDatabaseSettings(databasePath)),
                 reportPerMin)
         { }
 
@@ -54,7 +54,7 @@ namespace Backtrace
         /// <param name="reportPerMin">Numbers of records sending per one min</param>
         public BacktraceClient(
             string sectionName,
-            IBacktraceDatabase<object> backtraceDatabase,
+            IBacktraceDatabase backtraceDatabase,
             Dictionary<string, object> attributes = null,
             uint reportPerMin = 3)
             : this(BacktraceCredentials.ReadConfigurationSection(sectionName),
@@ -75,7 +75,7 @@ namespace Backtrace
             Dictionary<string, object> attributes = null,
             uint reportPerMin = 3)
             : base(BacktraceCredentials.ReadConfigurationSection(sectionName),
-                attributes, new BacktraceDatabase<object>(databaseSettings), reportPerMin)
+                attributes, new BacktraceDatabase(databaseSettings), reportPerMin)
         { }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace Backtrace
         public BacktraceClient(
             string sectionName = "BacktraceCredentials",
             Dictionary<string, object> attributes = null,
-            IBacktraceDatabase<object> database = null,
+            IBacktraceDatabase database = null,
             uint reportPerMin = 3)
             : base(BacktraceCredentials.ReadConfigurationSection(sectionName),
                 attributes, database, reportPerMin)
@@ -99,7 +99,7 @@ namespace Backtrace
         /// </summary>
         /// <param name="setup">Backtrace client configuration</param>
         /// <param name="backtraceDatabase">Backtrace database</param>
-        public BacktraceClient(BacktraceClientConfiguration setup, IBacktraceDatabase<object> backtraceDatabase = null)
+        public BacktraceClient(BacktraceClientConfiguration setup, IBacktraceDatabase backtraceDatabase = null)
             : base(setup.Credentials, setup.ClientAttributes, backtraceDatabase, setup.ReportPerMin)
         { }
         /// <summary>
@@ -145,7 +145,7 @@ namespace Backtrace
         public BacktraceClient(
             BacktraceCredentials backtraceCredentials,
             Dictionary<string, object> attributes = null,
-            IBacktraceDatabase<object> database = null,
+            IBacktraceDatabase database = null,
             uint reportPerMin = 3)
             : base(backtraceCredentials, attributes,
                   database, reportPerMin)

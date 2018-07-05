@@ -22,7 +22,7 @@ namespace Backtrace.Tests.DatabaseTests
         {
             int totalFails = 0;
             Random random = new Random();
-            var entries = new List<BacktraceDatabaseEntry<object>>();
+            var entries = new List<BacktraceDatabaseEntry>();
             for (int i = 0; i < numberOfEntries; i++)
             {
                 var percentage = random.Next(0, 100);

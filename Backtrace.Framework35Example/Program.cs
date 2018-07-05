@@ -32,7 +32,7 @@ namespace Backtrace.Framework35Example
             //create new backtrace database settings
             BacktraceDatabaseSettings databaseSettings = new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath);
             //create Backtrace database
-            var database = new BacktraceDatabase<object>(databaseSettings);
+            var database = new BacktraceDatabase(databaseSettings);
             //setup new client
             var backtraceClient = new BacktraceClient(credentials, databaseSettings);
 
@@ -46,7 +46,7 @@ namespace Backtrace.Framework35Example
             };
             //Add your own handler to client API
             backtraceClient.BeforeSend =
-               (BacktraceData<object> model) =>
+               (BacktraceData model) =>
                {
                    var data = model;
                    data.Attributes.Add("eventAtrtibute", "EventAttributeValue");
@@ -82,7 +82,7 @@ namespace Backtrace.Framework35Example
                 var response = backtraceClient.Send(report);
             }
             //Report a new message
-            backtraceClient.Send("Client message");
+            var sendResult = backtraceClient.Send("Client message");
         }
     }
 }

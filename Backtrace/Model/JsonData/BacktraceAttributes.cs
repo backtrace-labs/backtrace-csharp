@@ -16,7 +16,7 @@ namespace Backtrace.Model.JsonData
     /// <summary>
     /// Class instance to get a built-in attributes from current application
     /// </summary>
-    public class BacktraceAttributes<T>
+    public class BacktraceAttributes
     {
         /// <summary>
         /// Get built-in primitive attributes
@@ -34,9 +34,9 @@ namespace Backtrace.Model.JsonData
         /// <param name="report">Received report</param>
         /// <param name="clientAttributes">Client's attributes (report and client)</param>
         [JsonConstructor]
-        public BacktraceAttributes(BacktraceReportBase<T> report, Dictionary<string, T> clientAttributes)
+        public BacktraceAttributes(BacktraceReportBase report, Dictionary<string, object> clientAttributes)
         {
-            if(report != null)
+            if (report != null)
             {
                 ConvertAttributes(report, clientAttributes);
                 SetLibraryAttributes(report.CallingAssembly);
@@ -46,7 +46,7 @@ namespace Backtrace.Model.JsonData
             //Environment attributes override user attributes            
             SetMachineAttributes();
             SetProcessAttributes();
-            
+
         }
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace Backtrace.Model.JsonData
             {
                 Attributes["build.debug"] = true;
                 Attributes["build.jit"] = !debuggableAttribute.IsJITOptimizerDisabled;
-                Attributes["build.type"] = debuggableAttribute.IsJITOptimizerDisabled 
+                Attributes["build.type"] = debuggableAttribute.IsJITOptimizerDisabled
                     ? "Debug" : "Release";
                 // check for Debug Output "full" or "pdb-only"
                 Attributes["build.output"] = (debuggableAttribute.DebuggingFlags &
@@ -100,9 +100,9 @@ namespace Backtrace.Model.JsonData
         /// <param name="report">Received report</param>
         /// <param name="clientAttributes">Client's attributes (report and client)</param>
         /// <returns>Dictionary of custom user attributes </returns>
-        private void ConvertAttributes(BacktraceReportBase<T> report, Dictionary<string, T> clientAttributes)
+        private void ConvertAttributes(BacktraceReportBase report, Dictionary<string, object> clientAttributes)
         {
-            var attributes = BacktraceReportBase<T>.ConcatAttributes(report, clientAttributes);
+            var attributes = BacktraceReportBase.ConcatAttributes(report, clientAttributes);
             foreach (var attribute in attributes)
             {
                 var type = attribute.Value.GetType();
@@ -143,7 +143,7 @@ namespace Backtrace.Model.JsonData
         /// <summary>
         /// Set attributes from exception
         /// </summary>
-        internal void SetExceptionAttributes(BacktraceReportBase<T> report)
+        internal void SetExceptionAttributes(BacktraceReportBase report)
         {
             //there is no information to analyse
             if (report == null)
@@ -173,7 +173,12 @@ namespace Backtrace.Model.JsonData
                 return;
             }
             //How long the application has been running  in secounds
-            Attributes["process.age"] = Math.Round(process.TotalProcessorTime.TotalSeconds);
+            var processAge = Math.Round(process.TotalProcessorTime.TotalSeconds);
+            var totalProcessAge = unchecked((long)processAge);
+            if (totalProcessAge > 0)
+            {
+                Attributes["process.age"] = totalProcessAge;
+            }
             try
             {
                 Attributes["cpu.process.count"] = Process.GetProcesses().Count();
@@ -210,7 +215,7 @@ namespace Backtrace.Model.JsonData
                     Attributes["vm.vma.peak"] = peakVirtualMemorySize;
                 }
             }
-            catch(PlatformNotSupportedException)
+            catch (PlatformNotSupportedException)
             {
                 Trace.TraceWarning($"Cannot retrieve information about process memory - platform not supported");
             }
