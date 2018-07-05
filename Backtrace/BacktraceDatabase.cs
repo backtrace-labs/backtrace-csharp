@@ -378,7 +378,7 @@ namespace Backtrace
                     continue;
                 }
                 BacktraceDatabaseContext.Add(record);
-                if (!CheckDatabseSize())
+                if (ValidDatabaseSize())
                 {
                     throw new ArgumentException("Database directory has too many records or database size is bigger than in option declaration.");
                 }
@@ -389,7 +389,7 @@ namespace Backtrace
         /// Check current size of database
         /// </summary>
         /// <returns>False if BacktraceDatabase doesn't have more free space</returns>
-        private bool CheckDatabseSize()
+        private bool ValidDatabaseSize()
         {
             return ((BacktraceDatabaseContext.GetSize() > DatabaseSettings.MaxDatabaseSize || DatabaseSettings.MaxDatabaseSize == 0)
                 || (BacktraceDatabaseContext.GetTotalNumberOfRecords() > DatabaseSettings.MaxRecordCount || DatabaseSettings.MaxDatabaseSize == 0));

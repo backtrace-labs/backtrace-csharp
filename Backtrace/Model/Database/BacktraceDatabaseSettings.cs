@@ -36,8 +36,8 @@ namespace Backtrace.Model.Database
         {
             get
             {
-                //convert megabyte to kilobyte
-                return _maxDatabaseSize * 1000;
+                //convert megabyte to bytes
+                return _maxDatabaseSize * 1000 * 1000;
             }
             set
             {
