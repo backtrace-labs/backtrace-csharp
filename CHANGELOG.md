@@ -1,5 +1,11 @@
 ﻿# Backtrace C# Release Notes
 
+## Version 2.0.0 - 10.07.2018
+- `BacktraceDatabase` use `BacktraceRecord` instead of `BacktraceEntry`,
+- `BacktraceDatabase` new parameters - size limit and maximum number of record in database,
+- New information about current assembly in `BacktraceReport` attributes,
+- New directory for sample `Backtrace` projects,
+- `BacktraceReport` don't use anymore `BacktraceReportBase`. All `BacktraceClient` and `BacktraceDatabase` events use `BacktraceReport` instead of `BacktraceReportBase`.
 
 ## Version 1.3.2 - 03.07.2018
 - Fixed a invalid type for process.age attribute 

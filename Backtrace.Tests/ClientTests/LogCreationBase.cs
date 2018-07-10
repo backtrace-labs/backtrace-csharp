@@ -19,7 +19,7 @@ namespace Backtrace.Tests.ClientTests
         public virtual void Setup()
         {
             var api = new Mock<IBacktraceApi>();
-            api.Setup(n => n.Send(It.IsAny<Model.BacktraceData>())).Returns(new Model.BacktraceResult());
+            api.Setup(n => n.Send(It.IsAny<BacktraceData>())).Returns(new BacktraceResult());
             var credentials = new BacktraceCredentials(@"https://validurl.com/", "validToken");
             _backtraceClient = new BacktraceClient(credentials)
             {

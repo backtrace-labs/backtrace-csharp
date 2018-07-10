@@ -22,25 +22,25 @@ namespace Backtrace.Tests.DatabaseTests
         [TestCase(1)]
         [TestCase(5)]
         [Test(Author = "Konrad Dysput", Description = "Test add operation")]
-        public void TestNewContextEntries(int entryNumber)
+        public void TestNewContextRecords(int recordNumber)
         {
-            var totalNumberOfEntries = _database.Count();
-            for (int i = 0; i < entryNumber; i++)
+            var totalNumberOfRecords = _database.Count();
+            for (int i = 0; i < recordNumber; i++)
             {
-                _database.BacktraceDatabaseContext.Add(GetEntry());
+                _database.BacktraceDatabaseContext.Add(GetRecord());
             }
-            Assert.AreEqual(totalNumberOfEntries + entryNumber, _database.Count());
+            Assert.AreEqual(totalNumberOfRecords + recordNumber, _database.Count());
         }
-        [Test(Author = "Konrad Dysput", Description = "Test maximum number of entries")]
-        public void TestMaximumNumberOfEntries()
+        [Test(Author = "Konrad Dysput", Description = "Test maximum number of records")]
+        public void TestMaximumNumberOfRecords()
         {
             _database.Clear();
-            //we set maximum number of entries to equal to 100 in Setup method on DatabaseTestBase class
-            int maximumNumberOfEntries = 101;
-            //we add 100 entries - 100 is our database limit
-            for (int i = 0; i < maximumNumberOfEntries - 1; i++)
+            //we set maximum number of records  to equal to 100 in Setup method on DatabaseTestBase class
+            int maximumNumberOfRecords = 101;
+            //we add 100 records - 100 is our database limit
+            for (int i = 0; i < maximumNumberOfRecords - 1; i++)
             {
-                _database.BacktraceDatabaseContext.Add(GetEntry());
+                _database.BacktraceDatabaseContext.Add(GetRecord());
             }
             _database.Start();
             Assert.Throws<ArgumentException>(() => _database.Add(null, new Dictionary<string, object>(), MiniDumpType.None));
@@ -52,43 +52,43 @@ namespace Backtrace.Tests.DatabaseTests
         {
             _database.Clear();
             ChangeRetryOrder(RetryOrder.Queue);
-            //mock two entries
-            var firstEntry = GetEntry();
-            var secoundEntry = GetEntry();
-            //test if first entry is a real first entry
-            _database.BacktraceDatabaseContext.Add(firstEntry);
-            //test received entry after first pop
-            _database.BacktraceDatabaseContext.Add(secoundEntry);
+            //mock two records
+            var firstRecord = GetRecord();
+            var secoundRecord = GetRecord();
+            //test if first record is a real first record
+            _database.BacktraceDatabaseContext.Add(firstRecord);
+            //test received record after first pop
+            _database.BacktraceDatabaseContext.Add(secoundRecord);
 
             for (int i = 0; i < 10; i++)
             {
-                _database.BacktraceDatabaseContext.Add(GetEntry());
+                _database.BacktraceDatabaseContext.Add(GetRecord());
             }
-            DisposeEntries();
-            Assert.AreEqual(_database.BacktraceDatabaseContext.FirstOrDefault().Id, firstEntry.Id);
-            Assert.AreEqual(_database.BacktraceDatabaseContext.FirstOrDefault().Id, secoundEntry.Id);
+            DisposeRecords();
+            Assert.AreEqual(_database.BacktraceDatabaseContext.FirstOrDefault().Id, firstRecord.Id);
+            Assert.AreEqual(_database.BacktraceDatabaseContext.FirstOrDefault().Id, secoundRecord.Id);
         }
 
         [TestCase(1)]
         [TestCase(5)]
         [TestCase(15)]
         [Test(Author = "Konrad Dysput", Description = "Test FIFO list retry order")]
-        public void TestFifoListOrder(int totalNumberOfEntries)
+        public void TestFifoListOrder(int totalNumberOfRecords)
         {
             _database.Clear();
             ChangeRetryOrder(RetryOrder.Queue);
-            var entries = new List<BacktraceDatabaseEntry>();
-            for (int i = 0; i < totalNumberOfEntries; i++)
+            var records = new List<BacktraceDatabaseRecord>();
+            for (int i = 0; i < totalNumberOfRecords; i++)
             {
-                var entry = GetEntry();
-                entries.Add(entry);
-                _database.BacktraceDatabaseContext.Add(entry);
+                var record = GetRecord();
+                records.Add(record);
+                _database.BacktraceDatabaseContext.Add(record);
             }
-            DisposeEntries();
-            foreach (var entry in entries)
+            DisposeRecords();
+            foreach (var record in records)
             {
-                var firstEntryId = _database.BacktraceDatabaseContext.FirstOrDefault().Id;
-                Assert.AreEqual(firstEntryId, entry.Id);
+                var firstRecordId = _database.BacktraceDatabaseContext.FirstOrDefault().Id;
+                Assert.AreEqual(firstRecordId, record.Id);
             }
         }
 
@@ -99,42 +99,42 @@ namespace Backtrace.Tests.DatabaseTests
             ChangeRetryOrder(RetryOrder.Stack);
             for (int i = 0; i < 10; i++)
             {
-                _database.BacktraceDatabaseContext.Add(GetEntry());
+                _database.BacktraceDatabaseContext.Add(GetRecord());
             }
-            //mock two entries
-            var firstEntry = GetEntry();
-            var secoundEntry = GetEntry();
-            //test if first entry is a real first entry
-            _database.BacktraceDatabaseContext.Add(firstEntry);
-            //test received entry after first pop
-            _database.BacktraceDatabaseContext.Add(secoundEntry);
+            //mock two records
+            var firstRecord = GetRecord();
+            var secoundsRecord = GetRecord();
+            //test if first record is a real first record
+            _database.BacktraceDatabaseContext.Add(firstRecord);
+            //test received record after first pop
+            _database.BacktraceDatabaseContext.Add(secoundsRecord);
 
-            DisposeEntries();
-            Assert.AreEqual(_database.BacktraceDatabaseContext.FirstOrDefault().Id, secoundEntry.Id);
-            Assert.AreEqual(_database.BacktraceDatabaseContext.FirstOrDefault().Id, firstEntry.Id);
+            DisposeRecords();
+            Assert.AreEqual(_database.BacktraceDatabaseContext.FirstOrDefault().Id, secoundsRecord.Id);
+            Assert.AreEqual(_database.BacktraceDatabaseContext.FirstOrDefault().Id, firstRecord.Id);
         }
 
         [TestCase(1)]
         [TestCase(5)]
         [TestCase(15)]
         [Test(Author = "Konrad Dysput", Description = "Test LIFO list retry order")]
-        public void TestLifoListOrder(int totalNumberOfEntries)
+        public void TestLifoListOrder(int totalNumberOfRecords)
         {
             _database.Clear();
             ChangeRetryOrder(RetryOrder.Stack);
-            var entries = new List<BacktraceDatabaseEntry>();
-            for (int i = 0; i < totalNumberOfEntries; i++)
+            var records = new List<BacktraceDatabaseRecord>();
+            for (int i = 0; i < totalNumberOfRecords; i++)
             {
-                var entry = GetEntry();
-                entries.Add(entry);
-                _database.BacktraceDatabaseContext.Add(entry);
+                var record = GetRecord();
+                records.Add(record);
+                _database.BacktraceDatabaseContext.Add(record);
             }
-            DisposeEntries();
-            for (int retryIndex = entries.Count - 1; retryIndex >= 0; retryIndex--)
+            DisposeRecords();
+            for (int retryIndex = records.Count - 1; retryIndex >= 0; retryIndex--)
             {
-                var entry = entries[retryIndex];
-                var firstEntryId = _database.BacktraceDatabaseContext.FirstOrDefault().Id;
-                Assert.AreEqual(firstEntryId, entry.Id);
+                var record = records[retryIndex];
+                var firstRecordId = _database.BacktraceDatabaseContext.FirstOrDefault().Id;
+                Assert.AreEqual(firstRecordId, record.Id);
             }
         }
 

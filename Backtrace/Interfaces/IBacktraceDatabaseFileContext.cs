@@ -9,10 +9,10 @@ namespace Backtrace.Interfaces
     internal interface IBacktraceDatabaseFileContext
     {
         /// <summary>
-        /// Get all valid physical entries stored in database directory
+        /// Get all valid physical records stored in database directory
         /// </summary>
-        /// <returns>All existing physical entries</returns>
-        IEnumerable<FileInfo> GetEntries();
+        /// <returns>All existing physical records</returns>
+        IEnumerable<FileInfo> GetRecords();
 
         /// <summary>
         /// Get all physical files stored in database directory
@@ -21,9 +21,19 @@ namespace Backtrace.Interfaces
         IEnumerable<FileInfo> GetAll();
 
         /// <summary>
+        /// Valid all database files consistency
+        /// </summary>
+        bool ValidFileConsistency();
+
+        /// <summary>
         /// Remove orphaned files existing in database directory
         /// </summary>
-        /// <param name="existingEntries">Existing entries in BacktraceDatabaseContext</param>
-        void RemoveOrphaned(IEnumerable<BacktraceDatabaseEntry> existingEntries);
+        /// <param name="existingRecords">Existing entries in BacktraceDatabaseContext</param>
+        void RemoveOrphaned(IEnumerable<BacktraceDatabaseRecord> existingRecords);
+
+        /// <summary>
+        /// Remove all files from database directory
+        /// </summary>
+        void Clear();
     }
 }

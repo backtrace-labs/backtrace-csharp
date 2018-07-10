@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Backtrace.Tests.DatabaseTests.Model
 {
-    internal class MockBacktraceDatabaseWriter : BacktraceDatabaseEntryWriter, IBacktraceDatabaseEntryWriter
+    internal class MockBacktraceDatabaseWriter : BacktraceDatabaseRecordWriter, IBacktraceDatabaseRecordWriter
     {
         public bool writeFail = false;
 
@@ -29,7 +29,7 @@ namespace Backtrace.Tests.DatabaseTests.Model
             return string.Empty;
         }
 
-        public override void SaveValidReport(string sourcePath, string destinationPath)
+        public override void SaveValidRecord(string sourcePath, string destinationPath)
         {
             return;
         }

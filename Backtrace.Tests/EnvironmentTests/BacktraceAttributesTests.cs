@@ -17,7 +17,7 @@ namespace Backtrace.Tests.EnvironmentTests
         [Test]
         public void TestAttributesCreation()
         {
-            var report = new BacktraceReportBase("testMessage");
+            var report = new BacktraceReport("testMessage");
             //test object creation
             Assert.DoesNotThrow(() => new BacktraceAttributes(report, null));
 
@@ -25,7 +25,7 @@ namespace Backtrace.Tests.EnvironmentTests
             Assert.DoesNotThrow(() =>
             {
                 var backtraceAttributes = new BacktraceAttributes(report,new Dictionary<string, object>());
-                backtraceAttributes.SetExceptionAttributes(new BacktraceReportBase("message"));
+                backtraceAttributes.SetExceptionAttributes(new BacktraceReport("message"));
             });
             //test null
             Assert.DoesNotThrow(() =>

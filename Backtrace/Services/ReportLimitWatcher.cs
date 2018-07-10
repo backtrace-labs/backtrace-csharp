@@ -16,7 +16,7 @@ namespace Backtrace.Services
         /// <summary>
         /// Set event executed when client site report limit reached
         /// </summary>
-        internal Action<BacktraceReportBase> OnClientReportLimitReached = null;
+        internal Action<BacktraceReport> OnClientReportLimitReached = null;
 
         internal readonly Queue<long> _reportQue;
 
@@ -53,7 +53,7 @@ namespace Backtrace.Services
         /// </summary>
         /// <param name="report">Current report</param>
         /// <returns>true if user can add a new report</returns>
-        public bool WatchReport(BacktraceReportBase report)
+        public bool WatchReport(BacktraceReport report)
         {
             if (!_watcherEnable)
             {

@@ -1,7 +1,16 @@
 # Backtrace
+[![Backtrace@release](https://img.shields.io/badge/Backtrace%40master-2.0.0-blue.svg)](https://www.nuget.org/packages/Backtrace)
+[![Build status](https://ci.appveyor.com/api/projects/status/o0n9sp0ydgxb3ktu?svg=true)](https://ci.appveyor.com/project/konraddysput/backtrace-csharp)
+
+[![Backtrace@pre-release](https://img.shields.io/badge/Backtrace%40dev-2.0.1-blue.svg)](https://www.nuget.org/packages/Backtrace)
+[![Build status](https://ci.appveyor.com/api/projects/status/o0n9sp0ydgxb3ktu/branch/dev?svg=true)](https://ci.appveyor.com/project/konraddysput/backtrace-csharp/branch/dev)
+
+
 
 [Backtrace](http://backtrace.io/)'s integration with C# applications allows customers to capture and report handled and unhandled C# exceptions to their Backtrace instance, instantly offering the ability to prioritize and debug software errors.
 
+ 
+[Github Release]:(https://github.com/backtrace-labs/backtrace-csharp/)
 ## Usage
 
 ```csharp
@@ -14,7 +23,7 @@ try{
     //throw exception here
 }
 catch(Exception exception){
-    backtraceClient.Send(new BacktraceReport(exception));
+    await backtraceClient.SendAsync(new BacktraceReport(exception));
 }
 ```
 
@@ -181,7 +190,7 @@ For more information on `BacktraceClientConfiguration` parameters please see <a 
 
 
 Notes:
-- If parameter `reportPerMin` is equal to 0, there is no limit on the number of error reports per minute. When the `reportPerMin` cap is reached, `BacktraceClient.Send` method will return false.
+- If parameter `reportPerMin` is equal to 0, there is no limit on the number of error reports per minute. When the `reportPerMin` cap is reached, `BacktraceClient.Send/BacktraceClient.SendAsync` method will return false.
 
 
 #### Database initialization <a name="documentation-database-initialization"></a>
@@ -202,7 +211,8 @@ var backtraceClient = new BacktraceClient(configuration, database);
 ```
 
 Notes:
-- If a valid `databaseDirectory` directory is supplied, the Backtrace library will generate and attach a minidump to each error report automatically. Otherwise, `BacktraceDatabase` will be disabled.
+- If a valid `databaseDirectory` directory is supplied, the Backtrace library will generate and attach a minidump to each error report automatically. Otherwise, `BacktraceDatabase` will be disabled,
+- You can set `backtraceClient.MiniDumpType` to `MiniDumpType.None` if you don't want to generate minidump files.
 
 
 #### TLS/SSL Support
@@ -225,11 +235,11 @@ ServicePointManager.ServerCertificateValidationCallback
 
 ## Sending an error report <a name="documentation-sending-report"></a>
 
-`BacktraceClient.Send` method will send an error report to the Backtrace endpoint specified. There `Send` method is overloaded, see examples below:
+`BacktraceClient.Send/BacktraceClient.SendAsync` method will send an error report to the Backtrace endpoint specified. There `Send` method is overloaded, see examples below:
 
 ### Using BacktraceReport
 
-The `BacktraceReport` class extends `BacktraceReportBase` and represents a single error report. (Optional) You can also submit custom attributes using the `attributes` parameter, or attach files by supplying an array of file paths in the `attachmentPaths` parameter.
+The `BacktraceReport` class represents a single error report. (Optional) You can also submit custom attributes using the `attributes` parameter, or attach files by supplying an array of file paths in the `attachmentPaths` parameter.
 
 ```csharp
 try
@@ -335,12 +345,12 @@ backtraceClient.HandleApplicationException();
 
 ## Custom client and report classes <a name="documentation-customization"></a>
 
-You can extend `BacktraceReportBase` and `BacktraceBase` to create your own Backtrace client and error report implementation. You can refer to `BacktraceClient` and `BacktraceReport` for implementation inspirations. 
+You can extend `BacktraceBase` to create your own Backtrace client and error report implementation. You can refer to `BacktraceClient` for implementation inspirations. 
 
 # Architecture  <a name="architecture"></a>
 
 ## BacktraceReport  <a name="architecture-BacktraceReport"></a>
-**`BacktraceReport`** is a class that describe a single error report that extends `BacktraceReportBase` class. Keep in mind that `BacktraceClient` uses `CallingAssembly` method to retrieve information about your application.  
+**`BacktraceReport`** is a class that describe a single error report. Keep in mind that `BacktraceClient` uses `CallingAssembly` method to retrieve information about your application.  
 
 ## BacktraceClient  <a name="architecture-BacktraceClient"></a>
 **`BacktraceClient`** is a class that allows you to instantiate a client instance that interacts with `BacktraceApi`. This class sets up connection to the Backtrace endpoint and manages error reporting behavior (for example, saving minidump files on your local hard drive and limiting the number of error reports per minute). `BacktraceClient` extends `BacktraceBase` class.
