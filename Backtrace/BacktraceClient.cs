@@ -241,9 +241,5 @@ namespace Backtrace
         }
         #endregion
 #endif
-
-
-
-
     }
 }
