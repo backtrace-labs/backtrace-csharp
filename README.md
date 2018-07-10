@@ -1,8 +1,8 @@
 # Backtrace
-[![Backtrace@release](https://img.shields.io/badge/Backtrace%40master-1.3.3-blue.svg)](https://www.nuget.org/packages/Backtrace)
+[![Backtrace@release](https://img.shields.io/badge/Backtrace%40master-2.0.0-blue.svg)](https://www.nuget.org/packages/Backtrace)
 [![Build status](https://ci.appveyor.com/api/projects/status/o0n9sp0ydgxb3ktu?svg=true)](https://ci.appveyor.com/project/konraddysput/backtrace-csharp)
 
-[![Backtrace@pre-release](https://img.shields.io/badge/Backtrace%40dev-1.3.4-blue.svg)](https://www.nuget.org/packages/Backtrace)
+[![Backtrace@pre-release](https://img.shields.io/badge/Backtrace%40dev-2.0.1-blue.svg)](https://www.nuget.org/packages/Backtrace)
 [![Build status](https://ci.appveyor.com/api/projects/status/o0n9sp0ydgxb3ktu/branch/dev?svg=true)](https://ci.appveyor.com/project/konraddysput/backtrace-csharp/branch/dev)
 
 
@@ -239,7 +239,7 @@ ServicePointManager.ServerCertificateValidationCallback
 
 ### Using BacktraceReport
 
-The `BacktraceReport` class extends `BacktraceReportBase` and represents a single error report. (Optional) You can also submit custom attributes using the `attributes` parameter, or attach files by supplying an array of file paths in the `attachmentPaths` parameter.
+The `BacktraceReport` class represents a single error report. (Optional) You can also submit custom attributes using the `attributes` parameter, or attach files by supplying an array of file paths in the `attachmentPaths` parameter.
 
 ```csharp
 try
@@ -345,12 +345,12 @@ backtraceClient.HandleApplicationException();
 
 ## Custom client and report classes <a name="documentation-customization"></a>
 
-You can extend `BacktraceReportBase` and `BacktraceBase` to create your own Backtrace client and error report implementation. You can refer to `BacktraceClient` and `BacktraceReport` for implementation inspirations. 
+You can extend `BacktraceBase` to create your own Backtrace client and error report implementation. You can refer to `BacktraceClient` for implementation inspirations. 
 
 # Architecture  <a name="architecture"></a>
 
 ## BacktraceReport  <a name="architecture-BacktraceReport"></a>
-**`BacktraceReport`** is a class that describe a single error report that extends `BacktraceReportBase` class. Keep in mind that `BacktraceClient` uses `CallingAssembly` method to retrieve information about your application.  
+**`BacktraceReport`** is a class that describe a single error report. Keep in mind that `BacktraceClient` uses `CallingAssembly` method to retrieve information about your application.  
 
 ## BacktraceClient  <a name="architecture-BacktraceClient"></a>
 **`BacktraceClient`** is a class that allows you to instantiate a client instance that interacts with `BacktraceApi`. This class sets up connection to the Backtrace endpoint and manages error reporting behavior (for example, saving minidump files on your local hard drive and limiting the number of error reports per minute). `BacktraceClient` extends `BacktraceBase` class.
