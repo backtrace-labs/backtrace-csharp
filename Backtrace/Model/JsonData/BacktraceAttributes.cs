@@ -9,6 +9,7 @@ using Backtrace.Common;
 using Backtrace.Extensions;
 using System.Reflection;
 using Newtonsoft.Json;
+using System.IO;
 
 [assembly: InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Model.JsonData
@@ -34,7 +35,7 @@ namespace Backtrace.Model.JsonData
         /// <param name="report">Received report</param>
         /// <param name="clientAttributes">Client's attributes (report and client)</param>
         [JsonConstructor]
-        public BacktraceAttributes(BacktraceReportBase report, Dictionary<string, object> clientAttributes)
+        public BacktraceAttributes(BacktraceReport report, Dictionary<string, object> clientAttributes)
         {
             if (report != null)
             {
@@ -46,7 +47,6 @@ namespace Backtrace.Model.JsonData
             //Environment attributes override user attributes            
             SetMachineAttributes();
             SetProcessAttributes();
-
         }
 
         /// <summary>
@@ -59,15 +59,19 @@ namespace Backtrace.Model.JsonData
             Attributes["guid"] = GenerateMachineId().ToString();
             //Base name of application generating the report
             Attributes["application"] = callingAssembly.GetName().Name;
-            Attributes["lang.name"] = "C#";
+
             Attributes["location"] = callingAssembly.Location;
-            Attributes["version"] = FileVersionInfo.GetVersionInfo(callingAssembly.Location);
+            try
+            {
+                //in case when calling assembly from file system is not available
+                Attributes["version"] = FileVersionInfo.GetVersionInfo(callingAssembly.Location)?.FileVersion;
+            }
+            catch (FileNotFoundException) { }
             var culture = callingAssembly.GetName().CultureInfo.Name;
             if (!string.IsNullOrEmpty(culture))
             {
                 Attributes["culture"] = callingAssembly.GetName().CultureInfo.Name;
             }
-
 #if !NET35
             Attributes["dynamic"] = callingAssembly.IsDynamic;
             Attributes["trusted"] = callingAssembly.IsFullyTrusted;
@@ -111,9 +115,9 @@ namespace Backtrace.Model.JsonData
         /// <param name="report">Received report</param>
         /// <param name="clientAttributes">Client's attributes (report and client)</param>
         /// <returns>Dictionary of custom user attributes </returns>
-        private void ConvertAttributes(BacktraceReportBase report, Dictionary<string, object> clientAttributes)
+        private void ConvertAttributes(BacktraceReport report, Dictionary<string, object> clientAttributes)
         {
-            var attributes = BacktraceReportBase.ConcatAttributes(report, clientAttributes);
+            var attributes = BacktraceReport.ConcatAttributes(report, clientAttributes);
             foreach (var attribute in attributes)
             {
                 var type = attribute.Value.GetType();
@@ -154,7 +158,7 @@ namespace Backtrace.Model.JsonData
         /// <summary>
         /// Set attributes from exception
         /// </summary>
-        internal void SetExceptionAttributes(BacktraceReportBase report)
+        internal void SetExceptionAttributes(BacktraceReport report)
         {
             //there is no information to analyse
             if (report == null)

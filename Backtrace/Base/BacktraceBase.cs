@@ -69,7 +69,7 @@ namespace Backtrace.Base
         /// <summary>
         /// Set event executed when client site report limit reached
         /// </summary>
-        public Action<BacktraceReportBase> OnClientReportLimitReached
+        public Action<BacktraceReport> OnClientReportLimitReached
         {
             set
             {
@@ -164,7 +164,7 @@ namespace Backtrace.Base
         /// </summary>
         /// <param name="report">Report to send</param>
         [Obsolete("Send is obsolete, please use SendAsync instead if possible.")]
-        public virtual BacktraceResult Send(BacktraceReportBase report)
+        public virtual BacktraceResult Send(BacktraceReport report)
         {
             var record = Database.Add(report, Attributes, MiniDumpType);
             //create a JSON payload instance
@@ -188,7 +188,7 @@ namespace Backtrace.Base
         /// if inner exception exists, client should send report twice - one with current exception, one with inner exception
         /// </summary>
         /// <param name="report">current report</param>
-        private BacktraceResult HandleInnerException(BacktraceReportBase report)
+        private BacktraceResult HandleInnerException(BacktraceReport report)
         {
             //we have to create a copy of an inner exception report
             //to have the same calling assembly property
@@ -205,7 +205,7 @@ namespace Backtrace.Base
         /// Send asynchronous report to Backtrace API
         /// </summary>
         /// <param name="report">Report to send</param>
-        public virtual async Task<BacktraceResult> SendAsync(BacktraceReportBase report)
+        public virtual async Task<BacktraceResult> SendAsync(BacktraceReport report)
         {
             var record = Database.Add(report, Attributes, MiniDumpType);
             //create a JSON payload instance
@@ -229,7 +229,7 @@ namespace Backtrace.Base
         /// if inner exception exists, client should send report twice - one with current exception, one with inner exception
         /// </summary>
         /// <param name="report">current report</param>
-        private async Task<BacktraceResult> HandleInnerExceptionAsync(BacktraceReportBase report)
+        private async Task<BacktraceResult> HandleInnerExceptionAsync(BacktraceReport report)
         {
             var innerExceptionReport = report.CreateInnerReport();
             if (innerExceptionReport == null)
@@ -252,7 +252,7 @@ namespace Backtrace.Base
         /// </summary>
         public virtual void HandleApplicationThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
         {
-            SendAsync(new BacktraceReportBase(e.Exception)).Wait();
+            SendAsync(new BacktraceReport(e.Exception)).Wait();
             OnUnhandledApplicationException?.Invoke(e.Exception);
         }
 
@@ -263,7 +263,7 @@ namespace Backtrace.Base
 
         private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
-            SendAsync(new BacktraceReportBase(e.Exception)).Wait();
+            SendAsync(new BacktraceReport(e.Exception)).Wait();
             OnUnhandledApplicationException?.Invoke(e.Exception);
         }
 
@@ -276,7 +276,7 @@ namespace Backtrace.Base
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var exception = e.ExceptionObject as Exception;
-            Task.WaitAll(SendAsync(new BacktraceReportBase(exception)));
+            Task.WaitAll(SendAsync(new BacktraceReport(exception)));
             OnUnhandledApplicationException?.Invoke(exception);
         }
 #endif

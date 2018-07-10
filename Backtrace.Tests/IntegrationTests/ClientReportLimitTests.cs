@@ -35,7 +35,7 @@ namespace Backtrace.Tests.IntegrationTests
             //mock database
             var database = new Mock<IBacktraceDatabase>();
             database.Setup(n =>
-                n.Add(It.IsAny<BacktraceReportBase>(),
+                n.Add(It.IsAny<BacktraceReport>(),
                     It.IsAny<Dictionary<string, object>>(),
                     It.IsAny<MiniDumpType>()));
 
@@ -74,7 +74,7 @@ namespace Backtrace.Tests.IntegrationTests
                 {"Google url" , new Uri("http://google.com") }
             };
             //to check if client report limit reached use OnClientReportLimitReached 
-            _backtraceClient.OnClientReportLimitReached = (BacktraceReportBase report) =>
+            _backtraceClient.OnClientReportLimitReached = (BacktraceReport report) =>
             {
                 clientReportLimitReached = true;
             };
@@ -179,7 +179,7 @@ namespace Backtrace.Tests.IntegrationTests
             int totalNumberOfDropsOnEvents = 0;
 
             //set backtrace events
-            _backtraceClient.OnClientReportLimitReached = (BacktraceReportBase report) =>
+            _backtraceClient.OnClientReportLimitReached = (BacktraceReport report) =>
             {
                 totalDrop++;
                 clientReportLimitReached = true;

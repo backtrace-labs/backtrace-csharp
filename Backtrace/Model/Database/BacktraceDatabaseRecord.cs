@@ -105,7 +105,7 @@ namespace Backtrace.Model.Database
                     try
                     {
                         var diagnosticData = JsonConvert.DeserializeObject<BacktraceData>(diagnosticDataJson);
-                        var report = JsonConvert.DeserializeObject<BacktraceReportBase>(reportJson);
+                        var report = JsonConvert.DeserializeObject<BacktraceReport>(reportJson);
                         //add report to diagnostic data
                         //we don't store report with diagnostic data in the same json
                         //because we have easier way to serialize and deserialize data

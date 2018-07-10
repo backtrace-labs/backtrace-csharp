@@ -41,7 +41,7 @@ namespace Backtrace.Services
         /// <summary>
         /// Url to server
         /// </summary>
-        private string _serverurl;
+        private readonly string _serverurl;
 
         /// <summary>
         /// Create a new instance of Backtrace API
@@ -82,7 +82,7 @@ namespace Backtrace.Services
             return await SendAsync(Guid.NewGuid(), json, data.Attachments, data.Report);
         }
 
-        internal async Task<BacktraceResult> SendAsync(Guid requestId, string json, List<string> attachments, BacktraceReportBase report)
+        internal async Task<BacktraceResult> SendAsync(Guid requestId, string json, List<string> attachments, BacktraceReport report)
         {
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
             string boundary = FormDataHelper.GetBoundary(requestId);
@@ -151,7 +151,7 @@ namespace Backtrace.Services
             return Send(Guid.NewGuid(), json, data.Report?.AttachmentPaths ?? new List<string>(), data.Report);
         }
 
-        private BacktraceResult Send(Guid requestId, string json, List<string> attachments, BacktraceReportBase report)
+        private BacktraceResult Send(Guid requestId, string json, List<string> attachments, BacktraceReport report)
         {
             var formData = FormDataHelper.GetFormData(json, attachments, requestId);
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
@@ -182,7 +182,7 @@ namespace Backtrace.Services
         /// Handle server respond for synchronous request
         /// </summary>
         /// <param name="request">Current HttpWebRequest</param>
-        private BacktraceResult ReadServerResponse(HttpWebRequest request, BacktraceReportBase report)
+        private BacktraceResult ReadServerResponse(HttpWebRequest request, BacktraceReport report)
         {
             using (WebResponse webResponse = request.GetResponse() as HttpWebResponse)
             {
@@ -232,7 +232,7 @@ namespace Backtrace.Services
         }
         #endregion
 
-        public void SetClientRateLimitEvent(Action<BacktraceReportBase> onClientReportLimitReached)
+        public void SetClientRateLimitEvent(Action<BacktraceReport> onClientReportLimitReached)
         {
             reportLimitWatcher.OnClientReportLimitReached = onClientReportLimitReached;
         }

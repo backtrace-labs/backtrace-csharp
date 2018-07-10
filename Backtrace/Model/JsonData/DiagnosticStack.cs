@@ -86,19 +86,27 @@ namespace Backtrace.Model.JsonData
             }
             int? ILOffset = stackFrame.GetILOffset();
             string functionName = stackFrame.GetMethod()?.Name;
-
+            int? memberInfo = null;
+            //metadata token in some situations can throw Argument Exception. Plase check property definition to leran more about this behaviour
+            try
+            {
+                memberInfo = stackFrame.GetMethod()?.MetadataToken;
+            }
+            catch (InvalidOperationException)
+            { }
             return new DiagnosticStack()
             {
                 Column = stackFrame.GetFileColumnNumber(),
                 Library = libraryName,
                 ILOffset = ILOffset <= 0 ? null : ILOffset,
                 Il = ILOffset <= 0 ? null : ILOffset,
-                MemberInfo = stackFrame.GetMethod()?.MetadataToken,
+                MemberInfo = memberInfo,
                 FunctionName = string.IsNullOrEmpty(functionName) ? libraryName : functionName,
                 Line = stackFrame.GetFileLineNumber(),
                 SourceCode = generatedByException ? Guid.NewGuid().ToString() : string.Empty,
                 SourceCodeFullPath = stackFrame.GetFileName()
             };
+
         }
 
         internal static IEnumerable<DiagnosticStack> FromCurrentThread(string libraryName, IEnumerable<DiagnosticStack> exceptionStack)

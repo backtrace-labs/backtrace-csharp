@@ -54,7 +54,7 @@ namespace Backtrace.Tests.Events
             //mock database
             var database = new Mock<IBacktraceDatabase>();
             database.Setup(n =>
-                n.Add(It.IsAny<BacktraceReportBase>(),
+                n.Add(It.IsAny<BacktraceReport>(),
                     It.IsAny<Dictionary<string, object>>(),
                     It.IsAny<MiniDumpType>()));
 
@@ -80,7 +80,7 @@ namespace Backtrace.Tests.Events
             int totalNumberOfReports = 0;
             bool eventTrigger = false;
 
-            _backtraceClient.OnClientReportLimitReached = (BacktraceReportBase report) =>
+            _backtraceClient.OnClientReportLimitReached = (BacktraceReport report) =>
             {
                 eventTrigger = true;
             };
@@ -132,7 +132,14 @@ namespace Backtrace.Tests.Events
             int totalBeforeSennd = 0;
             int totalEnds = 0;
 
+
+/* Unmerged change from project 'Backtrace.Tests(net45)'
+Before:
             _backtraceClient.OnReportStart = (BacktraceReport report) =>
+After:
+            _backtraceClient.OnReportStart = (Model.BacktraceReport report) =>
+*/
+            this._backtraceClient.OnReportStart = (global::Backtrace.Model.BacktraceReport report) =>
             {
                 totalStart++;
             };

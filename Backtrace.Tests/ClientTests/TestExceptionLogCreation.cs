@@ -11,7 +11,7 @@ namespace Backtrace.Tests.ClientTests
     [TestFixture(Author = "Konrad Dysput", Category = "Client.MsgLogCreation", Description = "Test client messages")]
     public class TestExceptionLogCreation : LogCreationBase
     {
-        private static IEnumerable<Exception> _exceptions = new List<Exception>()
+        private static readonly IEnumerable<Exception> _exceptions = new List<Exception>()
             {
                 null,
                 new Exception("exception"),

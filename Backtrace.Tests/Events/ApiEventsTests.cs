@@ -51,7 +51,7 @@ namespace Backtrace.Tests.Events
             //mock database
             var database = new Mock<IBacktraceDatabase>();
             database.Setup(n =>
-                n.Add(It.IsAny<BacktraceReportBase>(),
+                n.Add(It.IsAny<BacktraceReport>(),
                     It.IsAny<Dictionary<string, object>>(),
                     It.IsAny<MiniDumpType>()));
 

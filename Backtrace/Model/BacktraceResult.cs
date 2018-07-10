@@ -15,7 +15,7 @@ namespace Backtrace.Model
         /// <summary>
         /// Current report
         /// </summary>
-        public BacktraceReportBase BacktraceReport { get; set; }
+        public BacktraceReport BacktraceReport { get; set; }
 
         /// <summary>
         /// Inner exception Backtrace status
@@ -81,7 +81,7 @@ namespace Backtrace.Model
         /// </summary>
         /// <param name="report">Executed report</param>
         /// <returns>BacktraceResult with limit reached information</returns>
-        internal static BacktraceResult OnLimitReached(BacktraceReportBase report)
+        internal static BacktraceResult OnLimitReached(BacktraceReport report)
         {
             return new BacktraceResult()
             {
@@ -97,7 +97,7 @@ namespace Backtrace.Model
         /// <param name="report">Executed report</param>
         /// <param name="exception">Exception</param>
         /// <returns>BacktraceResult with exception information</returns>
-        internal static BacktraceResult OnError(BacktraceReportBase report, Exception exception)
+        internal static BacktraceResult OnError(BacktraceReport report, Exception exception)
         {
             return new BacktraceResult()
             {

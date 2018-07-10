@@ -84,7 +84,7 @@ namespace Backtrace.Tests.DatabaseTests.Model
             var mockRecord = new Mock<BacktraceDatabaseRecord>();
             mockRecord.Setup(n => n.Delete());
             mockRecord.Setup(n => n.BacktraceData)
-                .Returns(new BacktraceData(It.IsAny<BacktraceReportBase>(), It.IsAny<Dictionary<string, object>>()));
+                .Returns(new BacktraceData(It.IsAny<BacktraceReport>(), It.IsAny<Dictionary<string, object>>()));
             var data = new BacktraceData(null, new Dictionary<string, object>());
             mockRecord.SetupProperty(n => n.Record, data);
 

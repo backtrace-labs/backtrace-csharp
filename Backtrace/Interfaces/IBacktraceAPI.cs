@@ -37,7 +37,7 @@ namespace Backtrace.Interfaces
         /// </summary>
         Func<string, string, BacktraceData, BacktraceResult> RequestHandler { get; set; }
 
-        void SetClientRateLimitEvent(Action<BacktraceReportBase> onClientReportLimitReached);
+        void SetClientRateLimitEvent(Action<BacktraceReport> onClientReportLimitReached);
 
         void SetClientRateLimit(uint rateLimit);
     }

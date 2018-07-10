@@ -168,7 +168,7 @@ namespace Backtrace.Tests.IntegrationTests
             _backtraceClient.BacktraceApi.SetClientRateLimit(Convert.ToUInt32(limit));
             //total ignored reports removed by ReportWatcher
             int totalIgnoredReports = 0;
-            _backtraceClient.OnClientReportLimitReached = (BacktraceReportBase report) =>
+            _backtraceClient.OnClientReportLimitReached = (BacktraceReport report) =>
             {
                 totalIgnoredReports++;
             };
@@ -224,7 +224,7 @@ namespace Backtrace.Tests.IntegrationTests
             _backtraceClient.BacktraceApi.SetClientRateLimit(Convert.ToUInt32(limit));
             //total ignored reports removed by ReportWatcher
             int totalIgnoredReports = 0;
-            _backtraceClient.OnClientReportLimitReached = (BacktraceReportBase report) =>
+            _backtraceClient.OnClientReportLimitReached = (BacktraceReport report) =>
             {
                 totalIgnoredReports++;
             };

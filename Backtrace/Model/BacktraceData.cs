@@ -43,7 +43,7 @@ namespace Backtrace.Model
         /// Name of the client that is sending this error report.
         /// </summary>
         [JsonProperty(PropertyName = "agent")]
-        public string Agent { get; private set; }
+        public const string Agent = "backtrace-csharp"; 
 
         /// <summary>
         /// Version of the C# library
@@ -100,7 +100,7 @@ namespace Backtrace.Model
         /// <summary>
         /// Current BacktraceReport
         /// </summary>
-        internal BacktraceReportBase Report { get; set; }
+        internal BacktraceReport Report { get; set; }
 
         /// <summary>
         /// Create instance of report data
@@ -108,7 +108,7 @@ namespace Backtrace.Model
         /// <param name="report">Current report</param>
         /// <param name="clientAttributes">BacktraceClient's attributes</param>
         [JsonConstructor]
-        public BacktraceData(BacktraceReportBase report, Dictionary<string, object> clientAttributes)
+        public BacktraceData(BacktraceReport report, Dictionary<string, object> clientAttributes)
         {
             if (report == null)
             {
@@ -143,7 +143,6 @@ namespace Backtrace.Model
             Uuid = Report.Uuid;
             Timestamp = Report.Timestamp;
             LangVersion = typeof(string).Assembly.ImageRuntimeVersion;
-            Agent = CurrentAssembly.Name;
             AgentVersion = CurrentAssembly.Version.ToString();
             Classifier = Report.ExceptionTypeReport ? new[] { Report.Classifier } : null;
         }
