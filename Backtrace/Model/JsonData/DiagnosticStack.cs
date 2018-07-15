@@ -1,6 +1,7 @@
 ﻿#if NET45
 using Microsoft.Diagnostics.Runtime;
 #endif
+using Backtrace.Common;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -59,6 +61,7 @@ namespace Backtrace.Model.JsonData
         /// </summary>
         [JsonProperty(PropertyName = "address")]
         public int? ILOffset { get; set; }
+
         /// <summary>
         /// Source code file name where exception occurs
         /// </summary>
@@ -85,12 +88,13 @@ namespace Backtrace.Model.JsonData
                 return null;
             }
             int? ILOffset = stackFrame.GetILOffset();
-            string functionName = stackFrame.GetMethod()?.Name;
+            var currentMethod = stackFrame.GetMethod();
+            string functionName = GetMethodName(currentMethod);
             int? memberInfo = null;
             //metadata token in some situations can throw Argument Exception. Plase check property definition to leran more about this behaviour
             try
             {
-                memberInfo = stackFrame.GetMethod()?.MetadataToken;
+                memberInfo = currentMethod?.MetadataToken;
             }
             catch (InvalidOperationException)
             { }
@@ -106,7 +110,40 @@ namespace Backtrace.Model.JsonData
                 SourceCode = generatedByException ? Guid.NewGuid().ToString() : string.Empty,
                 SourceCodeFullPath = stackFrame.GetFileName()
             };
-
+        }
+        /// <summary>
+        /// Get method name from current stack frame. 
+        /// </summary>
+        /// <param name="method">Stack frame method base</param>
+        /// <returns>Method name</returns>
+        private static string GetMethodName(MethodBase method)
+        {
+            if (method == null)
+            {
+                return string.Empty;
+            }
+#if NET35
+            return method.Name;
+#else
+            var declaringType = method.DeclaringType?.GetTypeInfo();
+            if (declaringType == null)
+            {
+                return method.Name;
+            }
+            string fullName = declaringType.FullName.Replace("+", ".");
+            bool isAsync = SystemHelper.StateMachineFrame(declaringType);
+            if (isAsync)
+            {
+                fullName = StackFrameHelper.GetAsyncFrameFullName(fullName);
+            }
+            StringBuilder result = new StringBuilder(fullName);
+            if (!isAsync)
+            {
+                result = result.AddSyncMethodName(method.Name);
+            }
+            result = result.AddFrameParameters(method.GetParameters());
+            return result.ToString();
+#endif
         }
 
         internal static IEnumerable<DiagnosticStack> FromCurrentThread(string libraryName, IEnumerable<DiagnosticStack> exceptionStack)
