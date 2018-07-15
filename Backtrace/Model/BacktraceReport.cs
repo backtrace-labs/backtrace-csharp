@@ -70,6 +70,18 @@ namespace Backtrace.Model
         public List<string> AttachmentPaths { get; set; }
 
         /// <summary>
+        /// Current report exception stack
+        /// </summary>
+        [JsonProperty(PropertyName = "diagnosticStack")]
+        public List<BacktraceStackFrame> DiagnosticStack
+        {
+            get
+            {
+                return BacktraceStackTrace.StackFrames;
+            }
+        }
+
+        /// <summary>
         /// Get or set minidump attachment path
         /// </summary>
         [JsonProperty(PropertyName = "minidumpFile")]
@@ -78,13 +90,16 @@ namespace Backtrace.Model
         /// <summary>
         /// Get an assembly where report was created (or should be created)
         /// </summary>
-        internal Assembly CallingAssembly { get; private set; }
+        internal Assembly CallingAssembly
+        {
+            get
+            {
+                return BacktraceStackTrace.CallingAssembly;
+            }
+        }
 
-        /// <summary>
-        /// Current report exception stack
-        /// </summary>
-        [JsonProperty(PropertyName = "diagnosticStack")]
-        public List<DiagnosticStack> DiagnosticStack { get; private set; } = new List<DiagnosticStack>();
+        internal BacktraceStackTrace BacktraceStackTrace { get; private set; }
+
 
         /// <summary>
         /// Create new instance of Backtrace report to sending a report with custom client message
@@ -101,7 +116,8 @@ namespace Backtrace.Model
             Message = message;
             Attributes = attributes ?? new Dictionary<string, object>();
             AttachmentPaths = attachmentPaths ?? new List<string>();
-            SetCallingAppInformation();
+            //SetCallingAppInformation();
+            BacktraceStackTrace = new BacktraceStackTrace(null);
         }
 
         /// <summary>
@@ -118,15 +134,12 @@ namespace Backtrace.Model
         {
             Attributes = attributes ?? new Dictionary<string, object>();
             AttachmentPaths = attachmentPaths ?? new List<string>();
-#if !NET35
-            var temp = ExceptionDispatchInfo.Capture(exception);
-            Console.WriteLine(temp);
-#endif
             Exception = exception;
             ExceptionTypeReport = exception != null;
             Classifier = ExceptionTypeReport ? exception.GetType().Name : string.Empty;
-            CallingAssembly = exception.GetExceptionSourceAssembly();
-            SetCallingAppInformation();
+            //CallingAssembly = exception.GetExceptionSourceAssembly();
+            //SetCallingAppInformation();
+            BacktraceStackTrace = new BacktraceStackTrace(exception);
         }
 
         /// <summary>
@@ -165,90 +178,90 @@ namespace Backtrace.Model
             return reportAttributes.Merge(attributes);
         }
 
-        /// <summary>
-        /// Set Calling Assembly and current thread stack trace property. 
-        /// CallingAssembly and StackTrace are necessary to prepare diagnostic JSON in BacktraceData class
-        /// </summary>
-        internal void SetCallingAppInformation()
-        {
-            // generate stacktrace with file info
-            // if assembly have pbd files, diagnostic JSON will contain information about 
-            // line number and column number
-            var stackTrace = new StackTrace(true);
-            var stackFrames = stackTrace.GetFrames();
-            SetStacktraceInformation(stackFrames, true);
-            if (Exception == null)
-            {
-                return;
-            }
-            // add stack trace from exception
-            var head = DiagnosticStack.Any() ? DiagnosticStack[0] : null;
-            var generatedStack = Exception.GetExceptionStackFrames(head);
-            SetStacktraceInformation(generatedStack, false);
+        ///// <summary>
+        ///// Set Calling Assembly and current thread stack trace property. 
+        ///// CallingAssembly and StackTrace are necessary to prepare diagnostic JSON in BacktraceData class
+        ///// </summary>
+        //internal void SetCallingAppInformation()
+        //{
+        //    // generate stacktrace with file info
+        //    // if assembly have pbd files, diagnostic JSON will contain information about 
+        //    // line number and column number
+        //    var stackTrace = new StackTrace(true);
+        //    var stackFrames = stackTrace.GetFrames();
+        //    SetStacktraceInformation(stackFrames, true);
+        //    if (Exception == null)
+        //    {
+        //        return;
+        //    }
+        //    // add stack trace from exception
+        //    var head = DiagnosticStack.Any() ? DiagnosticStack[0] : null;
+        //    var generatedStack = Exception.GetExceptionStackFrames(head);
+        //    SetStacktraceInformation(generatedStack, false);
 
-            //Library didn't found Calling assembly
-            //The reason for this behaviour is because we throw exception from TaskScheduler
-            //or other method that don't generate valid stack trace
-            if (CallingAssembly == null)
-            {
-                CallingAssembly = Assembly.GetExecutingAssembly();
-            }
-        }
+        //    //Library didn't found Calling assembly
+        //    //The reason for this behaviour is because we throw exception from TaskScheduler
+        //    //or other method that don't generate valid stack trace
+        //    if (CallingAssembly == null)
+        //    {
+        //        CallingAssembly = Assembly.GetExecutingAssembly();
+        //    }
+        //}
 
-        private void SetStacktraceInformation(StackFrame[] stackFrames, bool includeCallingAssembly, int startingIndex = 0)
-        {
-            // check if stack frames exists
-            if (stackFrames == null)
-            {
-                return;
-            }
-            var executedAssemblyName = Assembly.GetExecutingAssembly().FullName;
-            //if callingAssemblyFound is true, we dont need to found calling assembly in current stacktrace
-            bool callingAssemblyFound = !includeCallingAssembly;
+        //private void SetStacktraceInformation(StackFrame[] stackFrames, bool includeCallingAssembly, int startingIndex = 0)
+        //{
+        //    // check if stack frames exists
+        //    if (stackFrames == null)
+        //    {
+        //        return;
+        //    }
+        //    var executedAssemblyName = Assembly.GetExecutingAssembly().FullName;
+        //    //if callingAssemblyFound is true, we dont need to found calling assembly in current stacktrace
+        //    bool callingAssemblyFound = !includeCallingAssembly;
 
-            foreach (var stackFrame in stackFrames)
-            {
-                var method = stackFrame.GetMethod();
-                var declaringType = method?.DeclaringType;
-                if (declaringType == null)
-                {
-                    //received invalid or unvailable stackframe
-                    continue;
-                }
-                Assembly assembly = declaringType.Assembly;
-                if (assembly == null)
-                {
-                    continue;
-                }
-                var assemblyName = assembly.FullName;
-                if (executedAssemblyName.Equals(assemblyName))
-                {
-                    // remove all system and microsoft stack frames 
-                    //if we add any stackframe to list this is mistake because we receive 
-                    //system or microsoft dll (for example async invoke)
-                    DiagnosticStack.Clear();
-                    startingIndex = 0;
-                    continue;
-                }
+        //    foreach (var stackFrame in stackFrames)
+        //    {
+        //        var method = stackFrame.GetMethod();
+        //        var declaringType = method?.DeclaringType;
+        //        if (declaringType == null)
+        //        {
+        //            //received invalid or unvailable stackframe
+        //            continue;
+        //        }
+        //        Assembly assembly = declaringType.Assembly;
+        //        if (assembly == null)
+        //        {
+        //            continue;
+        //        }
+        //        var assemblyName = assembly.FullName;
+        //        if (executedAssemblyName.Equals(assemblyName))
+        //        {
+        //            // remove all system and microsoft stack frames 
+        //            //if we add any stackframe to list this is mistake because we receive 
+        //            //system or microsoft dll (for example async invoke)
+        //            DiagnosticStack.Clear();
+        //            startingIndex = 0;
+        //            continue;
+        //        }
 
-                if (!callingAssemblyFound && ((!(SystemHelper.SystemAssembly(assembly)))
-                    || (CallingAssembly != null && assembly?.FullName == CallingAssembly.FullName)))
-                {
-                    callingAssemblyFound = true;
-                    CallingAssembly = assembly;
-                }
-                if (!callingAssemblyFound)
-                {
-                    continue;
-                }
-                //if (!SystemHelper.SystemAssembly(assembly))
-                //{
-                var diagnosticStack = JsonData.DiagnosticStack.Convert(stackFrame, assembly.GetName().Name, true);
-                DiagnosticStack.Insert(startingIndex, diagnosticStack);
-                startingIndex++;
-                //}
-            }
-        }
+        //        if (!callingAssemblyFound && ((!(SystemHelper.SystemAssembly(assembly)))
+        //            || (CallingAssembly != null && assembly?.FullName == CallingAssembly.FullName)))
+        //        {
+        //            callingAssemblyFound = true;
+        //            CallingAssembly = assembly;
+        //        }
+        //        if (!callingAssemblyFound)
+        //        {
+        //            continue;
+        //        }
+        //        //if (!SystemHelper.SystemAssembly(assembly))
+        //        //{
+        //        var diagnosticStack = JsonData.DiagnosticStack.Convert(stackFrame, assembly.GetName().Name, true);
+        //        DiagnosticStack.Insert(startingIndex, diagnosticStack);
+        //        startingIndex++;
+        //        //}
+        //    }
+        //}
 
         /// <summary>
         /// create a copy of BacktraceReport for inner exception object inside exception
@@ -264,7 +277,10 @@ namespace Backtrace.Model
             }
             var copy = (BacktraceReport)this.MemberwiseClone();
             copy.Exception = this.Exception.InnerException;
-            copy.SetCallingAppInformation();
+            if(copy.CallingAssembly == null)
+            {
+                throw new ArgumentNullException();
+            }
             copy.Classifier = copy.Exception.GetType().Name;
             return copy;
         }

@@ -41,7 +41,8 @@ namespace Backtrace.Common
             builder.Append(")");
             return builder;
         }
-        public static string GetAsyncFrameFullName(string frameFullName)
+
+        internal static string GetAsyncFrameFullName(string frameFullName)
         {
             var start = frameFullName.LastIndexOf('<');
             var end = frameFullName.LastIndexOf('>');

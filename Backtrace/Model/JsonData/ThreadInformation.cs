@@ -26,7 +26,7 @@ namespace Backtrace.Model.JsonData
 
 
         [JsonProperty(PropertyName = "stack")]
-        internal IEnumerable<DiagnosticStack> Stack = new List<DiagnosticStack>();
+        internal IEnumerable<BacktraceStackFrame> Stack = new List<BacktraceStackFrame>();
 
         /// <summary>
         /// Create new instance of ThreadInformation
@@ -35,12 +35,9 @@ namespace Backtrace.Model.JsonData
         /// <param name="fault">Denotes whether a thread is a faulting thread - in most cases main thread</param>
         /// <param name="stack">Exception stack information</param>
         [JsonConstructor()]
-        public ThreadInformation(string threadName, bool fault, IEnumerable<DiagnosticStack> stack)
+        public ThreadInformation(string threadName, bool fault, IEnumerable<BacktraceStackFrame> stack)
         {
-            if (stack != null)
-            {
-                Stack = stack;
-            }
+            Stack = stack ?? new List<BacktraceStackFrame>();
             Name = threadName;
             Fault = fault;
         }
@@ -51,7 +48,7 @@ namespace Backtrace.Model.JsonData
         /// <param name="thread">Thread to analyse</param>
         /// <param name="stack">Exception stack information</param>
         /// <param name="currentThread">Is current thread flag</param>
-        public ThreadInformation(Thread thread, IEnumerable<DiagnosticStack> stack, bool currentThread = false)
+        public ThreadInformation(Thread thread, IEnumerable<BacktraceStackFrame> stack, bool currentThread = false)
             : this(
                  threadName: thread.GenerateValidThreadName().ToLower(),
                  fault: currentThread, //faulting thread = current thread

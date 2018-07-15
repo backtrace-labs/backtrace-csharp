@@ -188,7 +188,7 @@ namespace Backtrace
         /// </summary>
         /// <param name="backtraceReport">Current report</param>
         [Obsolete("Send is obsolete, please use SendAsync instead if possible.")]
-        public BacktraceResult Send(BacktraceReport backtraceReport)
+        public override BacktraceResult Send(BacktraceReport backtraceReport)
         {
             OnReportStart?.Invoke(backtraceReport);
             var result = base.Send(backtraceReport);
@@ -204,7 +204,7 @@ namespace Backtrace
         /// </summary>
         /// <param name="backtraceReport">Current report</param>
         /// <returns>Server response</returns>
-        public async Task<BacktraceResult> SendAsync(BacktraceReport backtraceReport)
+        public override async Task<BacktraceResult> SendAsync(BacktraceReport backtraceReport)
         {
             OnReportStart?.Invoke(backtraceReport);
             var result = await base.SendAsync(backtraceReport);
@@ -218,7 +218,7 @@ namespace Backtrace
         /// <param name="message">Custom client message</param>
         /// <param name="attributes">Additional information about application state</param>
         /// <param name="attachmentPaths">Path to all report attachments</param>
-        public virtual async Task<BacktraceResult> SendAsync(
+        public async Task<BacktraceResult> SendAsync(
             string message,
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null)

@@ -54,15 +54,15 @@ namespace Backtrace.Model.JsonData
             /// <summary>
             /// Get a SourceData instance from Exception stack
             /// </summary>
-            /// <param name="exceptionStack">Exception Stack</param>
+            /// <param name="stackFrame">Exception Stack</param>
             /// <returns>New instance of SoruceCode</returns>
-            public static SourceCode FromExceptionStack(DiagnosticStack exceptionStack)
+            public static SourceCode FromExceptionStack(BacktraceStackFrame stackFrame)
             {
                 return new SourceCode()
                 {
-                    StartColumn = exceptionStack.Column,
-                    StartLine = exceptionStack.Line,
-                    SourceCodeFullPath = exceptionStack.SourceCodeFullPath
+                    StartColumn = stackFrame.Column,
+                    StartLine = stackFrame.Line,
+                    SourceCodeFullPath = stackFrame.SourceCodeFullPath
                 };
             }
         }
@@ -71,12 +71,7 @@ namespace Backtrace.Model.JsonData
         /// Source code information about current executed program
         /// </summary>
         public Dictionary<string, SourceCode> data = new Dictionary<string, SourceCode>();
-        internal SourceCodeData(IEnumerable<DiagnosticStack> exceptionStack)
-        {
-            SetStack(exceptionStack);
-        }
-
-        private void SetStack(IEnumerable<DiagnosticStack> exceptionStack)
+        internal SourceCodeData(IEnumerable<BacktraceStackFrame> exceptionStack)
         {
             if (exceptionStack == null || exceptionStack.Count() == 0)
             {
@@ -84,7 +79,11 @@ namespace Backtrace.Model.JsonData
             }
             foreach (var exception in exceptionStack)
             {
-                string id = exception.SourceCode;      
+                if(exception.SourceCodeFullPath == null)
+                {
+                    continue;
+                }
+                string id = exception.SourceCode;
                 var value = SourceCode.FromExceptionStack(exception);
                 data.Add(id, value);
             }
