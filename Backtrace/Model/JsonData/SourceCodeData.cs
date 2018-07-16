@@ -79,7 +79,7 @@ namespace Backtrace.Model.JsonData
             }
             foreach (var exception in exceptionStack)
             {
-                if(exception.SourceCodeFullPath == null)
+                if (string.IsNullOrEmpty(exception.SourceCode))
                 {
                     continue;
                 }

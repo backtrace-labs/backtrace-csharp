@@ -135,10 +135,12 @@ namespace Backtrace.Services
             {
                 return;
             }
-            foreach (var key in BatchRetry.Keys)
+            for (int keyIndex = 0; keyIndex < BatchRetry.Keys.Count; keyIndex++)
             {
-                foreach (var value in BatchRetry[key])
+                var key = BatchRetry.Keys.ElementAt(keyIndex);
+                for (int batchIndex = 0; batchIndex < BatchRetry[key].Count; batchIndex++)
                 {
+                    var value = BatchRetry[key].ElementAt(batchIndex);
                     if (value.Id == record.Id)
                     {
                         //delete value from hard drive

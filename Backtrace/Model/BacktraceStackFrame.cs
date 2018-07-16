@@ -75,41 +75,46 @@ namespace Backtrace.Model
         }
 
 #endif
-        public BacktraceStackFrame(StackFrame frame, bool generatedByException)
+        public BacktraceStackFrame(StackFrame frame, bool generatedByException, bool reflectionMethodName = true)
         {
-            if(frame == null)
+            if (frame == null || frame.GetMethod() == null)
             {
                 return;
             }
-            FunctionName = GetMethodName(frame);
+            FunctionName = GetMethodName(frame, reflectionMethodName);
             Line = frame.GetFileLineNumber();
             Il = frame.GetILOffset();
             ILOffset = Il;
             SourceCodeFullPath = frame.GetFileName();
             FrameAssembly = frame.GetMethod().DeclaringType?.Assembly;
-            Library = FrameAssembly?.GetName().Name ?? "unknown";
+            Library = FrameAssembly?.GetName()?.Name ?? "unknown";
             SourceCode = generatedByException
                     ? Guid.NewGuid().ToString()
                     : string.Empty;
             Column = frame.GetFileColumnNumber();
             try
             {
-                MemberInfo = frame.GetMethod().MetadataToken;
+                MemberInfo = frame.GetMethod()?.MetadataToken;
             }
             catch (InvalidOperationException)
             {
                 //metadata token in some situations can throw Argument Exception. Plase check property definition to leran more about this behaviour
             }
+
         }
 
         /// <summary>
         /// Generate valid name for current stack frame.
         /// </summary>
         /// <returns>Valid method name in stack trace</returns>
-        private string GetMethodName(StackFrame frame)
+        private string GetMethodName(StackFrame frame, bool reflectionMethodName)
         {
             var method = frame.GetMethod();
             string methodName = method.Name;
+            if (!reflectionMethodName)
+            {
+                return methodName;
+            }
 #if NET35
             return methodName;
 #else
@@ -131,7 +136,7 @@ namespace Backtrace.Model
                 fullName = fullName + "." + method.Name;
             }
             StringBuilder result = new StringBuilder(fullName);
-           
+
             // add method parameters
             result.Append(AddMethodParameters(method.GetParameters()));
             return result.ToString();

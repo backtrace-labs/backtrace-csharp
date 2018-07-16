@@ -52,7 +52,7 @@ namespace Backtrace.Model.JsonData
             //get current thread id
             string generatedMainThreadId = current.GenerateValidThreadName().ToLower();
 
-            ThreadInformations[generatedMainThreadId] = new ThreadInformation(current, exceptionStack);
+            ThreadInformations[generatedMainThreadId] = new ThreadInformation(current, exceptionStack, true);
             //set currentThreadId
             MainThread = generatedMainThreadId;
         }

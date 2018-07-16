@@ -123,10 +123,10 @@ namespace Backtrace.Model
 
         private void SetThreadInformations()
         {
-            var threadData = new ThreadData(Report.CallingAssembly, Report.BacktraceStackTrace.StackFrames);
+            var threadData = new ThreadData(Report.CallingAssembly, Report.DiagnosticStack);
             ThreadInformations = threadData.ThreadInformations;
             MainThread = threadData.MainThread;
-            var sourceCodeData = new SourceCodeData(Report.BacktraceStackTrace.StackFrames);
+            var sourceCodeData = new SourceCodeData(Report.DiagnosticStack);
             SourceCode = sourceCodeData.data.Any() ? sourceCodeData.data : null;
         }
 
