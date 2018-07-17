@@ -258,7 +258,8 @@ catch (Exception exception)
 ```
 Notes:
 - if you initialize `BacktraceClient` with `BacktraceDatabase` and your application is offline or you pass invalid credentials to `BacktraceClient`, reports will be stored in database directory path,
-- for .NET 4.5+, we recommend to use `SendAsync` method
+- for .NET 4.5+, we recommend to use `SendAsync` method,
+- if you don't want to use reflection to determine valid stack frame method name, you can pass `false` to `reflectionMethodName`. By default this value is equal to `true`.
 
 #### Asynchronous Send Support
 

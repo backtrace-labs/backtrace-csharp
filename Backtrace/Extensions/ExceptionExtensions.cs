@@ -33,30 +33,30 @@ namespace Backtrace.Extensions
         /// Generate stack traces that not exists in current thread stack trace
         /// </summary>
         /// <returns>Unique exception stack frames</returns>
-        internal static StackFrame[] GetExceptionStackFrames(this Exception source, DiagnosticStack firstFrame)
-        {
-            if (source == null)
-            {
-                return null;
-            }
-            var exceptionStackTrace = new StackTrace(source, true);
-            var exceptionStackFrames = exceptionStackTrace.GetFrames();
-            if (exceptionStackFrames == null || !exceptionStackFrames.Any())
-            {
-                return null;
-            }
-            if (firstFrame == null)
-            {
-                return exceptionStackFrames;
-            }
-            var comparer = exceptionStackFrames[0];
-            //validate if exception stack frame exists in environment stack trace
-            if (firstFrame.ILOffset == comparer.GetILOffset()
-                && firstFrame.FunctionName == comparer.GetMethod()?.Name)
-            {
-                return null;
-            }
-            return exceptionStackFrames;
-        }
+        //internal static StackFrame[] GetExceptionStackFrames(this Exception source, DiagnosticStack firstFrame)
+        //{
+        //    if (source == null)
+        //    {
+        //        return null;
+        //    }
+        //    var exceptionStackTrace = new StackTrace(source, true);
+        //    var exceptionStackFrames = exceptionStackTrace.GetFrames();
+        //    if (exceptionStackFrames == null || !exceptionStackFrames.Any())
+        //    {
+        //        return null;
+        //    }
+        //    if (firstFrame == null)
+        //    {
+        //        return exceptionStackFrames;
+        //    }
+        //    var comparer = exceptionStackFrames[0];
+        //    //validate if exception stack frame exists in environment stack trace
+        //    if (firstFrame.ILOffset == comparer.GetILOffset()
+        //        && firstFrame.FunctionName == comparer.GetMethod()?.Name)
+        //    {
+        //        return null;
+        //    }
+        //    return exceptionStackFrames;
+        //}
     }
 }

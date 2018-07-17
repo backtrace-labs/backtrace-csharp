@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Backtrace.Common
@@ -38,7 +40,7 @@ namespace Backtrace.Common
             {
                 Trace.WriteLine("Cannot use library to generate minidump file");
             }
-            catch(Exception )
+            catch (Exception)
             {
                 //Operation not supported - library not exists or something really bad happend
                 Trace.WriteLine("Cannot load libraries required to generate minidump files");
@@ -159,10 +161,17 @@ namespace Backtrace.Common
                 || assemblyName.StartsWith("System."));
         }
 #if !NET35
-        internal static bool StateMachineFrame(TypeInfo declaringTypeInfo)
+        internal static bool StateMachineFrame(TypeInfo type)
         {
-            return typeof(System.Runtime.CompilerServices.IAsyncStateMachine)
-                .GetTypeInfo().IsAssignableFrom(declaringTypeInfo);
+            if (type == null)
+            {
+                return false;
+            }
+            return
+                (type.IsDefined(typeof(CompilerGeneratedAttribute)) 
+                && (typeof(IAsyncStateMachine).IsAssignableFrom(type) 
+                    || typeof(IEnumerator).IsAssignableFrom(type))
+                && typeof(IAsyncStateMachine).GetTypeInfo().IsAssignableFrom(type));
         }
 #endif
     }

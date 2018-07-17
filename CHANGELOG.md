@@ -1,5 +1,10 @@
 ﻿# Backtrace C# Release Notes
 
+## Version 2.0.1 - 17.07.2018
+- `BacktraceClient` use reflection to generate better method names for async state machine stack frames,
+- `BacktraceReport` allows to disable reflection feature by using additional constructor parameter,
+- `BacktraceClient` use `BacktraceStackTrace` and `BacktraceStackFrame` instead of `DiagnosticStack`.
+
 ## Version 2.0.0 - 10.07.2018
 - `BacktraceDatabase` use `BacktraceRecord` instead of `BacktraceEntry`,
 - `BacktraceDatabase` new parameters - size limit and maximum number of record in database,
