@@ -18,12 +18,12 @@ namespace Backtrace.Core
         /// <summary>
         /// Credentials
         /// </summary>
-        private BacktraceCredentials credentials = new BacktraceCredentials(ApplicationSettings.Host, ApplicationSettings.Token);
+        private readonly BacktraceCredentials credentials = new BacktraceCredentials(ApplicationSettings.Host, ApplicationSettings.Token);
 
         /// <summary>
         /// Database settings
         /// </summary>
-        private BacktraceDatabaseSettings databaseSettings = new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath);
+        private readonly BacktraceDatabaseSettings databaseSettings = new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath);
 
         /// <summary>
         /// New instance of BacktraceClient. Check SetupBacktraceLibrary method for intiailization example
@@ -37,6 +37,7 @@ namespace Backtrace.Core
 
         public async Task Start()
         {
+            await Task.Delay(int.MaxValue);
             await GenerateRandomStrings();
             await TryClean();
             //handle uncaught exception from unsafe code
@@ -173,6 +174,12 @@ namespace Backtrace.Core
             {
                 {"backtrace.io" , new Uri("http://backtrace.io") },
                 {"Google url" , new Uri("http://google.com") }
+            };
+            backtraceClient.BeforeSend = (BacktraceData data) =>
+            {
+                string json = Newtonsoft.Json.JsonConvert.SerializeObject(data);
+                System.Diagnostics.Trace.WriteLine(json);
+                return data;
             };
 
             //Add your own handler to client API

@@ -59,9 +59,9 @@ namespace Backtrace.Tests.DatabaseTests
             _backtraceDatabase.Clear();
             for (int i = 0; i < _totalNumberOfReports; i++)
             {
-                _backtraceDatabase.Add(backtraceReport, new Dictionary<string, object>());
+                _backtraceDatabase.Add(backtraceReport, new Dictionary<string, object>(), Types.MiniDumpType.None);
             }
-            Assert.Throws<ArgumentException>(() => _backtraceDatabase.Add(backtraceReport, new Dictionary<string, object>()));
+            Assert.Throws<ArgumentException>(() => _backtraceDatabase.Add(backtraceReport, new Dictionary<string, object>(),Types.MiniDumpType.None));
         }
 
         [TestCase(1)]
@@ -73,7 +73,7 @@ namespace Backtrace.Tests.DatabaseTests
             _backtraceDatabase.Clear();
             for (int i = 0; i < totalNumberOfRecords; i++)
             {
-                Assert.DoesNotThrow(() => _backtraceDatabase.Add(backtraceReport, new Dictionary<string, object>()));
+                Assert.DoesNotThrow(() => _backtraceDatabase.Add(backtraceReport, new Dictionary<string, object>(), Types.MiniDumpType.None));
             }
         }
     }

@@ -1,7 +1,6 @@
 ﻿using Backtrace.Common;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
@@ -75,6 +74,11 @@ namespace Backtrace.Model
         }
 
 #endif
+
+        [JsonConstructor()]
+        public BacktraceStackFrame()
+        { }
+
         public BacktraceStackFrame(StackFrame frame, bool generatedByException, bool reflectionMethodName = true)
         {
             if (frame == null || frame.GetMethod() == null)

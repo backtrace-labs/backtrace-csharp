@@ -123,10 +123,10 @@ namespace Backtrace.Common
                 case Architecture.Arm64:
                     return "arm64";
                 default:
-                    return Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE").ToLower();
+                    return Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE")?.ToLower();
             }
 #else
-            return Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE").ToLower();
+            return Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE")?.ToLower();
 #endif
         }
 
