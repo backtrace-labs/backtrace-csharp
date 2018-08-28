@@ -47,7 +47,10 @@ namespace Backtrace.Model.JsonData
             }
             foreach (var refAssembly in referencedAssemblies)
             {
-                AvailableDependencies.Add(refAssembly.Name, refAssembly.Version.ToString());
+                if (!AvailableDependencies.ContainsKey(refAssembly.Name))
+                {
+                    AvailableDependencies.Add(refAssembly.Name, refAssembly.Version.ToString());
+                }
             }
         }
 

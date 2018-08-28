@@ -4,7 +4,7 @@
     <TargetFrameworks>netstandard2.0;net45;net35</TargetFrameworks>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>Backtrace Error Diagnostic Tools Debug Bug Bugs StackTrace</PackageTags>
-    <PackageVersion>2.0.1</PackageVersion>
+    <PackageVersion>2.0.2</PackageVersion>
     <Product>Backtrace</Product>
     <PackageLicenseUrl>https://github.com/backtrace-labs/backtrace-csharp/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/backtrace-labs/backtrace-csharp</PackageProjectUrl>
@@ -12,12 +12,12 @@
     <Description>Backtrace's integration with C# applications allows customers to capture and report handled and unhandled C# exceptions to their Backtrace instance, instantly offering the ability to prioritize and debug software errors.</Description>
     <RepositoryUrl>https://github.com/backtrace-labs/backtrace-csharp</RepositoryUrl>
     <NeutralLanguage>en</NeutralLanguage>
-    <Version>2.0.1</Version>
+    <Version>2.0.2</Version>
     <Copyright>Backtrace I/O</Copyright>
     <Authors>Backtrace I/O</Authors>
     <Company>Backtrace I/O</Company>
-    <AssemblyVersion>2.0.1.0</AssemblyVersion>
-    <FileVersion>2.0.1.0</FileVersion>
+    <AssemblyVersion>2.0.2.0</AssemblyVersion>
+    <FileVersion>2.0.2.0</FileVersion>
   </PropertyGroup>
   
   <ItemGroup>

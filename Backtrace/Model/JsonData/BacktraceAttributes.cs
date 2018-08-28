@@ -247,7 +247,10 @@ namespace Backtrace.Model.JsonData
         {
             //The processor architecture.
             string cpuArchitecture = SystemHelper.CpuArchitecture();
-            Attributes["uname.machine"] = cpuArchitecture;
+            if (!string.IsNullOrEmpty(cpuArchitecture))
+            {
+                Attributes["uname.machine"] = cpuArchitecture;
+            }
 
             //Operating system name = such as "windows"
             Attributes["uname.sysname"] = SystemHelper.Name(cpuArchitecture);
