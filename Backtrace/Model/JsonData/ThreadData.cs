@@ -96,6 +96,12 @@ namespace Backtrace.Model.JsonData
         /// <param name="callingAssembly">Calling assembly</param>
         private void GetUsedThreads(Assembly callingAssembly)
         {
+            var currentPlatform = Environment.OSVersion.Platform.ToString();
+            if (!currentPlatform.ToLower().StartsWith("win"))
+            {
+                //avoid getting system threads for .NET Framework 4.5 in Untiy Environment
+                return;
+            }
             var mainThreadId = Thread.CurrentThread.ManagedThreadId;
             using (DataTarget target = DataTarget.AttachToProcess(Process.GetCurrentProcess().Id, 5000, AttachFlag.Passive))
             {

@@ -1,15 +1,14 @@
-﻿using System;
+﻿using Backtrace.Common;
+using Backtrace.Extensions;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Linq;
-using Backtrace.Base;
-using System.Net.NetworkInformation;
-using Backtrace.Common;
-using Backtrace.Extensions;
-using System.Reflection;
-using Newtonsoft.Json;
 using System.IO;
+using System.Linq;
+using System.Net.NetworkInformation;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Backtrace.Tests")]
 namespace Backtrace.Model.JsonData
@@ -251,7 +250,6 @@ namespace Backtrace.Model.JsonData
             {
                 Attributes["uname.machine"] = cpuArchitecture;
             }
-
             //Operating system name = such as "windows"
             Attributes["uname.sysname"] = SystemHelper.Name(cpuArchitecture);
 

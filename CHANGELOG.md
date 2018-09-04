@@ -1,5 +1,8 @@
 ﻿# Backtrace C# Release Notes
 
+## Version 2.0.3 - 04.09.2018
+- Thread data condition for Unity on .NET Framework 4.5+
+
 ## Version 2.0.2 - 28.08.2018
 - Nullable environment variables fix,
 - Fix for invalid database tests that use real minidump files,
