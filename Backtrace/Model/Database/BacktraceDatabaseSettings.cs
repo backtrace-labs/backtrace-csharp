@@ -65,6 +65,6 @@ namespace Backtrace.Model.Database
         /// </summary>
         public uint RetryLimit { get; set; } = 3;
 
-        public RetryOrder RetryOrder { get; set; } = RetryOrder.Stack;
+        public RetryOrder RetryOrder { get; set; } = RetryOrder.Queue;
     }
 }

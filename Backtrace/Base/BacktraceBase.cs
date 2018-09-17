@@ -22,28 +22,16 @@ namespace Backtrace.Base
         /// </summary>
         public Func<string, string, BacktraceData, BacktraceResult> RequestHandler
         {
-            get
-            {
-                return BacktraceApi.RequestHandler;
-            }
-            set
-            {
-                BacktraceApi.RequestHandler = value;
-            }
+            get => BacktraceApi.RequestHandler;
+            set => BacktraceApi.RequestHandler = value;
         }
         /// <summary>
         /// Set an event executed when received bad request, unauthorize request or other information from server
         /// </summary>
         public Action<Exception> OnServerError
         {
-            get
-            {
-                return BacktraceApi.OnServerError;
-            }
-            set
-            {
-                BacktraceApi.OnServerError = value;
-            }
+            get => BacktraceApi.OnServerError;
+            set => BacktraceApi.OnServerError = value;
         }
 
         /// <summary>
@@ -51,14 +39,8 @@ namespace Backtrace.Base
         /// </summary>
         public Action<BacktraceResult> OnServerResponse
         {
-            get
-            {
-                return BacktraceApi.OnServerResponse;
-            }
-            set
-            {
-                BacktraceApi.OnServerResponse = value;
-            }
+            get => BacktraceApi.OnServerResponse;
+            set => BacktraceApi.OnServerResponse = value;
         }
 
         /// <summary>
@@ -71,10 +53,7 @@ namespace Backtrace.Base
         /// </summary>
         public Action<BacktraceReport> OnClientReportLimitReached
         {
-            set
-            {
-                BacktraceApi.SetClientRateLimitEvent(value);
-            }
+            set => BacktraceApi.SetClientRateLimitEvent(value);
         }
 
         /// <summary>
@@ -103,10 +82,7 @@ namespace Backtrace.Base
         /// </summary>
         internal IBacktraceApi BacktraceApi
         {
-            get
-            {
-                return _backtraceApi;
-            }
+            get => _backtraceApi;
             set
             {
                 _backtraceApi = value;

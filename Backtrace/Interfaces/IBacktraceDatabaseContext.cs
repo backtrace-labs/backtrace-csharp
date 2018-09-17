@@ -85,9 +85,8 @@ namespace Backtrace.Interfaces
         int GetTotalNumberOfRecords();
 
         /// <summary>
-        /// Get all repots stored in Database
+        /// Remove the oldest record in database
         /// </summary>
-        //IEnumerable<BacktraceReportBase> Get(Func<BacktraceReportBase,IEnumerable<BacktraceReportBase) filter);
-
+        void RemoveLastRecord();
     }
 }

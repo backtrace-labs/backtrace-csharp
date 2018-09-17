@@ -141,7 +141,6 @@ namespace Backtrace.Services
                 var file = files[i];
                 file.Delete();
             }
-
         }
     }
 }

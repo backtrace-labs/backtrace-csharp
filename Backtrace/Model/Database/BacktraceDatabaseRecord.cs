@@ -169,14 +169,16 @@ namespace Backtrace.Model.Database
                 RecordWriter.Write(this, $"{Id}-record");
                 return true;
             }
-            catch (IOException)
+            catch (IOException io)
             {
-                Trace.WriteLine($"Received {nameof(IOException)} while saving data to database");
+                Trace.WriteLine($"Received {nameof(IOException)} while saving data to database.");
+                Debug.WriteLine($"Message {io.Message}");
                 return false;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Trace.WriteLine($"Received {nameof(Exception)} while saving data to database");
+                Trace.WriteLine($"Received {nameof(Exception)} while saving data to database.");
+                Debug.WriteLine($"Message {ex.Message}");
                 return false;
             }
         }

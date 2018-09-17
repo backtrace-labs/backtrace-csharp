@@ -4,7 +4,6 @@ using Backtrace.Model.Database;
 using Backtrace.Types;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("DynamicProxyGenAssembly2")]
@@ -81,7 +80,10 @@ namespace Backtrace.Services
         /// <returns>New instance of DatabaseRecordy</returns>
         public virtual BacktraceDatabaseRecord Add(BacktraceData backtraceData)
         {
-            if (backtraceData == null) throw new NullReferenceException(nameof(backtraceData));
+            if (backtraceData == null)
+            {
+                throw new NullReferenceException(nameof(backtraceData));
+            }
             //create new record and save it on hard drive
             var record = new BacktraceDatabaseRecord(backtraceData, _path);
             record.Save();
@@ -95,7 +97,10 @@ namespace Backtrace.Services
         /// <param name="backtraceRecord">Database record</param>
         public BacktraceDatabaseRecord Add(BacktraceDatabaseRecord backtraceRecord)
         {
-            if (backtraceRecord == null) throw new NullReferenceException(nameof(BacktraceDatabaseRecord));
+            if (backtraceRecord == null)
+            {
+                throw new NullReferenceException(nameof(BacktraceDatabaseRecord));
+            }
             //lock record, because Add method returns record
             backtraceRecord.Locked = true;
             //increment total size of database
@@ -151,6 +156,7 @@ namespace Backtrace.Services
                         TotalRecords--;
                         //decrement total size of database
                         TotalSize -= value.Size;
+                        System.Diagnostics.Debug.WriteLine($"[Delete] :: Total Size = {TotalSize}");
                         return;
                     }
                 }
@@ -165,6 +171,21 @@ namespace Backtrace.Services
         {
             RemoveMaxRetries();
             IncrementBatches();
+        }
+
+        /// <summary>
+        /// Remove last record in database
+        /// </summary>
+        public void RemoveLastRecord()
+        {
+            var record = LastOrDefault();
+            if (record != null)
+            {
+                record.Delete();
+                TotalRecords--;
+                TotalSize -= record.Size;
+                System.Diagnostics.Debug.WriteLine($"[RemoveLastRecord] :: Total Size = {TotalSize}");
+            }
         }
 
         /// <summary>
@@ -190,10 +211,15 @@ namespace Backtrace.Services
             for (int i = 0; i < total; i++)
             {
                 var value = currentBatch[i];
-                value.Delete();
-                TotalRecords--;
-                //decrement total size of database
-                TotalSize -= value.Size;
+                if (value.Valid())
+                {
+                    value.Delete();
+                    TotalRecords--;
+                    //decrement total size of database
+                    System.Diagnostics.Debug.WriteLine($"[RemoveMaxRetries]::BeforeDelete Total size: {TotalSize}. Record Size: {value.Size} ");
+                    TotalSize -= value.Size;
+                    System.Diagnostics.Debug.WriteLine($"[RemoveMaxRetries]::AfterDelete Total size: {TotalSize} ");
+                }
             }
         }
 
@@ -210,7 +236,10 @@ namespace Backtrace.Services
         /// Get total number of records in database
         /// </summary>
         /// <returns></returns>
-        public int Count() => TotalRecords;
+        public int Count()
+        {
+            return TotalRecords;
+        }
 
         /// <summary>
         /// Dispose
