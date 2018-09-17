@@ -6,7 +6,7 @@
 ## Version 2.0.2 - 28.08.2018
 - Nullable environment variables fix,
 - Fix for invalid database tests that use real minidump files,
-- Fix nullbale GetEnvironmentValue results.
+- Fix nullable GetEnvironmentValue results.
 
 ## Version 2.0.1 - 17.07.2018
 - `BacktraceClient` use reflection to generate better method names for async state machine stack frames,
