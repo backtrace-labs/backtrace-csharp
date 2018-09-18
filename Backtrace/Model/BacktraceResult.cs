@@ -106,5 +106,15 @@ namespace Backtrace.Model
                 Status = BacktraceResultStatus.ServerError
             };
         }
+
+        internal void AddInnerResult(BacktraceResult innerResult)
+        {
+            if(InnerExceptionResult == null)
+            {
+                InnerExceptionResult = innerResult;
+                return;
+            }
+            InnerExceptionResult.AddInnerResult(innerResult);
+        }
     }
 }

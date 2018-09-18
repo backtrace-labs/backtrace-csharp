@@ -17,10 +17,12 @@ namespace Backtrace.Base
     /// </summary>
     public class BacktraceBase
     {
+#if !NET35
         /// <summary>
         /// Ignore AggregateException and only prepare report for inner exceptions
         /// </summary>
         public bool IgnoreAggregateException { get; set; } = false;
+#endif
 
         /// <summary>
         /// Custom request handler for HTTP call to server
@@ -144,12 +146,11 @@ namespace Backtrace.Base
         /// Send a report to Backtrace API
         /// </summary>
         /// <param name="report">Report to send</param>
-#if !NET35
-        [Obsolete("Send is obsolete, please use SendAsync instead if possible.")]
-#endif
         public virtual BacktraceResult Send(BacktraceReport report)
         {
-            System.Diagnostics.Debug.WriteLine("Missing aggreaget exception implementation");
+#if !NET35
+            return SendAsync(report).Result;
+#else
             var record = Database.Add(report, Attributes, MiniDumpType);
             //create a JSON payload instance
             var data = record?.BacktraceData ?? report.ToBacktraceData(Attributes);
@@ -165,6 +166,7 @@ namespace Backtrace.Base
             //handle inner exception
             result.InnerExceptionResult = HandleInnerException(report);
             return result;
+#endif
         }
 
         /// <summary>
@@ -192,18 +194,10 @@ namespace Backtrace.Base
         public virtual async Task<BacktraceResult> SendAsync(BacktraceReport report)
         {
             System.Diagnostics.Debug.WriteLine("Missing aggreaget exception implementation");
-            //if (IgnoreAggregateException && report.Exception is AggregateException)
-            //{
-            //    var aggregateException = report.Exception as AggregateException;
-            //    aggregateException.Handle(e =>
-            //    {
-
-            //        return true;
-            //    });
-            //    //unpack report to check inner exception
-            //    throw new NotImplementedException(nameof(IgnoreAggregateException));
-
-            //}
+            if (IgnoreAggregateException && report.Exception is AggregateException)
+            {
+                return await HandleAggregateException(report);
+            }
             var record = Database.Add(report, Attributes, MiniDumpType);
             //create a JSON payload instance
             var data = record?.BacktraceData ?? report.ToBacktraceData(Attributes);
@@ -218,6 +212,35 @@ namespace Backtrace.Base
             //check if there is more errors to send
             //handle inner exception
             result.InnerExceptionResult = await HandleInnerExceptionAsync(report);
+            return result;
+        }
+
+        private async Task<BacktraceResult> HandleAggregateException(BacktraceReport report)
+        {
+            AggregateException aggregateException = report.Exception as AggregateException;
+            BacktraceResult result = null;
+            aggregateException.Handle(e =>
+            {
+                var innerReport = new BacktraceReport(
+                    exception: e,
+                    attributes: report.Attributes,
+                    attachmentPaths: report.AttachmentPaths,
+                    reflectionMethodName: report._reflectionMethodName)
+                {
+                    Factor = report.Factor,
+                    Fingerprint = report.Fingerprint
+                };
+                if (result == null)
+                {
+                    result = Send(innerReport);
+                }
+                else
+                {
+                    var innerResult = Send(innerReport);
+                    result.AddInnerResult(innerResult);
+                }
+                return true;
+            });
             return result;
         }
 
