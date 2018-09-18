@@ -16,6 +16,11 @@ namespace Backtrace
     public class BacktraceClient : BacktraceBase, IBacktraceClient
     {
         /// <summary>
+        /// Ignore AggregateException and only prepare report for inner exceptions
+        /// </summary>
+        public bool IgnoreAggregateException { get; set; } = false;
+
+        /// <summary>
         /// Set an event executed before sending data to Backtrace API
         /// </summary>
         public Action<BacktraceReport> OnReportStart;

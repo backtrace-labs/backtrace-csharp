@@ -39,7 +39,7 @@ namespace Backtrace.Model.JsonData
             if (report != null)
             {
                 ConvertAttributes(report, clientAttributes);
-                SetLibraryAttributes(report.CallingAssembly);
+                SetLibraryAttributes(report);
                 SetDebuggerAttributes(report.CallingAssembly);
                 SetExceptionAttributes(report);
             }
@@ -52,8 +52,18 @@ namespace Backtrace.Model.JsonData
         /// Set library attributes
         /// </summary>
         /// <param name="callingAssembly">Calling assembly</param>
-        private void SetLibraryAttributes(Assembly callingAssembly)
+        private void SetLibraryAttributes(BacktraceReport report)
         {
+            var callingAssembly = report.CallingAssembly;
+            if (!string.IsNullOrEmpty(report.Fingerprint))
+            {
+                Attributes["_mod_fingerprint"] = report.Fingerprint;
+            }
+
+            if (!string.IsNullOrEmpty(report.Factor))
+            {
+                Attributes["_mod_factor"] = report.Factor;
+            }
             //A unique identifier of a machine
             Attributes["guid"] = GenerateMachineId().ToString();
             //Base name of application generating the report

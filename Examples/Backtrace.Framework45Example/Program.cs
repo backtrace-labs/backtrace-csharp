@@ -9,19 +9,19 @@ using System.Threading.Tasks;
 
 namespace Backtrace.Framework45Example
 {
-    class Program
+    internal class Program
     {
         private Tree tree;
 
         /// <summary>
         /// Credentials
         /// </summary>
-        private BacktraceCredentials credentials = new BacktraceCredentials(ApplicationSettings.Host, ApplicationSettings.Token);
+        private readonly BacktraceCredentials credentials = new BacktraceCredentials(ApplicationSettings.Host, ApplicationSettings.Token);
 
         /// <summary>
         /// Database settings
         /// </summary>
-        private BacktraceDatabaseSettings databaseSettings = new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath);
+        private readonly BacktraceDatabaseSettings databaseSettings = new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath);
 
         /// <summary>
         /// New instance of BacktraceClient. Check SetupBacktraceLibrary method for intiailization example
@@ -31,6 +31,14 @@ namespace Backtrace.Framework45Example
         public Program()
         {
             SetupBacktraceLibrary();
+            var exception = new AggregateException("something really bad happend", new List<Exception>()
+            {
+                new ArgumentException("Really bad argument"),
+                new InvalidOperationException("You won't execute this line of code for sure"),
+                new FormatException("I don't have more funny exception descriptions lol")
+            });
+            backtraceClient.IgnoreAggregateException = true;
+            backtraceClient.SendAsync(exception).Wait();
         }
 
         public async Task Start()
@@ -94,8 +102,8 @@ namespace Backtrace.Framework45Example
                     continue;
                 }
             }
-            //var response = await backtraceClient.SendAsync($"{DateTime.Now}: Tree generated");
-            //Console.WriteLine($"Tree generated! Backtrace object id for last message: {response.Object}");
+            var response = await backtraceClient.SendAsync($"{DateTime.Now}: Tree generated");
+            Console.WriteLine($"Tree generated! Backtrace object id for last message: {response.Object}");
         }
 
         private async Task TryClean()
@@ -135,7 +143,7 @@ namespace Backtrace.Framework45Example
 
         }
 
-        unsafe static void DividePtrParam(int* p, int* j)
+        private static unsafe void DividePtrParam(int* p, int* j)
         {
             *p = *p / *j;
         }
@@ -191,7 +199,8 @@ namespace Backtrace.Framework45Example
                    return data;
                };
         }
-        static void Main(string[] args)
+
+        private static void Main(string[] args)
         {
             Program program = new Program();
             program.Start().Wait();

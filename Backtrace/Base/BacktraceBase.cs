@@ -18,6 +18,11 @@ namespace Backtrace.Base
     public class BacktraceBase
     {
         /// <summary>
+        /// Ignore AggregateException and only prepare report for inner exceptions
+        /// </summary>
+        public bool IgnoreAggregateException { get; set; } = false;
+
+        /// <summary>
         /// Custom request handler for HTTP call to server
         /// </summary>
         public Func<string, string, BacktraceData, BacktraceResult> RequestHandler
@@ -139,9 +144,12 @@ namespace Backtrace.Base
         /// Send a report to Backtrace API
         /// </summary>
         /// <param name="report">Report to send</param>
+#if !NET35
         [Obsolete("Send is obsolete, please use SendAsync instead if possible.")]
+#endif
         public virtual BacktraceResult Send(BacktraceReport report)
         {
+            System.Diagnostics.Debug.WriteLine("Missing aggreaget exception implementation");
             var record = Database.Add(report, Attributes, MiniDumpType);
             //create a JSON payload instance
             var data = record?.BacktraceData ?? report.ToBacktraceData(Attributes);
@@ -183,6 +191,19 @@ namespace Backtrace.Base
         /// <param name="report">Report to send</param>
         public virtual async Task<BacktraceResult> SendAsync(BacktraceReport report)
         {
+            System.Diagnostics.Debug.WriteLine("Missing aggreaget exception implementation");
+            //if (IgnoreAggregateException && report.Exception is AggregateException)
+            //{
+            //    var aggregateException = report.Exception as AggregateException;
+            //    aggregateException.Handle(e =>
+            //    {
+
+            //        return true;
+            //    });
+            //    //unpack report to check inner exception
+            //    throw new NotImplementedException(nameof(IgnoreAggregateException));
+
+            //}
             var record = Database.Add(report, Attributes, MiniDumpType);
             //create a JSON payload instance
             var data = record?.BacktraceData ?? report.ToBacktraceData(Attributes);
