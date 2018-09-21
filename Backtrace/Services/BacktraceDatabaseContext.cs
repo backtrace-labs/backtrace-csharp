@@ -174,9 +174,10 @@ namespace Backtrace.Services
         }
 
         /// <summary>
-        /// Remove last record in database
+        /// Remove last record in database. 
         /// </summary>
-        public void RemoveLastRecord()
+        /// <returns>If algorithm can remove last record, method return true. Otherwise false</returns>
+        public bool RemoveLastRecord()
         {
             var record = LastOrDefault();
             if (record != null)
@@ -185,7 +186,9 @@ namespace Backtrace.Services
                 TotalRecords--;
                 TotalSize -= record.Size;
                 System.Diagnostics.Debug.WriteLine($"[RemoveLastRecord] :: Total Size = {TotalSize}");
+                return true;
             }
+            return false;
         }
 
         /// <summary>

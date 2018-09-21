@@ -108,7 +108,7 @@ namespace Backtrace
             RemoveOrphaned();
             // setup database timer events
             if (DatabaseSettings.RetryBehavior == RetryBehavior.ByInterval
-                || !DatabaseSettings.AutoSendMode)
+                || DatabaseSettings.AutoSendMode)
             {
                 SetupTimer();
             }
@@ -168,7 +168,13 @@ namespace Backtrace
             {
                 return null;
             }
-            ValidateDatabaseSize();
+            //remove old reports (if database is full)
+            //and check database health state
+            var validationResult = ValidateDatabaseSize();
+            if (!validationResult)
+            {
+                return null;
+            }
             if (miniDumpType != MiniDumpType.None)
             {
                 string minidumpPath = GenerateMiniDump(backtraceReport, miniDumpType);
@@ -396,25 +402,34 @@ namespace Backtrace
         /// If space or number of records are invalid
         /// database will remove old reports
         /// </summary>
-        private void ValidateDatabaseSize()
+        private bool ValidateDatabaseSize()
         {
             //check how many records are stored in database
             //remove in case when we want to store one more than expected number
             //If record count == 0 then we ignore this condition
             if (BacktraceDatabaseContext.Count() + 1 > DatabaseSettings.MaxRecordCount && DatabaseSettings.MaxRecordCount != 0)
             {
-                BacktraceDatabaseContext.RemoveLastRecord();
+                if (!BacktraceDatabaseContext.RemoveLastRecord())
+                {
+                    return false;
+                }
             }
 
             //check database size. If database size == 0 then we ignore this condition
             //remove all records till database use enough space
             if (DatabaseSettings.MaxDatabaseSize != 0)
             {
-                while (BacktraceDatabaseContext.GetSize() > DatabaseSettings.MaxDatabaseSize)
+                //if your database is entry or every record is locked
+                //deletePolicyRetry avoid infinity loop
+                int deletePolicyRetry = 5;
+                while (BacktraceDatabaseContext.GetSize() > DatabaseSettings.MaxDatabaseSize || deletePolicyRetry != 0)
                 {
                     BacktraceDatabaseContext.RemoveLastRecord();
+                    deletePolicyRetry--;
                 }
+                return deletePolicyRetry != 0;
             }
+            return true;
         }
 
         /// <summary>

@@ -44,6 +44,7 @@ namespace Backtrace.Tests.DatabaseTests.Model
 
             var settings = new BacktraceDatabaseSettings(projectPath)
             {
+                RetryBehavior = RetryBehavior.NoRetry,
                 AutoSendMode = false, //we don't want to test timers
                 MaxRecordCount = 100,
                 RetryLimit = 3

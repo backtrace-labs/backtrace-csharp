@@ -85,8 +85,9 @@ namespace Backtrace.Interfaces
         int GetTotalNumberOfRecords();
 
         /// <summary>
-        /// Remove the oldest record in database
+        /// Remove last record in database. 
         /// </summary>
-        void RemoveLastRecord();
+        /// <returns>If algorithm can remove last record, method return true. Otherwise false</returns>
+        bool RemoveLastRecord();
     }
 }
