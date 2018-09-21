@@ -56,7 +56,7 @@ namespace Backtrace.Tests.DatabaseTests
         {
             _lastEntry = GetEntry();
             //get project path
-            string projectPath = Environment.CurrentDirectory;
+            string projectPath = System.IO.Path.GetTempPath();
             //setup credentials
             var credentials = new BacktraceCredentials("https://validurl.com/", "validToken");
             //mock api

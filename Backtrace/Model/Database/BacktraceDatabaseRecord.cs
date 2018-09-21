@@ -205,7 +205,7 @@ namespace Backtrace.Model.Database
         /// Check if all necessary files declared on record exists
         /// </summary>
         /// <returns>True if record is valid</returns>
-        public bool Valid()
+        internal virtual bool Valid()
         {
             return File.Exists(DiagnosticDataPath) && File.Exists(ReportPath);
         }

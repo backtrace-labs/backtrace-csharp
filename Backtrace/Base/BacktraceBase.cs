@@ -148,9 +148,6 @@ namespace Backtrace.Base
         /// <param name="report">Report to send</param>
         public virtual BacktraceResult Send(BacktraceReport report)
         {
-#if !NET35
-            return SendAsync(report).Result;
-#else
             var record = Database.Add(report, Attributes, MiniDumpType);
             //create a JSON payload instance
             var data = record?.BacktraceData ?? report.ToBacktraceData(Attributes);
@@ -166,7 +163,6 @@ namespace Backtrace.Base
             //handle inner exception
             result.InnerExceptionResult = HandleInnerException(report);
             return result;
-#endif
         }
 
         /// <summary>
@@ -193,7 +189,6 @@ namespace Backtrace.Base
         /// <param name="report">Report to send</param>
         public virtual async Task<BacktraceResult> SendAsync(BacktraceReport report)
         {
-            System.Diagnostics.Debug.WriteLine("Missing aggreaget exception implementation");
             if (IgnoreAggregateException && report.Exception is AggregateException)
             {
                 return await HandleAggregateException(report);
@@ -219,10 +214,11 @@ namespace Backtrace.Base
         {
             AggregateException aggregateException = report.Exception as AggregateException;
             BacktraceResult result = null;
-            aggregateException.Handle(e =>
+
+            foreach (var ex in aggregateException.InnerExceptions)
             {
                 var innerReport = new BacktraceReport(
-                    exception: e,
+                    exception: ex,
                     attributes: report.Attributes,
                     attachmentPaths: report.AttachmentPaths,
                     reflectionMethodName: report._reflectionMethodName)
@@ -232,15 +228,14 @@ namespace Backtrace.Base
                 };
                 if (result == null)
                 {
-                    result = Send(innerReport);
+                    result = await SendAsync(innerReport);
                 }
                 else
                 {
                     var innerResult = Send(innerReport);
                     result.AddInnerResult(innerResult);
                 }
-                return true;
-            });
+            }
             return result;
         }
 

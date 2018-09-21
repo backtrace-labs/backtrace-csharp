@@ -164,7 +164,7 @@ namespace Backtrace
         /// </summary>
         public BacktraceDatabaseRecord Add(BacktraceReport backtraceReport, Dictionary<string, object> attributes, MiniDumpType miniDumpType = MiniDumpType.Normal)
         {
-            if (!_enable)
+            if (!_enable || backtraceReport == null)
             {
                 return null;
             }

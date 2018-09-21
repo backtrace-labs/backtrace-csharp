@@ -1,14 +1,9 @@
-﻿using Backtrace.Interfaces;
+﻿using Backtrace.Model;
 using Backtrace.Model.Database;
 using Backtrace.Tests.DatabaseTests.Model;
 using Backtrace.Types;
-using Moq;
 using NUnit.Framework;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Backtrace.Tests.DatabaseTests
 {
@@ -36,14 +31,23 @@ namespace Backtrace.Tests.DatabaseTests
         {
             _database.Clear();
             //we set maximum number of records  to equal to 100 in Setup method on DatabaseTestBase class
-            int maximumNumberOfRecords = 101;
+            int maximumNumberOfRecords = 100;
             //we add 100 records - 100 is our database limit
-            for (int i = 0; i < maximumNumberOfRecords - 1; i++)
+            for (int i = 0; i < maximumNumberOfRecords; i++)
             {
-                _database.BacktraceDatabaseContext.Add(GetRecord());
+                var fakeRecord = GetRecord();
+                var record = _database.BacktraceDatabaseContext.Add(fakeRecord);
+                fakeRecord.Locked = false;
             }
             _database.Start();
-            Assert.Throws<ArgumentException>(() => _database.Add(null, new Dictionary<string, object>(), MiniDumpType.None));
+            _database.Add(
+                backtraceReport: new BacktraceReport("fake report"),
+                attributes: new Dictionary<string, object>(),
+                miniDumpType: MiniDumpType.None);
+
+            // in the end BacktraceDatabase should contain 100 reports. 
+            // Database should remove first ever report.
+            Assert.AreEqual(_database.Count(), maximumNumberOfRecords);
         }
 
 
@@ -82,7 +86,7 @@ namespace Backtrace.Tests.DatabaseTests
             {
                 var record = GetRecord();
                 records.Add(record);
-                _database.BacktraceDatabaseContext.Add(record);
+                var dbRecord = _database.BacktraceDatabaseContext.Add(record);
             }
             DisposeRecords();
             foreach (var record in records)

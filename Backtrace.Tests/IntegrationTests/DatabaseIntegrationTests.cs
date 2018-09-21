@@ -1,5 +1,4 @@
-﻿using Backtrace.Base;
-using Backtrace.Extensions;
+﻿using Backtrace.Extensions;
 using Backtrace.Interfaces;
 using Backtrace.Model;
 using Backtrace.Model.Database;
@@ -12,8 +11,6 @@ using RichardSzalay.MockHttp;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Backtrace.Tests.IntegrationTests
@@ -24,19 +21,18 @@ namespace Backtrace.Tests.IntegrationTests
         /// <summary>
         /// Client
         /// </summary>
-        BacktraceClient _backtraceClient;
+        private BacktraceClient _backtraceClient;
 
         /// <summary>
         /// Last database record
         /// </summary>
-        BacktraceDatabaseRecord _lastRecord;
+        private BacktraceDatabaseRecord _lastRecord;
 
         /// <summary>
         /// Enable hard drive write errors
         /// </summary>
-        bool _enableWriteErrors = false;
-
-        bool _writeFail = false;
+        private bool _enableWriteErrors = false;
+        private bool _writeFail = false;
 
         /// <summary>
         /// Get new database record 
@@ -64,7 +60,7 @@ namespace Backtrace.Tests.IntegrationTests
         {
             _lastRecord = GetRecord();
             //get project path
-            string projectPath = Environment.CurrentDirectory;
+            string projectPath = Path.GetTempPath();
             //setup credentials
             var credentials = new BacktraceCredentials("https://validurl.com/", "validToken");
             //mock api

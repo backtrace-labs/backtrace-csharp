@@ -164,7 +164,8 @@ namespace Backtrace
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null)
         {
-            return Send(new BacktraceReport(exception, attributes, attachmentPaths));
+            var report = new BacktraceReport(exception, attributes, attachmentPaths);
+            return Send(report);
         }
 
         /// <summary>
@@ -178,7 +179,8 @@ namespace Backtrace
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null)
         {
-            return Send(new BacktraceReport(message, attributes, attachmentPaths));
+            var report = new BacktraceReport(message, attributes, attachmentPaths);
+            return Send(report);
         }
 
         /// <summary>

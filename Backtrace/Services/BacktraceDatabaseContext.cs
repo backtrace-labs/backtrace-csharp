@@ -298,8 +298,9 @@ namespace Backtrace.Services
         private BacktraceDatabaseRecord GetFirstRecord()
         {
             //get all batches (from the beginning)
-            for (int i = 0; i < _retryNumber - 1; i++)
+            for (int i = 0; i < _retryNumber; i++)
             {
+                System.Diagnostics.Debug.WriteLine("Current iteration: " + i);
                 //if batch has any record that is not used
                 //set lock to true 
                 //and return file

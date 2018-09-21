@@ -35,7 +35,11 @@ namespace Backtrace.Framework45Example
             {
                 new ArgumentException("Really bad argument"),
                 new InvalidOperationException("You won't execute this line of code for sure"),
-                new FormatException("I don't have more funny exception descriptions lol")
+                new FormatException("I don't have more funny exception descriptions lol"),
+                new AggregateException("Another aggregateException", new List<Exception> ()
+                {
+                    new DivideByZeroException("meh")
+                })
             });
             backtraceClient.IgnoreAggregateException = true;
             backtraceClient.SendAsync(exception).Wait();
