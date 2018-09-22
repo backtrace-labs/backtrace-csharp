@@ -204,7 +204,7 @@ var dbSettings = new BacktraceDatabaseSettings("databaseDirectory"){
     AutoSendMode = true,
     RetryBehavior = Backtrace.Types.RetryBehavior.ByInterval
 };
-var database = new BacktraceDatabase<object>(dbSettings);
+var database = new BacktraceDatabase(dbSettings);
 var credentials = new BacktraceCredentials("backtrace_endpoint_url", "token");
 var configuration = new BacktraceClientConfiguration(credentials);
 var backtraceClient = new BacktraceClient(configuration, database);
@@ -313,7 +313,7 @@ catch (Exception exception)
  //Add your own handler to client API
 
 backtraceClient.BeforeSend =
-    (Model.BacktraceData<object> model) =>
+    (Model.BacktraceData model) =>
     {
         var data = model;
         //do something with data for example:        
