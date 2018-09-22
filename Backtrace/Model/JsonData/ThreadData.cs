@@ -1,13 +1,13 @@
 ﻿#if NET45
 using Microsoft.Diagnostics.Runtime;
 #endif
+using Backtrace.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
 using System.Linq;
 using System.Reflection;
-using Backtrace.Extensions;
+using System.Threading;
 
 namespace Backtrace.Model.JsonData
 {
@@ -32,8 +32,16 @@ namespace Backtrace.Model.JsonData
         internal ThreadData(Assembly callingAssembly, IEnumerable<BacktraceStackFrame> exceptionStack)
         {
 #if NET45
-            //use available in .NET 4.5 api to find stack trace of all available managed threads
-            GetUsedThreads(callingAssembly);
+            try
+            {
+                //use available in .NET 4.5 api to find stack trace of all available managed threads
+                GetUsedThreads(callingAssembly);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"[ThreadData] Received exception: {e.Message}");
+                Trace.WriteLine("Cannot retrieve information about threads.");
+            }
 #else
             //get all available process threads
             ProcessThreads();
@@ -135,7 +143,7 @@ namespace Backtrace.Model.JsonData
                     var frames = new List<BacktraceStackFrame>();
                     foreach (var frame in thread.StackTrace)
                     {
-                        if(frame.Method == null)
+                        if (frame.Method == null)
                         {
                             continue;
                         }
