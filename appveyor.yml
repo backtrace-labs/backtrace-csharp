@@ -9,17 +9,18 @@ branches:
 environment:  
   APPVEYOR_YML_DISABLE_PS_LINUX: true
 init:
-  # Good practise, because Windows line endings are different from Unix/Linux ones
-    - cmd: git config --global core.autocrlf true
+    # Good practise, because Windows line endings are different from Unix/Linux ones
+    - ps: git config --global core.autocrlf true
 before_build:
     # Display .NET version
-    - cmd: dotnet --version
+    - ps: dotnet --version
 build_script:
     #solve problem for .NET 3.5 by using two build commands#
     - ps: dotnet build .\Backtrace\Backtrace.csproj -f netstandard2.0 ; dotnet build .\Backtrace\Backtrace.csproj -f net45
-    - sh: dotnet build .\Backtrace\Backtrace.csproj -f netstandard2.0
+    - sh: dotnet build ./Backtrace/Backtrace.csproj -f netstandard2.0
 test_script:
     - ps: dotnet test .\Backtrace.Tests\
+    - sh: dotnet test ./Backtrace.Tests
 deploy: off
 on_finish:
     - ps echo "Build finished successfully"
