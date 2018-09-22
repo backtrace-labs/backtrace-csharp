@@ -1,7 +1,7 @@
 version: 1.0.{build}
 image: 
-    - Visual Studio 2017
     - Ubuntu
+    - Visual Studio 2017
 branches:
     only:
     - /master
@@ -20,7 +20,8 @@ build_script:
     - sh: dotnet build ./Backtrace/Backtrace.csproj -f netstandard2.0
 test_script:
     - ps: dotnet test .\Backtrace.Tests\
-    - sh: dotnet test ./Backtrace.Tests -f netstandard2.0
+    - sh: dotnet test ./Backtrace.Tests -f netcoreapp2.0
 deploy: off
 on_finish:
     - ps echo "Build finished successfully"
+    - sh echo "Build finished successfully"
