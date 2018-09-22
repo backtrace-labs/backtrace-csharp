@@ -31,18 +31,26 @@ namespace Backtrace.Framework45Example
         public Program()
         {
             SetupBacktraceLibrary();
-            var exception = new AggregateException("something really bad happend", new List<Exception>()
-            {
-                new ArgumentException("Really bad argument"),
-                new InvalidOperationException("You won't execute this line of code for sure"),
-                new FormatException("I don't have more funny exception descriptions lol"),
-                new AggregateException("Another aggregateException", new List<Exception> ()
-                {
-                    new DivideByZeroException("meh")
-                })
-            });
+            //var exception = new AggregateException("something really bad happend", new List<Exception>()
+            //{
+            //    new InvalidOperationException("You won't execute this line of code for sure"),
+            //    new ArgumentException("Really bad argument"),
+            //    new FormatException("I don't have more funny exception descriptions lol"),
+            //    new AggregateException("Another aggregateException", new List<Exception> ()
+            //    {
+            //        new DivideByZeroException("meh")
+            //    })
+            //});
+            var exception = new AggregateException("test exception",
+              new List<Exception>() {
+                     new ArgumentException("argument exception"),
+                    new InvalidOperationException("invalid operation exception"),
+                    new FormatException("format exception"),
+              });
+
+
             backtraceClient.IgnoreAggregateException = true;
-            backtraceClient.SendAsync(exception).Wait();
+            var result = backtraceClient.Send(exception);
         }
 
         public async Task Start()

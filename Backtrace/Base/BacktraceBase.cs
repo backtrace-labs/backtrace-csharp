@@ -148,6 +148,12 @@ namespace Backtrace.Base
         /// <param name="report">Report to send</param>
         public virtual BacktraceResult Send(BacktraceReport report)
         {
+#if !NET35
+            if (IgnoreAggregateException && report.Exception is AggregateException)
+            {
+                return HandleAggregateException(report).Result;
+            }
+#endif
             var record = Database.Add(report, Attributes, MiniDumpType);
             //create a JSON payload instance
             var data = record?.BacktraceData ?? report.ToBacktraceData(Attributes);
@@ -155,7 +161,7 @@ namespace Backtrace.Base
             data = BeforeSend?.Invoke(data) ?? data;
             var result = BacktraceApi.Send(data);
             record?.Dispose();
-            if (result.Status == BacktraceResultStatus.Ok)
+            if (result?.Status == BacktraceResultStatus.Ok)
             {
                 Database.Delete(record);
             }
@@ -200,7 +206,7 @@ namespace Backtrace.Base
             data = BeforeSend?.Invoke(data) ?? data;
             var result = await BacktraceApi.SendAsync(data);
             record?.Dispose();
-            if (result.Status == BacktraceResultStatus.Ok)
+            if (result?.Status == BacktraceResultStatus.Ok)
             {
                 Database.Delete(record);
             }
@@ -232,11 +238,10 @@ namespace Backtrace.Base
                 }
                 else
                 {
-                    var innerResult = Send(innerReport);
-                    result.AddInnerResult(innerResult);
+                    result.AddInnerResult(await SendAsync(innerReport));
                 }
             }
-            return result;
+            return result ?? new BacktraceResult() { Status = BacktraceResultStatus.Empty, BacktraceReport = report };
         }
 
         /// <summary>
