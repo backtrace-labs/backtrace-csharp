@@ -22,6 +22,3 @@ test_script:
     - ps: dotnet test .\Backtrace.Tests\
     - sh: dotnet test ./Backtrace.Tests -f netcoreapp2.0
 deploy: off
-on_finish:
-    - ps echo "Build finished successfully"
-    - sh echo "Build finished successfully"
