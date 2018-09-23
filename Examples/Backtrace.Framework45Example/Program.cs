@@ -31,19 +31,6 @@ namespace Backtrace.Framework45Example
         public Program()
         {
             SetupBacktraceLibrary();
-            var exception = new AggregateException("something really bad happend", new List<Exception>()
-            {
-                new InvalidOperationException("You won't execute this line of code for sure"),
-                new ArgumentException("Really bad argument"),
-                new FormatException("I don't have more funny exception descriptions lol"),
-                new AggregateException("Another aggregateException", new List<Exception> ()
-                {
-                    new DivideByZeroException("meh")
-                })
-            });
-
-            backtraceClient.IgnoreAggregateException = true;
-            var result = backtraceClient.Send(exception);
         }
 
         public async Task Start()
@@ -173,7 +160,10 @@ namespace Backtrace.Framework45Example
             //create Backtrace database
             var database = new BacktraceDatabase(databaseSettings);
             //setup new client
-            backtraceClient = new BacktraceClient(configuartion, database);
+            backtraceClient = new BacktraceClient(configuartion, database)
+            {
+                IgnoreAggregateException = true
+            };
 
             //handle all unhandled application exceptions
             backtraceClient.HandleApplicationException();

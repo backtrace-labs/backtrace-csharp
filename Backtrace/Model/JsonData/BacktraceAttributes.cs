@@ -139,6 +139,11 @@ namespace Backtrace.Model.JsonData
                     ComplexAttributes.Add(attribute.Key, attribute.Value);
                 }
             }
+            //add exception information to Complex attributes.
+            if (report.ExceptionTypeReport)
+            {
+                ComplexAttributes.Add("Exception Properties", report.Exception);
+            }
         }
 
         /// <summary>
@@ -148,7 +153,9 @@ namespace Backtrace.Model.JsonData
         /// <returns>Machine uuid</returns>
         private Guid GenerateMachineId()
         {
-            var networkInterface = NetworkInterface.GetAllNetworkInterfaces().FirstOrDefault(n => n.OperationalStatus == OperationalStatus.Up);
+            var networkInterface =
+                 NetworkInterface.GetAllNetworkInterfaces()
+                    .FirstOrDefault(n => n.OperationalStatus == OperationalStatus.Up);
 
             PhysicalAddress physicalAddr = null;
             string macAddress = null;
