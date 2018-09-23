@@ -1,5 +1,12 @@
 ﻿# Backtrace C# Release Notes
 
+## Version 2.0.4 - 23.09.2018
+- `BacktraceClient` allows developer to unpack `AggregateException` and send only exceptions available in `InnerExceptions` property.
+- `BacktraceReport` accepts two new properties: `Factory` and `Fingerprint`. These properties allows you to change server side algorithms. 
+- `BacktraceData` now include informations about `Exception` properties. You can check detailed `Exception` properties in Annotations.
+- `BacktraceDatabase` doesn't throw exception when developer can't add new record. This situation exists when database was full or database hasn't enough disk space for exceptions.
+- `BacktraceResult` can use new `Status`. In case when developer want to unpack `AggregateException` and `InnerExceptions` property is empty, `BacktraceClient` return `BacktraceResult` with status `Empty`,
+
 ## Version 2.0.3 - 04.09.2018
 - Thread data condition for Unity on .NET Framework 4.5+
 

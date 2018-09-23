@@ -190,7 +190,8 @@ For more information on `BacktraceClientConfiguration` parameters please see <a 
 
 
 Notes:
-- If parameter `reportPerMin` is equal to 0, there is no limit on the number of error reports per minute. When the `reportPerMin` cap is reached, `BacktraceClient.Send/BacktraceClient.SendAsync` method will return false.
+- If parameter `reportPerMin` is equal to 0, there is no limit on the number of error reports per minute. When the `reportPerMin` cap is reached, `BacktraceClient.Send/BacktraceClient.SendAsync` method will return false,
+- `BacktraceClient` allows you to unpack `AggregateExceptions` and send only exceptions that are available in `InnerException` property of `AggregateException`. By default `BacktraceClient` will send `AggregateException` information to Backtrace server. To avoid sending these reports, please override `IgnoreAggregateException` and set value to `true`.
 
 
 #### Database initialization <a name="documentation-database-initialization"></a>
@@ -259,7 +260,27 @@ catch (Exception exception)
 Notes:
 - if you initialize `BacktraceClient` with `BacktraceDatabase` and your application is offline or you pass invalid credentials to `BacktraceClient`, reports will be stored in database directory path,
 - for .NET 4.5+, we recommend to use `SendAsync` method,
-- if you don't want to use reflection to determine valid stack frame method name, you can pass `false` to `reflectionMethodName`. By default this value is equal to `true`.
+- if you don't want to use reflection to determine valid stack frame method name, you can pass `false` to `reflectionMethodName`. By default this value is equal to `true`,
+- `BacktraceReport` allows you to change default fingerprint generation algorithm. You can use `Fingerprint` property if you want to change fingerprint value. Keep in mind - fingerprint should be valid sha256 string.,
+- `BacktraceReport` allows you to change grouping strategy in Backtrace server. If you want to change how algorithm group your reports in Backtrace server please override `Factor` property.
+
+If you want to use `Fingerprint` and `Factory` property you have to override default property values. See example below to check how to use these properties:
+
+```
+try
+{
+  //throw exception here
+}
+catch (Exception exception)
+{
+    var report = new BacktraceReport(...){
+        FingerPrint = "sha256 string",
+        Factor = exception.GetType().Name
+    };
+    ....
+}
+
+```
 
 #### Asynchronous Send Support
 
