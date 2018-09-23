@@ -191,7 +191,7 @@ For more information on `BacktraceClientConfiguration` parameters please see <a 
 
 Notes:
 - If parameter `reportPerMin` is equal to 0, there is no limit on the number of error reports per minute. When the `reportPerMin` cap is reached, `BacktraceClient.Send/BacktraceClient.SendAsync` method will return false,
-- `BacktraceClient` allows you to unpack `AggregateExceptions` and send only exceptions that are available in `InnerException` property of `AggregateException`. By default `BacktraceClient` will send `AggregateException` information to Backtrace server. To avoid sending these reports, please override `IgnoreAggregateException` and set value to `true`.
+- `BacktraceClient` allows you to unpack `AggregateExceptions` and send only exceptions that are available in `InnerException` property of `AggregateException`. By default `BacktraceClient` will send `AggregateException` information to Backtrace server. To avoid sending these reports, please override `UnpackAggregateException` and set value to `true`.
 
 
 #### Database initialization <a name="documentation-database-initialization"></a>
@@ -395,7 +395,7 @@ You can extend `BacktraceBase` to create your own Backtrace client and error rep
 `BacktraceApi` can send synchronous and asynchronous reports to the Backtrace endpoint. To enable asynchronous report (default is synchronous) you have to set `AsynchronousRequest` property to `true`.
 
 ## BacktraceResult  <a name="architecture-BacktraceResult"></a>
-**`BacktraceResult`** is a class that holds response and result from a `Send` or `SendAsync` call. The class contains a `Status` property that indicates whether the call was completed (`OK`), the call returned with an error (`ServerError`), or the call was aborted because client reporting limit was reached (`LimitReached`). Additionally, the class has a `Message` property that contains details about the status. Note that the `Send` call may produce an error report on an inner exception, in this case you can find an additional `BacktraceResult` object in the `InnerExceptionResult` property.
+**`BacktraceResult`** is a class that holds response and result from a `Send` or `SendAsync` call. The class contains a `Status` property that indicates whether the call was completed (`OK`), the call returned with an error (`ServerError`), the call was aborted because client reporting limit was reached (`LimitReached`), or the call wasn't needed because developer use `UnpackAggregateException` property with empty `AggregateException` object (`Empty`).  Additionally, the class has a `Message` property that contains details about the status. Note that the `Send` call may produce an error report on an inner exception, in this case you can find an additional `BacktraceResult` object in the `InnerExceptionResult` property.
 
 ## BacktraceDatabase  <a name="architecture-BacktraceDatabase"></a>
 **`BacktraceDatabase`** is a class that stores error report data in your local hard drive. If `DatabaseSettings` dones't contain a **valid** `DatabasePath` then `BacktraceDatabase` won't generate minidump files and store error report data. 

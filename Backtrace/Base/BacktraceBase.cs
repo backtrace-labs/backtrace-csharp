@@ -21,7 +21,7 @@ namespace Backtrace.Base
         /// <summary>
         /// Ignore AggregateException and only prepare report for inner exceptions
         /// </summary>
-        public bool IgnoreAggregateException { get; set; } = false;
+        public bool UnpackAggregateExcetpion { get; set; } = false;
 #endif
 
         /// <summary>
@@ -149,7 +149,7 @@ namespace Backtrace.Base
         public virtual BacktraceResult Send(BacktraceReport report)
         {
 #if !NET35
-            if (IgnoreAggregateException && report.Exception is AggregateException)
+            if (UnpackAggregateExcetpion && report.Exception is AggregateException)
             {
                 return HandleAggregateException(report).Result;
             }
@@ -195,7 +195,7 @@ namespace Backtrace.Base
         /// <param name="report">Report to send</param>
         public virtual async Task<BacktraceResult> SendAsync(BacktraceReport report)
         {
-            if (IgnoreAggregateException && report.Exception is AggregateException)
+            if (UnpackAggregateExcetpion && report.Exception is AggregateException)
             {
                 return await HandleAggregateException(report);
             }

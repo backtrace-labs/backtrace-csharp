@@ -162,7 +162,7 @@ namespace Backtrace.Framework45Example
             //setup new client
             backtraceClient = new BacktraceClient(configuartion, database)
             {
-                IgnoreAggregateException = true
+                UnpackAggregateExcetpion = true
             };
 
             //handle all unhandled application exceptions

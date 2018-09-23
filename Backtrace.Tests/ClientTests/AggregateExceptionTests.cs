@@ -30,7 +30,7 @@ namespace Backtrace.Tests.ClientTests
             _backtraceClient = new BacktraceClient(credentials)
             {
                 BacktraceApi = api.Object,
-                IgnoreAggregateException = true
+                UnpackAggregateExcetpion = true
             };
         }
 
