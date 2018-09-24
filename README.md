@@ -264,7 +264,7 @@ Notes:
 - `BacktraceReport` allows you to change default fingerprint generation algorithm. You can use `Fingerprint` property if you want to change fingerprint value. Keep in mind - fingerprint should be valid sha256 string.,
 - `BacktraceReport` allows you to change grouping strategy in Backtrace server. If you want to change how algorithm group your reports in Backtrace server please override `Factor` property.
 
-If you want to use `Fingerprint` and `Factory` property you have to override default property values. See example below to check how to use these properties:
+If you want to use `Fingerprint` and `Factor` property you have to override default property values. See example below to check how to use these properties:
 
 ```
 try
