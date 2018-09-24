@@ -39,7 +39,7 @@ namespace Backtrace.Model.JsonData
             if (report != null)
             {
                 ConvertAttributes(report, clientAttributes);
-                SetLibraryAttributes(report.CallingAssembly);
+                SetLibraryAttributes(report);
                 SetDebuggerAttributes(report.CallingAssembly);
                 SetExceptionAttributes(report);
             }
@@ -52,8 +52,18 @@ namespace Backtrace.Model.JsonData
         /// Set library attributes
         /// </summary>
         /// <param name="callingAssembly">Calling assembly</param>
-        private void SetLibraryAttributes(Assembly callingAssembly)
+        private void SetLibraryAttributes(BacktraceReport report)
         {
+            var callingAssembly = report.CallingAssembly;
+            if (!string.IsNullOrEmpty(report.Fingerprint))
+            {
+                Attributes["_mod_fingerprint"] = report.Fingerprint;
+            }
+
+            if (!string.IsNullOrEmpty(report.Factor))
+            {
+                Attributes["_mod_factor"] = report.Factor;
+            }
             //A unique identifier of a machine
             Attributes["guid"] = GenerateMachineId().ToString();
             //Base name of application generating the report
@@ -129,6 +139,11 @@ namespace Backtrace.Model.JsonData
                     ComplexAttributes.Add(attribute.Key, attribute.Value);
                 }
             }
+            //add exception information to Complex attributes.
+            if (report.ExceptionTypeReport)
+            {
+                ComplexAttributes.Add("Exception Properties", report.Exception);
+            }
         }
 
         /// <summary>
@@ -138,7 +153,9 @@ namespace Backtrace.Model.JsonData
         /// <returns>Machine uuid</returns>
         private Guid GenerateMachineId()
         {
-            var networkInterface = NetworkInterface.GetAllNetworkInterfaces().FirstOrDefault(n => n.OperationalStatus == OperationalStatus.Up);
+            var networkInterface =
+                 NetworkInterface.GetAllNetworkInterfaces()
+                    .FirstOrDefault(n => n.OperationalStatus == OperationalStatus.Up);
 
             PhysicalAddress physicalAddr = null;
             string macAddress = null;

@@ -1,8 +1,8 @@
 # Backtrace
-[![Backtrace@release](https://img.shields.io/badge/Backtrace%40master-2.0.3-blue.svg)](https://www.nuget.org/packages/Backtrace)
+[![Backtrace@release](https://img.shields.io/badge/Backtrace%40master-2.0.4-blue.svg)](https://www.nuget.org/packages/Backtrace)
 [![Build status](https://ci.appveyor.com/api/projects/status/o0n9sp0ydgxb3ktu?svg=true)](https://ci.appveyor.com/project/konraddysput/backtrace-csharp)
 
-[![Backtrace@pre-release](https://img.shields.io/badge/Backtrace%40dev-2.0.4-blue.svg)](https://www.nuget.org/packages/Backtrace)
+[![Backtrace@pre-release](https://img.shields.io/badge/Backtrace%40dev-2.0.5-blue.svg)](https://www.nuget.org/packages/Backtrace)
 [![Build status](https://ci.appveyor.com/api/projects/status/o0n9sp0ydgxb3ktu/branch/dev?svg=true)](https://ci.appveyor.com/project/konraddysput/backtrace-csharp/branch/dev)
 
 
@@ -190,7 +190,8 @@ For more information on `BacktraceClientConfiguration` parameters please see <a 
 
 
 Notes:
-- If parameter `reportPerMin` is equal to 0, there is no limit on the number of error reports per minute. When the `reportPerMin` cap is reached, `BacktraceClient.Send/BacktraceClient.SendAsync` method will return false.
+- If parameter `reportPerMin` is equal to 0, there is no limit on the number of error reports per minute. When the `reportPerMin` cap is reached, `BacktraceClient.Send/BacktraceClient.SendAsync` method will return false,
+- `BacktraceClient` allows you to unpack `AggregateExceptions` and send only exceptions that are available in `InnerException` property of `AggregateException`. By default `BacktraceClient` will send `AggregateException` information to Backtrace server. To avoid sending these reports, please override `UnpackAggregateException` and set value to `true`.
 
 
 #### Database initialization <a name="documentation-database-initialization"></a>
@@ -204,7 +205,7 @@ var dbSettings = new BacktraceDatabaseSettings("databaseDirectory"){
     AutoSendMode = true,
     RetryBehavior = Backtrace.Types.RetryBehavior.ByInterval
 };
-var database = new BacktraceDatabase<object>(dbSettings);
+var database = new BacktraceDatabase(dbSettings);
 var credentials = new BacktraceCredentials("backtrace_endpoint_url", "token");
 var configuration = new BacktraceClientConfiguration(credentials);
 var backtraceClient = new BacktraceClient(configuration, database);
@@ -259,7 +260,27 @@ catch (Exception exception)
 Notes:
 - if you initialize `BacktraceClient` with `BacktraceDatabase` and your application is offline or you pass invalid credentials to `BacktraceClient`, reports will be stored in database directory path,
 - for .NET 4.5+, we recommend to use `SendAsync` method,
-- if you don't want to use reflection to determine valid stack frame method name, you can pass `false` to `reflectionMethodName`. By default this value is equal to `true`.
+- if you don't want to use reflection to determine valid stack frame method name, you can pass `false` to `reflectionMethodName`. By default this value is equal to `true`,
+- `BacktraceReport` allows you to change default fingerprint generation algorithm. You can use `Fingerprint` property if you want to change fingerprint value. Keep in mind - fingerprint should be valid sha256 string.,
+- `BacktraceReport` allows you to change grouping strategy in Backtrace server. If you want to change how algorithm group your reports in Backtrace server please override `Factor` property.
+
+If you want to use `Fingerprint` and `Factor` property you have to override default property values. See example below to check how to use these properties:
+
+```
+try
+{
+  //throw exception here
+}
+catch (Exception exception)
+{
+    var report = new BacktraceReport(...){
+        FingerPrint = "sha256 string",
+        Factor = exception.GetType().Name
+    };
+    ....
+}
+
+```
 
 #### Asynchronous Send Support
 
@@ -313,7 +334,7 @@ catch (Exception exception)
  //Add your own handler to client API
 
 backtraceClient.BeforeSend =
-    (Model.BacktraceData<object> model) =>
+    (Model.BacktraceData model) =>
     {
         var data = model;
         //do something with data for example:        
@@ -374,7 +395,7 @@ You can extend `BacktraceBase` to create your own Backtrace client and error rep
 `BacktraceApi` can send synchronous and asynchronous reports to the Backtrace endpoint. To enable asynchronous report (default is synchronous) you have to set `AsynchronousRequest` property to `true`.
 
 ## BacktraceResult  <a name="architecture-BacktraceResult"></a>
-**`BacktraceResult`** is a class that holds response and result from a `Send` or `SendAsync` call. The class contains a `Status` property that indicates whether the call was completed (`OK`), the call returned with an error (`ServerError`), or the call was aborted because client reporting limit was reached (`LimitReached`). Additionally, the class has a `Message` property that contains details about the status. Note that the `Send` call may produce an error report on an inner exception, in this case you can find an additional `BacktraceResult` object in the `InnerExceptionResult` property.
+**`BacktraceResult`** is a class that holds response and result from a `Send` or `SendAsync` call. The class contains a `Status` property that indicates whether the call was completed (`OK`), the call returned with an error (`ServerError`), the call was aborted because client reporting limit was reached (`LimitReached`), or the call wasn't needed because developer use `UnpackAggregateException` property with empty `AggregateException` object (`Empty`).  Additionally, the class has a `Message` property that contains details about the status. Note that the `Send` call may produce an error report on an inner exception, in this case you can find an additional `BacktraceResult` object in the `InnerExceptionResult` property.
 
 ## BacktraceDatabase  <a name="architecture-BacktraceDatabase"></a>
 **`BacktraceDatabase`** is a class that stores error report data in your local hard drive. If `DatabaseSettings` dones't contain a **valid** `DatabasePath` then `BacktraceDatabase` won't generate minidump files and store error report data. 

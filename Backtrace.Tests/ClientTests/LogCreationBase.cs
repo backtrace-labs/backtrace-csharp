@@ -2,11 +2,7 @@
 using Backtrace.Model;
 using Moq;
 using NUnit.Framework;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Backtrace.Tests.ClientTests
 {
@@ -19,7 +15,9 @@ namespace Backtrace.Tests.ClientTests
         public virtual void Setup()
         {
             var api = new Mock<IBacktraceApi>();
-            api.Setup(n => n.Send(It.IsAny<BacktraceData>())).Returns(new BacktraceResult());
+            api.Setup(n => n.Send(It.IsAny<BacktraceData>()))
+                .Returns(new BacktraceResult() { Status = Types.BacktraceResultStatus.Ok });
+
             var credentials = new BacktraceCredentials(@"https://validurl.com/", "validToken");
             _backtraceClient = new BacktraceClient(credentials)
             {

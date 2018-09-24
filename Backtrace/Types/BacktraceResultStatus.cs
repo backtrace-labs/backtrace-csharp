@@ -20,6 +20,10 @@ namespace Backtrace.Types
         /// <summary>
         /// Set when data were send to API
         /// </summary>
-        Ok
+        Ok,
+        /// <summary>
+        /// Status generated Backtrace client receive empty report (Aggregate Exception purpose)
+        /// </summary>
+        Empty
     }
 }

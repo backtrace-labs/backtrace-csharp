@@ -20,7 +20,7 @@ namespace Backtrace.Tests.DatabaseTests
         /// <summary>
         /// Current project directory
         /// </summary>
-        private readonly string _projectDirectory = Environment.CurrentDirectory;
+        private readonly string _projectDirectory = System.IO.Path.GetTempPath();
 
         [Test(Author = "Konrad Dysput", Description = "Test database initialization")]
         public void TestDatabaseInitalizationConditions()

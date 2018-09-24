@@ -85,9 +85,9 @@ namespace Backtrace.Interfaces
         int GetTotalNumberOfRecords();
 
         /// <summary>
-        /// Get all repots stored in Database
+        /// Remove last record in database. 
         /// </summary>
-        //IEnumerable<BacktraceReportBase> Get(Func<BacktraceReportBase,IEnumerable<BacktraceReportBase) filter);
-
+        /// <returns>If algorithm can remove last record, method return true. Otherwise false</returns>
+        bool RemoveLastRecord();
     }
 }

@@ -1,5 +1,4 @@
-﻿using Backtrace.Base;
-using Backtrace.Common;
+﻿using Backtrace.Common;
 using Backtrace.Interfaces;
 using Backtrace.Model;
 using Backtrace.Model.Database;
@@ -9,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Timers;
-using System.Diagnostics;
 #if !NET35
 using System.Threading.Tasks;
 #endif
@@ -110,7 +108,7 @@ namespace Backtrace
             RemoveOrphaned();
             // setup database timer events
             if (DatabaseSettings.RetryBehavior == RetryBehavior.ByInterval
-                || !DatabaseSettings.AutoSendMode)
+                || DatabaseSettings.AutoSendMode)
             {
                 SetupTimer();
             }
@@ -166,17 +164,16 @@ namespace Backtrace
         /// </summary>
         public BacktraceDatabaseRecord Add(BacktraceReport backtraceReport, Dictionary<string, object> attributes, MiniDumpType miniDumpType = MiniDumpType.Normal)
         {
-            if (!_enable)
+            if (!_enable || backtraceReport == null)
             {
                 return null;
             }
-            if (BacktraceDatabaseContext.Count() + 1 > DatabaseSettings.MaxRecordCount && DatabaseSettings.MaxRecordCount != 0)
+            //remove old reports (if database is full)
+            //and check database health state
+            var validationResult = ValidateDatabaseSize();
+            if (!validationResult)
             {
-                throw new ArgumentException("Maximum number of records available in BacktraceDatabase");
-            }
-            if (BacktraceDatabaseContext.GetSize() > DatabaseSettings.MaxDatabaseSize && DatabaseSettings.MaxDatabaseSize != 0)
-            {
-                throw new ArgumentException("You don't have enought space in database for more records");
+                return null;
             }
             if (miniDumpType != MiniDumpType.None)
             {
@@ -196,13 +193,19 @@ namespace Backtrace
         /// Get all stored records in BacktraceDatabase
         /// </summary>
         /// <returns>All stored records in BacktraceDatabase</returns>
-        public IEnumerable<BacktraceDatabaseRecord> Get() => BacktraceDatabaseContext?.Get() ?? new List<BacktraceDatabaseRecord>();
+        public IEnumerable<BacktraceDatabaseRecord> Get()
+        {
+            return BacktraceDatabaseContext?.Get() ?? new List<BacktraceDatabaseRecord>();
+        }
 
         /// <summary>
         /// Delete single record from database
         /// </summary>
         /// <param name="record">Record to delete</param>
-        public void Delete(BacktraceDatabaseRecord record) => BacktraceDatabaseContext?.Delete(record);
+        public void Delete(BacktraceDatabaseRecord record)
+        {
+            BacktraceDatabaseContext?.Delete(record);
+        }
 
         /// <summary>
         /// Send and delete all records from database
@@ -250,7 +253,11 @@ namespace Backtrace
 
         private async void OnTimedEventAsync(object source, ElapsedEventArgs e)
         {
-            if (!BacktraceDatabaseContext.Any() || _timerBackgroundWork) return;
+            if (!BacktraceDatabaseContext.Any() || _timerBackgroundWork)
+            {
+                return;
+            }
+
             _timerBackgroundWork = true;
             _timer.Stop();
             //read first record (keep in mind LIFO and FIFO settings) from memory database
@@ -287,7 +294,11 @@ namespace Backtrace
 #endif
         private void OnTimedEvent(object source, ElapsedEventArgs e)
         {
-            if (!BacktraceDatabaseContext.Any() || _timerBackgroundWork) return;
+            if (!BacktraceDatabaseContext.Any() || _timerBackgroundWork)
+            {
+                return;
+            }
+
             _timerBackgroundWork = true;
             _timer.Stop();
             //read first record (keep in mind LIFO and FIFO settings) from memory database
@@ -352,7 +363,10 @@ namespace Backtrace
         /// Get total number of records in database
         /// </summary>
         /// <returns>Total number of records</returns>
-        internal int Count() => BacktraceDatabaseContext.Count();
+        internal int Count()
+        {
+            return BacktraceDatabaseContext.Count();
+        }
 
         /// <summary>
         /// Detect all orphaned minidump and files
@@ -378,21 +392,44 @@ namespace Backtrace
                     continue;
                 }
                 BacktraceDatabaseContext.Add(record);
-                if (!ValidDatabaseSize())
-                {
-                    throw new ArgumentException("Database directory has too many records or database size is bigger than in option declaration.");
-                }
+                ValidateDatabaseSize();
                 record.Dispose();
             }
         }
         /// <summary>
-        /// Check current size of database
+        /// Validate database size - check how many records are stored 
+        /// in database and how much records need space.
+        /// If space or number of records are invalid
+        /// database will remove old reports
         /// </summary>
-        /// <returns>False if BacktraceDatabase doesn't have more free space</returns>
-        private bool ValidDatabaseSize()
+        private bool ValidateDatabaseSize()
         {
-            return ((BacktraceDatabaseContext.GetSize() < DatabaseSettings.MaxDatabaseSize || DatabaseSettings.MaxDatabaseSize == 0)
-                || (BacktraceDatabaseContext.GetTotalNumberOfRecords() < DatabaseSettings.MaxRecordCount || DatabaseSettings.MaxDatabaseSize == 0));
+            //check how many records are stored in database
+            //remove in case when we want to store one more than expected number
+            //If record count == 0 then we ignore this condition
+            if (BacktraceDatabaseContext.Count() + 1 > DatabaseSettings.MaxRecordCount && DatabaseSettings.MaxRecordCount != 0)
+            {
+                if (!BacktraceDatabaseContext.RemoveLastRecord())
+                {
+                    return false;
+                }
+            }
+
+            //check database size. If database size == 0 then we ignore this condition
+            //remove all records till database use enough space
+            if (DatabaseSettings.MaxDatabaseSize != 0)
+            {
+                //if your database is entry or every record is locked
+                //deletePolicyRetry avoid infinity loop
+                int deletePolicyRetry = 5;
+                while (BacktraceDatabaseContext.GetSize() > DatabaseSettings.MaxDatabaseSize || deletePolicyRetry != 0)
+                {
+                    BacktraceDatabaseContext.RemoveLastRecord();
+                    deletePolicyRetry--;
+                }
+                return deletePolicyRetry != 0;
+            }
+            return true;
         }
 
         /// <summary>

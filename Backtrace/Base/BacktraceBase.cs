@@ -17,33 +17,28 @@ namespace Backtrace.Base
     /// </summary>
     public class BacktraceBase
     {
+#if !NET35
+        /// <summary>
+        /// Ignore AggregateException and only prepare report for inner exceptions
+        /// </summary>
+        public bool UnpackAggregateExcetpion { get; set; } = false;
+#endif
+
         /// <summary>
         /// Custom request handler for HTTP call to server
         /// </summary>
         public Func<string, string, BacktraceData, BacktraceResult> RequestHandler
         {
-            get
-            {
-                return BacktraceApi.RequestHandler;
-            }
-            set
-            {
-                BacktraceApi.RequestHandler = value;
-            }
+            get => BacktraceApi.RequestHandler;
+            set => BacktraceApi.RequestHandler = value;
         }
         /// <summary>
         /// Set an event executed when received bad request, unauthorize request or other information from server
         /// </summary>
         public Action<Exception> OnServerError
         {
-            get
-            {
-                return BacktraceApi.OnServerError;
-            }
-            set
-            {
-                BacktraceApi.OnServerError = value;
-            }
+            get => BacktraceApi.OnServerError;
+            set => BacktraceApi.OnServerError = value;
         }
 
         /// <summary>
@@ -51,14 +46,8 @@ namespace Backtrace.Base
         /// </summary>
         public Action<BacktraceResult> OnServerResponse
         {
-            get
-            {
-                return BacktraceApi.OnServerResponse;
-            }
-            set
-            {
-                BacktraceApi.OnServerResponse = value;
-            }
+            get => BacktraceApi.OnServerResponse;
+            set => BacktraceApi.OnServerResponse = value;
         }
 
         /// <summary>
@@ -71,10 +60,7 @@ namespace Backtrace.Base
         /// </summary>
         public Action<BacktraceReport> OnClientReportLimitReached
         {
-            set
-            {
-                BacktraceApi.SetClientRateLimitEvent(value);
-            }
+            set => BacktraceApi.SetClientRateLimitEvent(value);
         }
 
         /// <summary>
@@ -103,10 +89,7 @@ namespace Backtrace.Base
         /// </summary>
         internal IBacktraceApi BacktraceApi
         {
-            get
-            {
-                return _backtraceApi;
-            }
+            get => _backtraceApi;
             set
             {
                 _backtraceApi = value;
@@ -163,9 +146,14 @@ namespace Backtrace.Base
         /// Send a report to Backtrace API
         /// </summary>
         /// <param name="report">Report to send</param>
-        [Obsolete("Send is obsolete, please use SendAsync instead if possible.")]
         public virtual BacktraceResult Send(BacktraceReport report)
         {
+#if !NET35
+            if (UnpackAggregateExcetpion && report.Exception is AggregateException)
+            {
+                return HandleAggregateException(report).Result;
+            }
+#endif
             var record = Database.Add(report, Attributes, MiniDumpType);
             //create a JSON payload instance
             var data = record?.BacktraceData ?? report.ToBacktraceData(Attributes);
@@ -173,7 +161,7 @@ namespace Backtrace.Base
             data = BeforeSend?.Invoke(data) ?? data;
             var result = BacktraceApi.Send(data);
             record?.Dispose();
-            if (result.Status == BacktraceResultStatus.Ok)
+            if (result?.Status == BacktraceResultStatus.Ok)
             {
                 Database.Delete(record);
             }
@@ -207,6 +195,10 @@ namespace Backtrace.Base
         /// <param name="report">Report to send</param>
         public virtual async Task<BacktraceResult> SendAsync(BacktraceReport report)
         {
+            if (UnpackAggregateExcetpion && report.Exception is AggregateException)
+            {
+                return await HandleAggregateException(report);
+            }
             var record = Database.Add(report, Attributes, MiniDumpType);
             //create a JSON payload instance
             var data = record?.BacktraceData ?? report.ToBacktraceData(Attributes);
@@ -214,7 +206,7 @@ namespace Backtrace.Base
             data = BeforeSend?.Invoke(data) ?? data;
             var result = await BacktraceApi.SendAsync(data);
             record?.Dispose();
-            if (result.Status == BacktraceResultStatus.Ok)
+            if (result?.Status == BacktraceResultStatus.Ok)
             {
                 Database.Delete(record);
             }
@@ -222,6 +214,34 @@ namespace Backtrace.Base
             //handle inner exception
             result.InnerExceptionResult = await HandleInnerExceptionAsync(report);
             return result;
+        }
+
+        private async Task<BacktraceResult> HandleAggregateException(BacktraceReport report)
+        {
+            AggregateException aggregateException = report.Exception as AggregateException;
+            BacktraceResult result = null;
+
+            foreach (var ex in aggregateException.InnerExceptions)
+            {
+                var innerReport = new BacktraceReport(
+                    exception: ex,
+                    attributes: report.Attributes,
+                    attachmentPaths: report.AttachmentPaths,
+                    reflectionMethodName: report._reflectionMethodName)
+                {
+                    Factor = report.Factor,
+                    Fingerprint = report.Fingerprint
+                };
+                if (result == null)
+                {
+                    result = await SendAsync(innerReport);
+                }
+                else
+                {
+                    result.AddInnerResult(await SendAsync(innerReport));
+                }
+            }
+            return result ?? new BacktraceResult() { Status = BacktraceResultStatus.Empty, BacktraceReport = report };
         }
 
         /// <summary>

@@ -159,13 +159,13 @@ namespace Backtrace
         /// <param name="exception">Current exception</param>
         /// <param name="attributes">Additional information about application state</param>
         /// <param name="attachmentPaths">Path to all report attachments</param>
-        [Obsolete("Send is obsolete, please use SendAsync instead if possible.")]
         public virtual BacktraceResult Send(
             Exception exception,
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null)
         {
-            return Send(new BacktraceReport(exception, attributes, attachmentPaths));
+            var report = new BacktraceReport(exception, attributes, attachmentPaths);
+            return Send(report);
         }
 
         /// <summary>
@@ -174,20 +174,19 @@ namespace Backtrace
         /// <param name="message">Custom client message</param>
         /// <param name="attributes">Additional information about application state</param>
         /// <param name="attachmentPaths">Path to all report attachments</param>
-        [Obsolete("Send is obsolete, please use SendAsync instead if possible.")]
         public virtual BacktraceResult Send(
             string message,
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null)
         {
-            return Send(new BacktraceReport(message, attributes, attachmentPaths));
+            var report = new BacktraceReport(message, attributes, attachmentPaths);
+            return Send(report);
         }
 
         /// <summary>
         /// Sending a backtrace report to Backtrace API
         /// </summary>
         /// <param name="backtraceReport">Current report</param>
-        [Obsolete("Send is obsolete, please use SendAsync instead if possible.")]
         public override BacktraceResult Send(BacktraceReport backtraceReport)
         {
             OnReportStart?.Invoke(backtraceReport);

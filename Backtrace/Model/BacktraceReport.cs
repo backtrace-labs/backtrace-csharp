@@ -1,12 +1,7 @@
-﻿using Backtrace.Common;
-using Backtrace.Extensions;
-using Backtrace.Model;
-using Backtrace.Model.JsonData;
+﻿using Backtrace.Extensions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 #if !NET35
 using System.Runtime.ExceptionServices;
@@ -21,6 +16,16 @@ namespace Backtrace.Model
     public class BacktraceReport
     {
         /// <summary>
+        /// Fingerprint
+        /// </summary>
+        public string Fingerprint { get; set; }
+
+        /// <summary>
+        /// Factor
+        /// </summary>
+        public string Factor { get; set; }
+
+        /// <summary>
         /// 16 bytes of randomness in human readable UUID format
         /// server will reject request if uuid is already found
         /// </summary>s
@@ -31,7 +36,7 @@ namespace Backtrace.Model
         /// UTC timestamp in seconds
         /// </summary>
         [JsonProperty(PropertyName = "timestamp")]
-        public long Timestamp { get; private set; } = (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+        public long Timestamp { get; private set; } = (int)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
 
         /// <summary>
         /// Get information aboout report type. If value is true the BacktraceReport has an error information
@@ -181,8 +186,8 @@ namespace Backtrace.Model
             {
                 return null;
             }
-            var copy = (BacktraceReport)this.MemberwiseClone();
-            copy.Exception = this.Exception.InnerException;
+            var copy = (BacktraceReport)MemberwiseClone();
+            copy.Exception = Exception.InnerException;
             copy.SetCallingAssemblyInformation();
             copy.Classifier = copy.Exception.GetType().Name;
             return copy;

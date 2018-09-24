@@ -1,14 +1,12 @@
 ﻿using Backtrace.Extensions;
 using Backtrace.Interfaces;
+using Backtrace.Model;
 using Backtrace.Model.Database;
 using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Backtrace.Tests.DatabaseTests
 {
@@ -23,7 +21,7 @@ namespace Backtrace.Tests.DatabaseTests
         /// <summary>
         /// Current project directory - any database path
         /// </summary>
-        private readonly string _projectDirectory = Environment.CurrentDirectory;
+        private readonly string _projectDirectory = System.IO.Path.GetTempPath();
 
         /// <summary>
         /// Total number of reports
@@ -41,7 +39,8 @@ namespace Backtrace.Tests.DatabaseTests
 
             var backtraceDatabaseSettings = new BacktraceDatabaseSettings(_projectDirectory)
             {
-                MaxRecordCount = _totalNumberOfReports
+                MaxRecordCount = _totalNumberOfReports,
+                RetryBehavior = Types.RetryBehavior.NoRetry
             };
 
             _backtraceDatabase = new BacktraceDatabase(backtraceDatabaseSettings)
@@ -59,9 +58,11 @@ namespace Backtrace.Tests.DatabaseTests
             _backtraceDatabase.Clear();
             for (int i = 0; i < _totalNumberOfReports; i++)
             {
-                _backtraceDatabase.Add(backtraceReport, new Dictionary<string, object>(), Types.MiniDumpType.None);
+                var record = _backtraceDatabase.Add(backtraceReport, new Dictionary<string, object>(), Types.MiniDumpType.None);
+                record.Dispose();
             }
-            Assert.Throws<ArgumentException>(() => _backtraceDatabase.Add(backtraceReport, new Dictionary<string, object>(),Types.MiniDumpType.None));
+            _backtraceDatabase.Add(backtraceReport, new Dictionary<string, object>(), Types.MiniDumpType.None);
+            Assert.AreEqual(_totalNumberOfReports, _backtraceDatabase.Count());
         }
 
         [TestCase(1)]

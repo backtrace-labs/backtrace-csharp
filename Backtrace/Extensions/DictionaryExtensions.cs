@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Backtrace.Extensions
 {
@@ -20,11 +18,11 @@ namespace Backtrace.Extensions
         internal static Dictionary<string, object> Merge(
             this Dictionary<string, object> source, Dictionary<string, object> toMerge)
         {
-            if(source == null)
+            if (source == null)
             {
                 throw new ArgumentException(nameof(source));
             }
-            if(toMerge == null)
+            if (toMerge == null)
             {
                 throw new ArgumentException(nameof(toMerge));
             }

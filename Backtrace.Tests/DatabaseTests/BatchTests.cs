@@ -1,10 +1,5 @@
 ﻿using Backtrace.Tests.DatabaseTests.Model;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Backtrace.Tests.DatabaseTests
 {
@@ -17,11 +12,12 @@ namespace Backtrace.Tests.DatabaseTests
         /// <summary>
         /// Add record to first batch on context
         /// </summary>
-        private void AddRecords(int numberOfRecordsOnBatch)
+        private void AddRecords(int numberOfRecordsOnBatch, bool locked = false)
         {
             for (int i = 0; i < numberOfRecordsOnBatch; i++)
             {
-                _database.BacktraceDatabaseContext.Add(GetRecord());
+                var fakeRecord = _database.BacktraceDatabaseContext.Add(GetRecord());
+                fakeRecord.Locked = locked;
             }
         }
         [TestCase(3, 2, 0)]
@@ -53,6 +49,44 @@ namespace Backtrace.Tests.DatabaseTests
             _database.BacktraceDatabaseContext.IncrementBatchRetry();
             totalRecords = _database.BacktraceDatabaseContext.Count();
             Assert.AreEqual(totalRecords, recordsOnFirstBatch + recordsOnSecoundBatch);
+        }
+
+        [Test]
+        public void TestRecordLimitInBatches()
+        {
+            _database.Start();
+            _database.Clear();
+            //value from database settings
+            int maxRecordCount = 100;
+            AddRecords(maxRecordCount);
+
+            var report = new Backtrace.Model.BacktraceReport("report");
+            var result = _database.Add(
+                backtraceReport: report,
+                attributes: null,
+                miniDumpType: Types.MiniDumpType.None
+                );
+            Assert.IsNotNull(result);
+            Assert.AreEqual(maxRecordCount, _database.Count());
+        }
+
+        [Test]
+        public void TestRecordLimitWithAllReservedBatches()
+        {
+            _database.Start();
+            _database.Clear();
+            //value from database settings
+            int maxRecordCount = 100;
+            AddRecords(maxRecordCount, true);
+
+            var report = new Backtrace.Model.BacktraceReport("report");
+            var result = _database.Add(
+                backtraceReport: report,
+                attributes: null,
+                miniDumpType: Types.MiniDumpType.None
+                );
+            Assert.IsNull(result);
+            Assert.AreEqual(maxRecordCount, _database.Count());
         }
     }
 }

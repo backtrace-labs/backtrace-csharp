@@ -37,7 +37,6 @@ namespace Backtrace.Core
 
         public async Task Start()
         {
-            await Task.Delay(int.MaxValue);
             await GenerateRandomStrings();
             await TryClean();
             //handle uncaught exception from unsafe code

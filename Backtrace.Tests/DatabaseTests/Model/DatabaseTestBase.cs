@@ -1,6 +1,4 @@
-﻿using Backtrace.Base;
-using Backtrace.Interfaces;
-using Backtrace.Interfaces.Database;
+﻿using Backtrace.Interfaces;
 using Backtrace.Model;
 using Backtrace.Model.Database;
 using Backtrace.Services;
@@ -10,9 +8,6 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Backtrace.Tests.DatabaseTests.Model
 {
@@ -30,7 +25,7 @@ namespace Backtrace.Tests.DatabaseTests.Model
         public virtual void Setup()
         {
             //get project path
-            string projectPath = Environment.CurrentDirectory;
+            string projectPath = Path.GetTempPath();
 
             //mock api
             var mockApi = new Mock<IBacktraceApi>();
@@ -49,9 +44,10 @@ namespace Backtrace.Tests.DatabaseTests.Model
 
             var settings = new BacktraceDatabaseSettings(projectPath)
             {
+                RetryBehavior = RetryBehavior.NoRetry,
                 AutoSendMode = false, //we don't want to test timers
                 MaxRecordCount = 100,
-                RetryLimit = 3 
+                RetryLimit = 3
             };
             _database = new BacktraceDatabase(settings)
             {
@@ -85,6 +81,9 @@ namespace Backtrace.Tests.DatabaseTests.Model
             mockRecord.Setup(n => n.Delete());
             mockRecord.Setup(n => n.BacktraceData)
                 .Returns(new BacktraceData(It.IsAny<BacktraceReport>(), It.IsAny<Dictionary<string, object>>()));
+            mockRecord.Setup(n => n.Valid())
+                .Returns(true);
+
             var data = new BacktraceData(null, new Dictionary<string, object>());
             mockRecord.SetupProperty(n => n.Record, data);
 
