@@ -417,15 +417,19 @@ namespace Backtrace
 
             //check database size. If database size == 0 then we ignore this condition
             //remove all records till database use enough space
-            if (DatabaseSettings.MaxDatabaseSize != 0)
+            if (DatabaseSettings.MaxDatabaseSize != 0 && BacktraceDatabaseContext.GetSize() > DatabaseSettings.MaxDatabaseSize)
             {
                 //if your database is entry or every record is locked
                 //deletePolicyRetry avoid infinity loop
                 int deletePolicyRetry = 5;
-                while (BacktraceDatabaseContext.GetSize() > DatabaseSettings.MaxDatabaseSize || deletePolicyRetry != 0)
+                while (BacktraceDatabaseContext.GetSize() > DatabaseSettings.MaxDatabaseSize)
                 {
                     BacktraceDatabaseContext.RemoveLastRecord();
                     deletePolicyRetry--;
+                    if(deletePolicyRetry != 0)
+                    {
+                        break;
+                    }
                 }
                 return deletePolicyRetry != 0;
             }

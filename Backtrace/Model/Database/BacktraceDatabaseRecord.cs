@@ -1,5 +1,4 @@
-﻿using Backtrace.Base;
-using Backtrace.Interfaces.Database;
+﻿using Backtrace.Interfaces.Database;
 using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
@@ -153,7 +152,7 @@ namespace Backtrace.Model.Database
             {
                 DiagnosticDataPath = Save(Record, $"{Id}-attachment");
                 ReportPath = Save(Record.Report, $"{Id}-report");
-                
+
                 // get minidump information
                 MiniDumpPath = Record.Report?.MinidumpFile ?? string.Empty;
                 Size += MiniDumpPath == string.Empty ? 0 : new FileInfo(MiniDumpPath).Length;

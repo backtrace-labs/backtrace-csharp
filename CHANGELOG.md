@@ -1,5 +1,10 @@
 ﻿# Backtrace C# Release Notes
 
+## Version 2.0.5 - 03.12.2018
+- Removed unused usings,
+- `BacktraceDatabase` conditions with maximum number of records/maximum disk space fix,
+- Removed invalid tests from `Backtrace.Tests` solution.
+
 ## Version 2.0.4 - 23.09.2018
 - `BacktraceClient` allows developer to unpack `AggregateException` and send only exceptions available in `InnerExceptions` property.
 - `BacktraceReport` accepts two new properties: `Factor` and `Fingerprint`. These properties allows you to change server side algorithms. 

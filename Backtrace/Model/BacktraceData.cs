@@ -1,11 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using Backtrace.Model.JsonData;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using Backtrace.Model.JsonData;
 using System.Linq;
 using System.Reflection;
 using static Backtrace.Model.JsonData.SourceCodeData;
-using Backtrace.Base;
 
 namespace Backtrace.Model
 {
@@ -43,7 +42,7 @@ namespace Backtrace.Model
         /// Name of the client that is sending this error report.
         /// </summary>
         [JsonProperty(PropertyName = "agent")]
-        public const string Agent = "backtrace-csharp"; 
+        public const string Agent = "backtrace-csharp";
 
         /// <summary>
         /// Version of the C# library
