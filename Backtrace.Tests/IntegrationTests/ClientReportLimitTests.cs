@@ -1,5 +1,4 @@
-﻿using Backtrace.Base;
-using Backtrace.Interfaces;
+﻿using Backtrace.Interfaces;
 using Backtrace.Model;
 using Backtrace.Model.Database;
 using Backtrace.Services;
@@ -146,68 +145,6 @@ namespace Backtrace.Tests.IntegrationTests
 
             Assert.AreEqual(expectedNumberOfReports, totalSend);
             Assert.IsFalse(clientReportLimitReached);
-        }
-
-        /// <summary>
-        /// Test a initialization and submission sequence for backtrace client w/ threading w/o rate limiting
-        /// </summary>
-        [TestCase(1, 2)]
-        [TestCase(5, 2)]
-        [TestCase(10, 2)]
-        [TestCase(1, 5)]
-        [TestCase(5, 10)]
-        [TestCase(5, 20)]
-        [Test(Author = "Arthur Tu and Konrad Dysput", Description = "Test a initialization and submission sequence for backtrace client w/ threading w/o rate limiting")]
-        public void ThreadedWithReportRateLimit(int numberOfTasks, int clientRateLimit)
-        {
-            //set rate limiting
-            clientReportLimitReached = false;
-            _backtraceClient.SetClientReportLimit((uint)clientRateLimit);
-
-            //set expected number of drop and request
-            int expectedNumberOfAttempts = 4 * numberOfTasks;
-            int expectedNumberOfDropRequest = expectedNumberOfAttempts - (int)clientRateLimit;
-
-            if (expectedNumberOfDropRequest < 0)
-            {
-                expectedNumberOfDropRequest = 0;
-            }
-
-            var tasks = new Task[numberOfTasks];
-            int totalAttemps = 0;
-            int totalDrop = 0;
-            int totalNumberOfDropsOnEvents = 0;
-
-            //set backtrace events
-            _backtraceClient.OnClientReportLimitReached = (BacktraceReport report) =>
-            {
-                totalDrop++;
-                clientReportLimitReached = true;
-            };
-            _backtraceClient.AfterSend = (BacktraceResult res) =>
-            {
-                if (res.Status == BacktraceResultStatus.LimitReached)
-                {
-                    totalNumberOfDropsOnEvents++;
-                }
-                totalAttemps++;
-            };
-
-            //initialize startup tasks
-            for (int taskIndex = 0; taskIndex < numberOfTasks; taskIndex++)
-            {
-                tasks[taskIndex] = ThreadTest(taskIndex);
-            }
-            Task.WaitAll(tasks);
-
-            //check if BacktraceResult is correct on events
-            Assert.AreEqual(totalDrop, totalNumberOfDropsOnEvents);
-            //check correct number of attempts
-            Assert.AreEqual(totalAttemps, expectedNumberOfAttempts);
-            //check if expected number of drops are equal to total dropped packages from rate limit client
-            Assert.AreEqual(totalDrop, expectedNumberOfDropRequest);
-            //check if limit reached or if any report was dropped
-            Assert.IsTrue(clientReportLimitReached || totalDrop == 0);
         }
     }
 }

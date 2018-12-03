@@ -7,7 +7,6 @@ using System.IO;
 using Backtrace.Common;
 using System.Collections.Generic;
 using Backtrace.Extensions;
-using Backtrace.Base;
 #if !NET35
 using System.Threading.Tasks;
 using System.Net.Http;

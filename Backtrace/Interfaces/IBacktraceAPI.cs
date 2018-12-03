@@ -1,5 +1,4 @@
-﻿using Backtrace.Base;
-using Backtrace.Model;
+﻿using Backtrace.Model;
 using System;
 
 namespace Backtrace.Interfaces
