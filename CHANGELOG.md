@@ -1,5 +1,9 @@
 ﻿# Backtrace C# Release Notes
 
+## Version 2.0.6 - 20.12.2018
+- New `BacktraceCredentials` constructor,
+- UnhandledThreadException flow
+
 ## Version 2.0.5 - 03.12.2018
 - Removed unused usings,
 - `BacktraceDatabase` conditions with maximum number of records/maximum disk space fix,
