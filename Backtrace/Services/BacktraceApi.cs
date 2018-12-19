@@ -52,7 +52,7 @@ namespace Backtrace.Services
             {
                 throw new ArgumentException($"{nameof(BacktraceCredentials)} cannot be null");
             }
-            _serverurl = $"{credentials.BacktraceHostUri.AbsoluteUri}post?format=json&token={credentials.Token}";
+            _serverurl = credentials.GetSubmissionUrl().ToString();
             reportLimitWatcher = new ReportLimitWatcher(reportPerMin);
         }
         #region asyncRequest

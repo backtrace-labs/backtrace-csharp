@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Text;
@@ -20,7 +19,13 @@ namespace Backtrace.Model
         /// <summary>
         /// Get a Uri to Backtrace servcie
         /// </summary>
-        public Uri BacktraceHostUri => _backtraceHostUri;
+        public Uri BacktraceHostUri
+        {
+            get
+            {
+                return _backtraceHostUri;
+            }
+        }
 
         /// <summary>
         /// Get an access token
@@ -31,6 +36,71 @@ namespace Backtrace.Model
             {
                 return Encoding.UTF8.GetString(_accessToken);
             }
+        }
+
+        /// <summary>
+        /// Create submission url to Backtrace API
+        /// </summary>
+        /// <returns></returns>
+        internal Uri GetSubmissionUrl()
+        {
+            if (_backtraceHostUri == null)
+            {
+                throw new ArgumentException(nameof(BacktraceHostUri));
+            }
+
+            var uriBuilder = new UriBuilder(BacktraceHostUri);
+            if (submitUrl)
+            {
+                return uriBuilder.Uri;
+            }
+            if (string.IsNullOrEmpty(Token))
+            {
+                throw new ArgumentException(nameof(Token));
+            }
+
+            if (!uriBuilder.Scheme.StartsWith("http"))
+            {
+                uriBuilder.Scheme = $"https://{uriBuilder.Scheme}";
+            }
+            if(!uriBuilder.Path.EndsWith("/") && !string.IsNullOrEmpty(uriBuilder.Path))
+            {
+                uriBuilder.Path += "/";
+            }
+            uriBuilder.Path = $"{uriBuilder.Path}post";
+            uriBuilder.Query = $"format=json&token={Token}";
+            return uriBuilder.Uri;
+        }
+        private readonly bool submitUrl = false;
+
+        /// <summary>
+        /// Initialize Backtrace credentials with Backtrace submit url. 
+        /// If you pass backtraceSubmitUrl you have to make sure url to API is valid and contains token
+        /// </summary>
+        /// <param name="backtraceSubmitUrl">Backtrace submit url</param>
+        public BacktraceCredentials(
+            string backtraceSubmitUrl)
+            : this(new Uri(backtraceSubmitUrl))
+        { }
+
+        /// <summary>
+        /// Initialize Backtrace credentials with Backtrace submit url. 
+        /// If you pass backtraceSubmitUrl you have to make sure url to API is valid and contains token
+        /// </summary>
+        /// <param name="backtraceSubmitUrl">Backtrace submit url</param>
+        public BacktraceCredentials(Uri backtraceSubmitUrl)
+        {
+            var hostToCheck = backtraceSubmitUrl.Host;
+            if (!hostToCheck.StartsWith("www."))
+            {
+                hostToCheck = $"www.{hostToCheck}";
+            }
+            submitUrl = hostToCheck.StartsWith("www.submit.backtrace.io");
+            if (!submitUrl)
+            {
+                throw new ArgumentException(nameof(backtraceSubmitUrl));
+            }
+            _backtraceHostUri = backtraceSubmitUrl;
         }
 
         /// <summary>
@@ -69,7 +139,7 @@ namespace Backtrace.Model
         public BacktraceCredentials(
             string backtraceHostUrl,
             string accessToken)
-        : this(new Uri(backtraceHostUrl), Encoding.UTF8.GetBytes(accessToken))
+        : this(backtraceHostUrl, Encoding.UTF8.GetBytes(accessToken))
         { }
 
         /// <summary>

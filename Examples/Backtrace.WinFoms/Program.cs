@@ -44,7 +44,6 @@ namespace Backtrace.WinFoms
             backtraceClient = new BacktraceClient(configuartion, database);
             //Setting application exceptions
             backtraceClient.HandleApplicationException();
-            backtraceClient.SendAsync("WPF Application crash report started").Wait();
             Application.EnableVisualStyles();
             Application.ThreadException += backtraceClient.HandleApplicationThreadException;
             Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
