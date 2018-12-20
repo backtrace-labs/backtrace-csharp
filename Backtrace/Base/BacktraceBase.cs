@@ -29,16 +29,30 @@ namespace Backtrace.Base
         /// </summary>
         public Func<string, string, BacktraceData, BacktraceResult> RequestHandler
         {
-            get => BacktraceApi.RequestHandler;
-            set => BacktraceApi.RequestHandler = value;
+            get
+            {
+                return BacktraceApi.RequestHandler;
+            }
+
+            set
+            {
+                BacktraceApi.RequestHandler = value;
+            }
         }
         /// <summary>
         /// Set an event executed when received bad request, unauthorize request or other information from server
         /// </summary>
         public Action<Exception> OnServerError
         {
-            get => BacktraceApi.OnServerError;
-            set => BacktraceApi.OnServerError = value;
+            get
+            {
+                return BacktraceApi.OnServerError;
+            }
+
+            set
+            {
+                BacktraceApi.OnServerError = value;
+            }
         }
 
         /// <summary>
@@ -46,8 +60,15 @@ namespace Backtrace.Base
         /// </summary>
         public Action<BacktraceResult> OnServerResponse
         {
-            get => BacktraceApi.OnServerResponse;
-            set => BacktraceApi.OnServerResponse = value;
+            get
+            {
+                return BacktraceApi.OnServerResponse;
+            }
+
+            set
+            {
+                BacktraceApi.OnServerResponse = value;
+            }
         }
 
         /// <summary>
@@ -60,7 +81,10 @@ namespace Backtrace.Base
         /// </summary>
         public Action<BacktraceReport> OnClientReportLimitReached
         {
-            set => BacktraceApi.SetClientRateLimitEvent(value);
+            set
+            {
+                BacktraceApi.SetClientRateLimitEvent(value);
+            }
         }
 
         /// <summary>
@@ -89,7 +113,11 @@ namespace Backtrace.Base
         /// </summary>
         internal IBacktraceApi BacktraceApi
         {
-            get => _backtraceApi;
+            get
+            {
+                return _backtraceApi;
+            }
+
             set
             {
                 _backtraceApi = value;
@@ -218,7 +246,7 @@ namespace Backtrace.Base
 
         private async Task<BacktraceResult> HandleAggregateException(BacktraceReport report)
         {
-            AggregateException aggregateException = report.Exception as AggregateException;
+            var aggregateException = report.Exception as AggregateException;
             BacktraceResult result = null;
 
             foreach (var ex in aggregateException.InnerExceptions)
@@ -232,6 +260,7 @@ namespace Backtrace.Base
                     Factor = report.Factor,
                     Fingerprint = report.Fingerprint
                 };
+
                 if (result == null)
                 {
                     result = await SendAsync(innerReport);
@@ -272,7 +301,8 @@ namespace Backtrace.Base
         /// </summary>
         public virtual void HandleApplicationThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
         {
-            SendAsync(new BacktraceReport(e.Exception)).Wait();
+            var exception = e.Exception as Exception;
+            Send(new BacktraceReport(exception));
             OnUnhandledApplicationException?.Invoke(e.Exception);
         }
 
@@ -283,7 +313,8 @@ namespace Backtrace.Base
 
         private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
-            SendAsync(new BacktraceReport(e.Exception)).Wait();
+            var exception = e.Exception as Exception;
+            Send(new BacktraceReport(exception));
             OnUnhandledApplicationException?.Invoke(e.Exception);
         }
 
