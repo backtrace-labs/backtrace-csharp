@@ -1,17 +1,15 @@
 ﻿using Backtrace.Core.Model;
-using Backtrace.Interfaces;
 using Backtrace.Model;
 using Backtrace.Model.Database;
-using Backtrace.Services;
+using Backtrace.Model.Types;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Backtrace.Core
 {
-    class Program
+    internal class Program
     {
         private Tree tree;
 
@@ -23,7 +21,10 @@ namespace Backtrace.Core
         /// <summary>
         /// Database settings
         /// </summary>
-        private readonly BacktraceDatabaseSettings databaseSettings = new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath);
+        private readonly BacktraceDatabaseSettings databaseSettings = new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath)
+        {
+            DeduplicationStrategy = DeduplicationStrategy.Application | DeduplicationStrategy.Classifier | DeduplicationStrategy.Message
+        };
 
         /// <summary>
         /// New instance of BacktraceClient. Check SetupBacktraceLibrary method for intiailization example
@@ -37,6 +38,17 @@ namespace Backtrace.Core
 
         public async Task Start()
         {
+            try
+            {
+                var i = 0;
+                var temp = 12312 / i;
+            }
+            catch (Exception e)
+            {
+                await backtraceClient.SendAsync(e);
+                await backtraceClient.SendAsync(e);
+                await backtraceClient.SendAsync(e);
+            }
             await GenerateRandomStrings();
             await TryClean();
             //handle uncaught exception from unsafe code
@@ -138,7 +150,7 @@ namespace Backtrace.Core
 
         }
 
-        unsafe static void DividePtrParam(int* p, int* j)
+        private static unsafe void DividePtrParam(int* p, int* j)
         {
             *p = *p / *j;
         }
@@ -195,7 +207,7 @@ namespace Backtrace.Core
                };
         }
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Program program = new Program();
             program.Start().Wait();

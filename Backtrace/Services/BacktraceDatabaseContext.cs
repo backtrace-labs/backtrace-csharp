@@ -1,6 +1,7 @@
 ﻿using Backtrace.Interfaces;
 using Backtrace.Model;
 using Backtrace.Model.Database;
+using Backtrace.Model.Types;
 using Backtrace.Types;
 using System;
 using System.Collections.Generic;
@@ -45,16 +46,26 @@ namespace Backtrace.Services
         internal RetryOrder RetryOrder { get; set; }
 
         /// <summary>
+        /// Deduplicaiton strategy
+        /// </summary>
+        public DeduplicationStrategy DeduplicationStrategy { get; set; }
+
+        /// <summary>
         /// Initialize new instance of Backtrace Database Context
         /// </summary>
         /// <param name="path">Path to database directory</param>
         /// <param name="retryNumber">Total number of retries</param>
         /// <param name="retryOrder">Record order</param>
-        public BacktraceDatabaseContext(string path, uint retryNumber, RetryOrder retryOrder)
+        public BacktraceDatabaseContext(
+            string path,
+            uint retryNumber,
+            RetryOrder retryOrder,
+            DeduplicationStrategy deduplicationStrategy = DeduplicationStrategy.None)
         {
             _path = path;
             _retryNumber = checked((int)retryNumber);
             RetryOrder = retryOrder;
+            DeduplicationStrategy = deduplicationStrategy;
             SetupBatch();
         }
 
@@ -84,8 +95,12 @@ namespace Backtrace.Services
             {
                 throw new NullReferenceException(nameof(backtraceData));
             }
+            var deduplicationModel = new DeduplicationModel(backtraceData, DeduplicationStrategy);
             //create new record and save it on hard drive
-            var record = new BacktraceDatabaseRecord(backtraceData, _path);
+            var record = new BacktraceDatabaseRecord(backtraceData, _path)
+            {
+                Hash = deduplicationModel.GetSha()
+            };
             record.Save();
             //add record to database context
             return Add(record);
@@ -292,6 +307,19 @@ namespace Backtrace.Services
             return RetryOrder == RetryOrder.Queue
                     ? GetFirstRecord()
                     : GetLastRecord();
+        }
+
+
+        /// <summary>
+        /// Get first Backtrace database record by predicate funciton
+        /// </summary>
+        /// <param name="predicate">Filter function</param>
+        /// <returns>Backtrace Database record</returns>
+        public BacktraceDatabaseRecord FirstOrDefault(Func<BacktraceDatabaseRecord, bool> predicate)
+        {
+            return BatchRetry
+                .SelectMany(n => n.Value)
+                .FirstOrDefault(predicate);
         }
 
         /// <summary>

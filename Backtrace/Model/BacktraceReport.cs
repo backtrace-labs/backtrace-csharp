@@ -1,9 +1,7 @@
 ﻿using Backtrace.Extensions;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 #if !NET35
 using System.Runtime.ExceptionServices;
@@ -131,6 +129,7 @@ namespace Backtrace.Model
             ExceptionTypeReport = exception != null;
             Classifier = ExceptionTypeReport ? exception.GetType().Name : string.Empty;
             _reflectionMethodName = reflectionMethodName;
+            Message = ExceptionTypeReport ? exception.Message : string.Empty;
             SetCallingAssemblyInformation();
         }
 

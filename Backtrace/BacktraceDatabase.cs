@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Timers;
+using Backtrace.Model.Types;
 #if !NET35
 using System.Threading.Tasks;
 #endif
@@ -43,7 +44,13 @@ namespace Backtrace
         /// <summary>
         /// Database path
         /// </summary>
-        private string DatabasePath => DatabaseSettings.DatabasePath;
+        private string DatabasePath
+        {
+            get
+            {
+                return DatabaseSettings.DatabasePath;
+            }
+        }
 
         private bool _timerBackgroundWork = false;
         /// <summary>
@@ -83,7 +90,7 @@ namespace Backtrace
                 throw new ArgumentException("Databse path does not exists");
             }
             DatabaseSettings = databaseSettings;
-            BacktraceDatabaseContext = new BacktraceDatabaseContext(DatabasePath, DatabaseSettings.RetryLimit, DatabaseSettings.RetryOrder);
+            BacktraceDatabaseContext = new BacktraceDatabaseContext(DatabasePath, DatabaseSettings.RetryLimit, DatabaseSettings.RetryOrder, DatabaseSettings.DeduplicationStrategy);
             BacktraceDatabaseFileContext = new BacktraceDatabaseFileContext(DatabasePath, DatabaseSettings.MaxDatabaseSize, DatabaseSettings.MaxRecordCount);
         }
 
@@ -168,6 +175,7 @@ namespace Backtrace
             {
                 return null;
             }
+
             //remove old reports (if database is full)
             //and check database health state
             var validationResult = ValidateDatabaseSize();
@@ -175,6 +183,20 @@ namespace Backtrace
             {
                 return null;
             }
+
+            var data = backtraceReport.ToBacktraceData(attributes);
+            if (DatabaseSettings.DeduplicationStrategy != DeduplicationStrategy.None)
+            {
+                var sha = new DeduplicationModel(data, DatabaseSettings.DeduplicationStrategy).GetSha();
+                var record = BacktraceDatabaseContext.FirstOrDefault(n => n.Hash == sha);
+                if (record != null)
+                {
+                    record.Locked = true;
+                    record.Increment();
+                    return record;
+                }
+            }
+
             if (miniDumpType != MiniDumpType.None)
             {
                 string minidumpPath = GenerateMiniDump(backtraceReport, miniDumpType);
@@ -184,7 +206,6 @@ namespace Backtrace
                 }
             }
 
-            var data = backtraceReport.ToBacktraceData(attributes);
             return BacktraceDatabaseContext.Add(data);
         }
 
@@ -426,7 +447,7 @@ namespace Backtrace
                 {
                     BacktraceDatabaseContext.RemoveLastRecord();
                     deletePolicyRetry--;
-                    if(deletePolicyRetry != 0)
+                    if (deletePolicyRetry != 0)
                     {
                         break;
                     }

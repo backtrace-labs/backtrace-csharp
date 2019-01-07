@@ -1,9 +1,7 @@
-﻿using Backtrace.Base;
-using Backtrace.Model;
+﻿using Backtrace.Model;
 using Backtrace.Model.Database;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("DynamicProxyGenAssembly2")]
 namespace Backtrace.Interfaces
@@ -27,6 +25,12 @@ namespace Backtrace.Interfaces
         /// </summary>
         /// <returns>First existing record in database store</returns>
         BacktraceDatabaseRecord FirstOrDefault();
+
+        /// <summary>
+        /// Get first record or null
+        /// </summary>
+        /// <returns>First existing record in database store</returns>
+        BacktraceDatabaseRecord FirstOrDefault(Func<BacktraceDatabaseRecord, bool> predicate);
 
         /// <summary>
         /// Get last record or null

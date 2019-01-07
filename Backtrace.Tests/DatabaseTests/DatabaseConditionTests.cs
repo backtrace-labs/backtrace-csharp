@@ -1,6 +1,5 @@
 ﻿using Backtrace.Extensions;
 using Backtrace.Interfaces;
-using Backtrace.Model;
 using Backtrace.Model.Database;
 using Moq;
 using NUnit.Framework;
@@ -21,7 +20,7 @@ namespace Backtrace.Tests.DatabaseTests
         /// <summary>
         /// Current project directory - any database path
         /// </summary>
-        private readonly string _projectDirectory = System.IO.Path.GetTempPath();
+        private readonly string _projectDirectory = Path.GetTempPath();
 
         /// <summary>
         /// Total number of reports

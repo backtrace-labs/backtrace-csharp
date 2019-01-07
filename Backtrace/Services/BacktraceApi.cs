@@ -81,14 +81,19 @@ namespace Backtrace.Services
             return await SendAsync(Guid.NewGuid(), json, data.Attachments, data.Report);
         }
 
-        internal async Task<BacktraceResult> SendAsync(Guid requestId, string json, List<string> attachments, BacktraceReport report)
+        internal async Task<BacktraceResult> SendAsync(Guid requestId, string json, List<string> attachments, BacktraceReport report, Dictionary<string,string> additionalParameters = null)
         {
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
             string boundary = FormDataHelper.GetBoundary(requestId);
 
             using (var content = new MultipartFormDataContent(boundary))
             {
-                var request = new HttpRequestMessage(HttpMethod.Post, _serverurl);
+                var requestUrl = _serverurl;
+                if(additionalParameters != null)
+                {
+                    //var builder = new UriBuilder(requestUri).
+                }
+                var request = new HttpRequestMessage(HttpMethod.Post, requestUrl);
                 content.AddJson("upload_file.json", json);
                 content.AddFiles(attachments);
 
