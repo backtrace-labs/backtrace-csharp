@@ -217,7 +217,7 @@ Notes:
 
 
 #### Deduplication 
-Backtrace C# library allows you to aggregate the same reports. By using Backtrace deduplication mechanism you can aggregate the same reports and send only one message to Backtrace Api. As a developer you can choose dedplication options. Please use `DeduplicationStrategy` enum to setup possible deduplication rules or copy example below to setup deduplication strategy:
+Backtrace C# library allows you to aggregate the same reports. By using Backtrace deduplication mechanism you can aggregate the same reports and send only one message to Backtrace Api. As a developer you can choose deduplication options. Please use `DeduplicationStrategy` enum to setup possible deduplication rules or copy example below to setup deduplication strategy:
 
 ```csharp
 var dbSettings = new BacktraceDatabaseSettings(path)
@@ -226,10 +226,13 @@ var dbSettings = new BacktraceDatabaseSettings(path)
 }
 ```
 
-> What does it mean - when user want to use it?
-> What will user see in Backtrace?
-> How we handle file operations in Database?
-> How this feature works with different database methods
+Notes:
+* When you aggregate reports via Backtrace C# library, `BacktraceDatabase` will store number of the same reports in `counter` file. 
+* By storing data in additional counter file we can read number of the same offline reports on application starts and send them to Backtrace when your internet connection back. 
+* When C# library aggregate multiple reports into one diagnostic data, application will send only one request, not multiple,
+* `BacktraceDatabase` methods allows you to use aggregated diagnostic data together. You can check `Hash` property of `BacktraceDatabaseRecord` to check generated hash for diagnostic data and `Counter` to check how much the same records we detect.
+* `BacktraceDatabase` `Count` method will return number of all records stored in database (included deduplicated records),
+* `BacktarceDatabase` `Delete` method will remove record (with multiple deduplicated records) at the same time.
 
 #### TLS/SSL Support
 
