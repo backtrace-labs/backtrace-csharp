@@ -8,6 +8,6 @@
         /// <summary>
         /// Determine how many records are the same in database
         /// </summary>
-        public int Total { get; set; } = 0;
+        public int Total { get; set; } = 1;
     }
 }

@@ -216,6 +216,21 @@ Notes:
 - You can set `backtraceClient.MiniDumpType` to `MiniDumpType.None` if you don't want to generate minidump files.
 
 
+#### Deduplication 
+Backtrace C# library allows you to aggregate the same reports. By using Backtrace deduplication mechanism you can aggregate the same reports and send only one message to Backtrace Api. As a developer you can choose dedplication options. Please use `DeduplicationStrategy` enum to setup possible deduplication rules or copy example below to setup deduplication strategy:
+
+```csharp
+var dbSettings = new BacktraceDatabaseSettings(path)
+{
+    DeduplicationStrategy = DeduplicationStrategy.Application | DeduplicationStrategy.Classifier | DeduplicationStrategy.Message,
+}
+```
+
+> What does it mean - when user want to use it?
+> What will user see in Backtrace?
+> How we handle file operations in Database?
+> How this feature works with different database methods
+
 #### TLS/SSL Support
 
 For .NET Standard 2.0 and .NET Framework 4.6+, TLS 1.2 support is built-in.
@@ -302,7 +317,7 @@ catch (Exception exception)
 }
 ```
 
-### Other BacktraceReport Overloads
+### Other BacktraceReport Overloads 
 
 `BacktraceClient` can also automatically create `BacktraceReport` given an exception or a custom message using the following overloads of the `BacktraceClient.Send` method:
 
@@ -363,7 +378,6 @@ backtraceClient.BeforeSend =
 ```csharp
 backtraceClient.HandleApplicationException();
 ``` 
-
 
 ## Custom client and report classes <a name="documentation-customization"></a>
 

@@ -64,6 +64,12 @@ namespace Backtrace.Model.Database
         internal long Size { get; set; }
 
         /// <summary>
+        /// Record hash
+        /// </summary>
+        [JsonProperty(PropertyName = "hash")]
+        internal string Hash = string.Empty;
+
+        /// <summary>
         /// Stored record
         /// </summary>
         [JsonIgnore]
@@ -73,40 +79,21 @@ namespace Backtrace.Model.Database
         /// Path to database directory
         /// </summary>
         [JsonIgnore]
-        private readonly string _path = string.Empty;
-
-        /// <summary>
-        /// Record hash
-        /// </summary>
-        [JsonIgnore]
-        internal string Hash = string.Empty;
+        private readonly string _path = string.Empty;      
 
         [JsonIgnore]
-        internal int Count
+        private int _count = 0;
+
+        [JsonIgnore]
+        public int Count
         {
             get
             {
-                if (!Valid())
+                if (_count == 0)
                 {
-                    return 1;
+                    _count = ReadCounter();
                 }
-                if (!File.Exists(CounterDataPath))
-                {
-                    return 1;
-                }
-                using (var dataReader = new StreamReader(CounterDataPath))
-                {
-                    try
-                    {
-                        var json = dataReader.ReadToEnd();
-                        var counter = JsonConvert.DeserializeObject<CounterData>(json);
-                        return counter.Total;
-                    }
-                    catch (SerializationException)
-                    {
-                        return 1;
-                    }
-                }
+                return _count;
             }
         }
 
@@ -246,22 +233,30 @@ namespace Backtrace.Model.Database
                 };
                 return;
             }
+            string resultJson = string.Empty;
             //read json files stored in BacktraceDatabase
             using (var dataReader = new StreamReader(CounterDataPath))
-            using (var dataWriter = new StreamWriter(CounterDataPath))
             {
                 var json = dataReader.ReadToEnd();
                 try
                 {
                     var counterData = JsonConvert.DeserializeObject<CounterData>(json);
                     counterData.Total++;
-                    var resultJson = JsonConvert.SerializeObject(counterData);
-                    dataWriter.Write(resultJson);
+                    resultJson = JsonConvert.SerializeObject(counterData);
+
                 }
                 catch (SerializationException)
                 {
                     File.Delete(CounterDataPath);
                     Increment();
+                }
+            }
+            using (var dataWriter = new StreamWriter(CounterDataPath))
+            {
+                if (!string.IsNullOrEmpty(resultJson))
+                {
+                    dataWriter.Write(resultJson);
+                    _count++;
                 }
             }
         }
@@ -349,6 +344,42 @@ namespace Backtrace.Model.Database
             catch (Exception e)
             {
                 Trace.WriteLine($"Cannot delete file: {path}. Message: {e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Read total numbers of the same records
+        /// </summary>
+        /// <returns>Number of records</returns>
+        private int ReadCounter()
+        {
+            if (!Valid())
+            {
+                return 1;
+            }
+            if (!File.Exists(CounterDataPath))
+            {
+                CounterDataPath = Save(new CounterData(), $"{Id}-counter");
+                return 1;
+            }
+            using (var dataReader = new StreamReader(CounterDataPath))
+            {
+                try
+                {
+                    var json = dataReader.ReadToEnd();
+                    var counter = JsonConvert.DeserializeObject<CounterData>(json);
+                    return counter.Total;
+                }
+                catch (SerializationException serializationException)
+                {
+                    Debug.WriteLine(serializationException);
+                    return 1;
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e);
+                    return 1;
+                }
             }
         }
 

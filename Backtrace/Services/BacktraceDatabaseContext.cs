@@ -1,10 +1,12 @@
-﻿using Backtrace.Interfaces;
+﻿using Backtrace.Common;
+using Backtrace.Interfaces;
 using Backtrace.Model;
 using Backtrace.Model.Database;
 using Backtrace.Model.Types;
 using Backtrace.Types;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("DynamicProxyGenAssembly2")]
@@ -50,12 +52,23 @@ namespace Backtrace.Services
         /// </summary>
         public DeduplicationStrategy DeduplicationStrategy { get; set; }
 
+        public Func<DeduplicationStrategy, BacktraceData, string> DeduplicationHash { get; set; }
+
+        /// <summary>
+        /// Initialize new instance of Backtrace Database Context
+        /// </summary>
+        /// <param name="settings">Database settings</param>
+        public BacktraceDatabaseContext(BacktraceDatabaseSettings settings)
+            : this(settings.DatabasePath, settings.RetryLimit, settings.RetryOrder, settings.DeduplicationStrategy)
+        { }
+
         /// <summary>
         /// Initialize new instance of Backtrace Database Context
         /// </summary>
         /// <param name="path">Path to database directory</param>
         /// <param name="retryNumber">Total number of retries</param>
         /// <param name="retryOrder">Record order</param>
+        /// <param name="deduplicationStrategy"> Deduplication strategy type </param>
         public BacktraceDatabaseContext(
             string path,
             uint retryNumber,
@@ -84,22 +97,59 @@ namespace Backtrace.Services
             }
         }
 
+
+        /// <summary>
+        /// Generate hash for current diagnostic data
+        /// </summary>
+        /// <param name="backtraceData">Diagnostic data </param>
+        /// <returns>hash for current backtrace data</returns>
+        private string GetHash(BacktraceData backtraceData)
+        {
+            if (DeduplicationStrategy == DeduplicationStrategy.None)
+            {
+                return string.Empty;
+            }
+            if (DeduplicationHash != null)
+            {
+                return DeduplicationHash(DeduplicationStrategy, backtraceData);
+            }
+            var deduplicationModel = new DeduplicationModel(backtraceData, DeduplicationStrategy);
+            return deduplicationModel.GetSha();
+        }
+
         /// <summary>
         /// Add new record to database
         /// </summary>
         /// <param name="backtraceData">Diagnostic data that should be stored in database</param>
         /// <returns>New instance of DatabaseRecordy</returns>
-        public virtual BacktraceDatabaseRecord Add(BacktraceData backtraceData)
+        public virtual BacktraceDatabaseRecord Add(BacktraceData backtraceData, MiniDumpType miniDumpType = MiniDumpType.None)
         {
             if (backtraceData == null)
             {
                 throw new NullReferenceException(nameof(backtraceData));
             }
-            var deduplicationModel = new DeduplicationModel(backtraceData, DeduplicationStrategy);
+            string hash = GetHash(backtraceData);
+            if (!string.IsNullOrEmpty(hash))
+            {
+                var existRecord = BatchRetry.SelectMany(n => n.Value)
+                    .FirstOrDefault(n => n.Hash == hash);
+
+                if (existRecord != null)
+                {
+                    existRecord.Locked = true;
+                    existRecord.Increment();
+                    TotalRecords++;
+                    return existRecord;
+                }
+            }
+
+            string minidumpPath = GenerateMiniDump(backtraceData.Report, miniDumpType);
+            backtraceData.Report.SetMinidumpPath(minidumpPath);
+
             //create new record and save it on hard drive
             var record = new BacktraceDatabaseRecord(backtraceData, _path)
             {
-                Hash = deduplicationModel.GetSha()
+                Hash = hash
             };
             record.Save();
             //add record to database context
@@ -168,7 +218,14 @@ namespace Backtrace.Services
                         //delete value from current batch
                         BatchRetry[key].Remove(value);
                         //decrement all records
-                        TotalRecords--;
+                        if (value.Count > 0)
+                        {
+                            TotalRecords = TotalRecords - value.Count;
+                        }
+                        else
+                        {
+                            TotalRecords--;
+                        }
                         //decrement total size of database
                         TotalSize -= value.Size;
                         System.Diagnostics.Debug.WriteLine($"[Delete] :: Total Size = {TotalSize}");
@@ -198,7 +255,14 @@ namespace Backtrace.Services
             if (record != null)
             {
                 record.Delete();
-                TotalRecords--;
+                if (record.Count > 0)
+                {
+                    TotalRecords = TotalRecords - record.Count;
+                }
+                else
+                {
+                    TotalRecords--;
+                }
                 TotalSize -= record.Size;
                 System.Diagnostics.Debug.WriteLine($"[RemoveLastRecord] :: Total Size = {TotalSize}");
                 return true;
@@ -232,7 +296,14 @@ namespace Backtrace.Services
                 if (value.Valid())
                 {
                     value.Delete();
-                    TotalRecords--;
+                    if (value.Count > 0)
+                    {
+                        TotalRecords = TotalRecords - value.Count;
+                    }
+                    else
+                    {
+                        TotalRecords--;
+                    }
                     //decrement total size of database
                     System.Diagnostics.Debug.WriteLine($"[RemoveMaxRetries]::BeforeDelete Total size: {TotalSize}. Record Size: {value.Size} ");
                     TotalSize -= value.Size;
@@ -256,7 +327,7 @@ namespace Backtrace.Services
         /// <returns></returns>
         public int Count()
         {
-            return TotalRecords;
+            return BatchRetry.SelectMany(n => n.Value).Sum(n => n.Count);
         }
 
         /// <summary>
@@ -377,7 +448,38 @@ namespace Backtrace.Services
         /// <returns>Total number of records</returns>
         public int GetTotalNumberOfRecords()
         {
-            return TotalRecords;
+            return Count();
+        }
+
+
+
+        /// <summary>
+        /// Create new minidump file in database directory path. Minidump file name is a random Guid
+        /// </summary>
+        /// <param name="backtraceReport">Current report</param>
+        /// <param name="miniDumpType">Generated minidump type</param>
+        /// <returns>Path to minidump file</returns>
+        internal virtual string GenerateMiniDump(BacktraceReport backtraceReport, MiniDumpType miniDumpType)
+        {
+            if (miniDumpType == MiniDumpType.None)
+            {
+                return string.Empty;
+            }
+            //note that every minidump file generated by app ends with .dmp extension
+            //its important information if you want to clear minidump file
+            string minidumpDestinationPath = Path.Combine(_path, $"{backtraceReport.Uuid}-dump.dmp");
+            MinidumpException minidumpExceptionType = backtraceReport.ExceptionTypeReport
+                ? MinidumpException.Present
+                : MinidumpException.None;
+
+            bool minidumpSaved = MinidumpHelper.Write(
+                filePath: minidumpDestinationPath,
+                options: miniDumpType,
+                exceptionType: minidumpExceptionType);
+
+            return minidumpSaved
+                ? minidumpDestinationPath
+                : string.Empty;
         }
     }
 }

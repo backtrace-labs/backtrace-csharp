@@ -40,11 +40,6 @@ namespace Backtrace.Tests.DatabaseTests
                 fakeRecord.Locked = false;
             }
             _database.Start();
-            _database.Add(
-                backtraceReport: new BacktraceReport("fake report"),
-                attributes: new Dictionary<string, object>(),
-                miniDumpType: MiniDumpType.None);
-
             // in the end BacktraceDatabase should contain 100 reports. 
             // Database should remove first ever report.
             Assert.AreEqual(_database.Count(), maximumNumberOfRecords);

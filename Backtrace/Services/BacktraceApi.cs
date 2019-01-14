@@ -40,7 +40,7 @@ namespace Backtrace.Services
         /// <summary>
         /// Url to server
         /// </summary>
-        private readonly string _serverurl;
+        private readonly Uri _serverurl;
 
         /// <summary>
         /// Create a new instance of Backtrace API
@@ -52,7 +52,7 @@ namespace Backtrace.Services
             {
                 throw new ArgumentException($"{nameof(BacktraceCredentials)} cannot be null");
             }
-            _serverurl = credentials.GetSubmissionUrl().ToString();
+            _serverurl = credentials.GetSubmissionUrl();
             reportLimitWatcher = new ReportLimitWatcher(reportPerMin);
         }
         #region asyncRequest
@@ -74,14 +74,14 @@ namespace Backtrace.Services
             // execute user custom request handler
             if (RequestHandler != null)
             {
-                return RequestHandler?.Invoke(_serverurl, FormDataHelper.GetContentTypeWithBoundary(Guid.NewGuid()), data);
+                return RequestHandler?.Invoke(_serverurl.ToString(), FormDataHelper.GetContentTypeWithBoundary(Guid.NewGuid()), data);
             }
             //get a json from diagnostic object
             var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
             return await SendAsync(Guid.NewGuid(), json, data.Attachments, data.Report);
         }
 
-        internal async Task<BacktraceResult> SendAsync(Guid requestId, string json, List<string> attachments, BacktraceReport report, Dictionary<string,string> additionalParameters = null)
+        internal async Task<BacktraceResult> SendAsync(Guid requestId, string json, List<string> attachments, BacktraceReport report)
         {
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
             string boundary = FormDataHelper.GetBoundary(requestId);
@@ -89,10 +89,6 @@ namespace Backtrace.Services
             using (var content = new MultipartFormDataContent(boundary))
             {
                 var requestUrl = _serverurl;
-                if(additionalParameters != null)
-                {
-                    //var builder = new UriBuilder(requestUri).
-                }
                 var request = new HttpRequestMessage(HttpMethod.Post, requestUrl);
                 content.AddJson("upload_file.json", json);
                 content.AddFiles(attachments);
@@ -148,7 +144,7 @@ namespace Backtrace.Services
             // execute user custom request handler
             if (RequestHandler != null)
             {
-                return RequestHandler?.Invoke(_serverurl, FormDataHelper.GetContentTypeWithBoundary(Guid.NewGuid()), data);
+                return RequestHandler?.Invoke(_serverurl.ToString(), FormDataHelper.GetContentTypeWithBoundary(Guid.NewGuid()), data);
             }
             //set submission data
             string json = JsonConvert.SerializeObject(data);

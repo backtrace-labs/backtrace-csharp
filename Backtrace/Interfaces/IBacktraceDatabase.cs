@@ -1,10 +1,9 @@
-﻿using Backtrace.Base;
-using Backtrace.Model;
+﻿using Backtrace.Model;
 using Backtrace.Model.Database;
+using Backtrace.Model.Types;
 using Backtrace.Types;
 using System;
 using System.Collections.Generic;
-using System.Text;
 #if !NET35
 using System.Threading.Tasks;
 #endif
@@ -56,7 +55,7 @@ namespace Backtrace.Interfaces
         /// Get all records stored in Database
         /// </summary>
         IEnumerable<BacktraceDatabaseRecord> Get();
-        
+
         /// <summary>
         /// Delete database record by using BacktraceDatabaseRecord
         /// </summary>
@@ -73,5 +72,10 @@ namespace Backtrace.Interfaces
         /// Get database size
         /// </summary>
         long GetDatabaseSize();
+
+        /// <summary>
+        /// Deduplication method. Use this method to override default method to generate hash from deduplication model
+        /// </summary>
+        Func<DeduplicationStrategy, BacktraceData, string> DeduplicationHash { set; get; }
     }
 }
