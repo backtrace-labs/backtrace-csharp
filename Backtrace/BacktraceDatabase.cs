@@ -275,6 +275,7 @@ namespace Backtrace
             while (record != null)
             {
                 var backtraceData = record.BacktraceData;
+                
                 //meanwhile someone delete data from a disk
                 if (backtraceData == null || backtraceData.Report == null)
                 {
@@ -282,6 +283,7 @@ namespace Backtrace
                 }
                 else
                 {
+                    backtraceData.Deduplication = record.Count;
                     //send record from database to API
                     var result = await BacktraceApi.SendAsync(backtraceData);
                     if (result.Status == BacktraceResultStatus.Ok)
