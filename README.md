@@ -233,6 +233,7 @@ Notes:
 * `BacktraceDatabase` methods allows you to use aggregated diagnostic data together. You can check `Hash` property of `BacktraceDatabaseRecord` to check generated hash for diagnostic data and `Counter` to check how much the same records we detect.
 * `BacktraceDatabase` `Count` method will return number of all records stored in database (included deduplicated records),
 * `BacktarceDatabase` `Delete` method will remove record (with multiple deduplicated records) at the same time.
+* You can override default hash method by using `GenerateHash` delegate available in `BacktraceDatabase` object. When you add your own method implementation, `BacktraceDatabase` won't use default deduplication mechanism.
 
 #### TLS/SSL Support
 
