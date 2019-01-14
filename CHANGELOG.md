@@ -3,6 +3,7 @@
 ## Version 2.1.0 - 14.01.2019
 
 - Deduplication parameters. Now `BacktraceDatabaseSettings` allow you to setup deduplication rules. If you use deduplication types, you can aggregate existing reports and send only one message for all the same reports.
+- `BacktraceDatabase` allows you to override default deduplication methods and generate your own hash per diagnostic data.
 
 ## Version 2.0.6 - 20.12.2018
 
