@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Timers;
-using Backtrace.Model.Types;
 #if !NET35
 using System.Threading.Tasks;
 #endif

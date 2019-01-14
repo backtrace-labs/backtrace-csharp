@@ -1,5 +1,5 @@
 ﻿using Backtrace.Model;
-using Backtrace.Model.Types;
+using Backtrace.Types;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;

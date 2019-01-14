@@ -1,7 +1,7 @@
 ﻿using Backtrace.Core.Model;
 using Backtrace.Model;
 using Backtrace.Model.Database;
-using Backtrace.Model.Types;
+using Backtrace.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,6 +1,6 @@
 ﻿using Backtrace.Common;
 using Backtrace.Model.JsonData;
-using Backtrace.Model.Types;
+using Backtrace.Types;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

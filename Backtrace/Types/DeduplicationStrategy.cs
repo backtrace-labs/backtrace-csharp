@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Backtrace.Model.Types
+namespace Backtrace.Types
 {
 
     /// <summary>
@@ -14,11 +12,11 @@ namespace Backtrace.Model.Types
         /// <summary>
         /// Ignore deduplication strategy
         /// </summary>
-        None =0,
+        None = 0,
         /// <summary>
         /// Only stack trace
         /// </summary>
-        Default =1,
+        Default = 1,
         /// <summary>
         /// Stack trace and exception classifier
         /// </summary>

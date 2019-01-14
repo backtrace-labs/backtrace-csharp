@@ -1,5 +1,4 @@
 ﻿using Backtrace.Types;
-using Backtrace.Model.Types;
 
 namespace Backtrace.Model.Database
 {
