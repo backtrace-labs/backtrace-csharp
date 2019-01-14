@@ -282,7 +282,6 @@ namespace Backtrace
                 }
                 else
                 {
-                    backtraceData.Deduplication = record.Count;
                     //send record from database to API
                     var result = await BacktraceApi.SendAsync(backtraceData);
                     if (result.Status == BacktraceResultStatus.Ok)

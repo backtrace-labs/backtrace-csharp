@@ -46,8 +46,6 @@ namespace Backtrace.Core
             catch (Exception e)
             {
                 await backtraceClient.SendAsync(e);
-                await backtraceClient.SendAsync(e);
-                await backtraceClient.SendAsync(e);
             }
             await GenerateRandomStrings();
             await TryClean();
@@ -207,10 +205,10 @@ namespace Backtrace.Core
                };
         }
 
-        private static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            Program program = new Program();
-            program.Start().Wait();
+            var program = new Program();
+            await program.Start();
         }
     }
 }
