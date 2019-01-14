@@ -2,7 +2,7 @@
 using Backtrace.Interfaces;
 using Backtrace.Model;
 using Backtrace.Model.Database;
-using Backtrace.Model.Types;
+using Backtrace.Types;
 using Moq;
 using NUnit.Framework;
 using System;
