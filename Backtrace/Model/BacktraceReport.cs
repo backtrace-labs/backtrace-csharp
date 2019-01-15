@@ -1,7 +1,9 @@
 ﻿using Backtrace.Extensions;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 #if !NET35
 using System.Runtime.ExceptionServices;
