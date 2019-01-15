@@ -6,7 +6,6 @@
 - `BacktraceDatabase` allows you to override default deduplication methods and generate your own hash per diagnostic data.
 
 ## Version 2.0.6 - 20.12.2018
-
 - New `BacktraceCredentials` constructor,
 - UnhandledThreadException flow
 
