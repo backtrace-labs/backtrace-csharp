@@ -18,7 +18,6 @@ namespace Backtrace.Tests.DatabaseTests
             {
                 var fakeRecord = _database.BacktraceDatabaseContext.Add(GetRecord());
                 fakeRecord.Locked = locked;
-                System.Diagnostics.Trace.WriteLine(_database.Count());
             }
         }
         [TestCase(3, 2, 0)]
