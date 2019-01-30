@@ -119,7 +119,7 @@ namespace Backtrace.Tests.Events
         [TestCase(5)]
         [TestCase(10)]
         [Test(Author = "Konrad Dysput", Description = "Test OnReportStart, BeforeSend and AfterSend events")]
-        public void TestStartAndStopEvents(int numberOfThreads)
+        public async Task TestStartAndStopEvents(int numberOfThreads)
         {
             //setup test method
             //Test case tests Send and SendAsync method - magic number 2 means that we test 2 methods
@@ -127,9 +127,9 @@ namespace Backtrace.Tests.Events
             var expectedNumberOfEnds = numberOfThreads * 2;
             var expectedNumberOfBeforeSendEvents = numberOfThreads * 2;
 
-            List<Thread> threads = new List<Thread>();
+            List<Task> threads = new List<Task>();
             int totalStart = 0;
-            int totalBeforeSennd = 0;
+            int totalBeforeSend = 0;
             int totalEnds = 0;
 
 
@@ -141,34 +141,33 @@ After:
 */
             this._backtraceClient.OnReportStart = (global::Backtrace.Model.BacktraceReport report) =>
             {
-                totalStart++;
+                Interlocked.Increment(ref totalStart);
             };
             _backtraceClient.BeforeSend = (BacktraceData data) =>
             {
-                totalBeforeSennd++;
+                Interlocked.Increment(ref totalBeforeSend);
                 return data;
             };
             _backtraceClient.AfterSend = (BacktraceResult result) =>
             {
-                totalEnds++;
+                Interlocked.Increment(ref totalEnds);
             };
 
             for (int threadIndex = 0; threadIndex < numberOfThreads; threadIndex++)
             {
 
-                threads.Add(new Thread(new ThreadStart(() =>
+                threads.Add(Task.Run(async () =>
                 {
                     _backtraceClient.Send("client message");
-                    _backtraceClient.SendAsync("client message").Wait();
-                })));
+                    await _backtraceClient.SendAsync("client message");
+                }));
             }
 
-            threads.ForEach(n => n.Start());
-            threads.ForEach(n => n.Join());
+            await Task.WhenAll(threads);
 
-            Assert.AreEqual(totalStart, expectedNumberOfStarts);
-            Assert.AreEqual(totalBeforeSennd, expectedNumberOfBeforeSendEvents);
-            Assert.AreEqual(totalEnds, expectedNumberOfEnds);
+            Assert.AreEqual(expectedNumberOfStarts, totalStart, "Start event count doesn't match");
+            Assert.AreEqual(expectedNumberOfBeforeSendEvents, totalBeforeSend, "Before send event count doesn't match");
+            Assert.AreEqual(expectedNumberOfEnds, totalEnds, "After send event count doesn't match");
         }
     }
 }

@@ -8,6 +8,7 @@ using NUnit.Framework;
 using RichardSzalay.MockHttp;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Backtrace.Tests.IntegrationTests
@@ -121,7 +122,7 @@ namespace Backtrace.Tests.IntegrationTests
         [TestCase(5)]
         [TestCase(10)]
         [Test(Author = "Arthur Tu and Konrad Dysput", Description = "Test rate limiting on single/multiple thread thread")]
-        public void SingleThreadWithoutReportRateLimit(int numberOfTasks)
+        public async Task SingleThreadWithoutReportRateLimit(int numberOfTasks)
         {
             // one thread = 4 request to API 
             int expectedNumberOfReports = numberOfTasks * 4;
@@ -132,7 +133,7 @@ namespace Backtrace.Tests.IntegrationTests
             clientReportLimitReached = false;
             _backtraceClient.AfterSend = (BacktraceResult res) =>
             {
-                totalSend++;
+                Interlocked.Increment(ref totalSend);
             };
 
             //prepare thread and catch 2 exception per thread and send two custom messages
@@ -141,7 +142,7 @@ namespace Backtrace.Tests.IntegrationTests
             {
                 taskList[threadIndex] = ThreadTest(threadIndex);
             }
-            Task.WaitAll(taskList);
+            await Task.WhenAll(taskList);
 
             Assert.AreEqual(expectedNumberOfReports, totalSend);
             Assert.IsFalse(clientReportLimitReached);
