@@ -41,8 +41,6 @@ namespace Backtrace.Model
             //initialize environment stack trace
             var stackTrace = new StackTrace(true);
             //reverse frame order
-            var frames = stackTrace.GetFrames();
-            SetStacktraceInformation(frames, generateExceptionInformation);
             if (_exception != null)
             {
                 if (CallingAssembly == null)
@@ -52,6 +50,11 @@ namespace Backtrace.Model
                 var exceptionStackTrace = new StackTrace(_exception, true);
                 var exceptionFrames = exceptionStackTrace.GetFrames();
                 SetStacktraceInformation(exceptionFrames, true);
+            }
+            else
+            {
+                var frames = stackTrace.GetFrames();
+                SetStacktraceInformation(frames, generateExceptionInformation);
             }
             //Library didn't found Calling assembly
             //The reason for this behaviour is because we throw exception from TaskScheduler
