@@ -194,7 +194,7 @@ namespace Backtrace
             }
 
             var data = backtraceReport.ToBacktraceData(attributes);
-            return BacktraceDatabaseContext.Add(data);
+            return BacktraceDatabaseContext.Add(data, miniDumpType);
         }
 
 
