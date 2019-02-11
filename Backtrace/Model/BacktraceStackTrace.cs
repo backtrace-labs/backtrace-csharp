@@ -1,11 +1,8 @@
 ﻿using Backtrace.Common;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace Backtrace.Model
 {
@@ -24,13 +21,19 @@ namespace Backtrace.Model
         internal Assembly CallingAssembly { get; set; }
 
         /// <summary>
+        /// Include environment stack trace in exception reports
+        /// </summary>
+        private readonly bool _includeEnvironmentStackTrace;
+
+        /// <summary>
         /// Current exception
         /// </summary>
         private readonly Exception _exception;
         private readonly bool _reflectionMethodName;
-        public BacktraceStackTrace(Exception exception, bool reflectionMethodName)
+        public BacktraceStackTrace(Exception exception, bool reflectionMethodName, bool includeEnvironmentStackTrace)
         {
             _exception = exception;
+            _includeEnvironmentStackTrace = includeEnvironmentStackTrace;
             _reflectionMethodName = reflectionMethodName;
             Initialize();
         }
@@ -40,9 +43,13 @@ namespace Backtrace.Model
             bool generateExceptionInformation = _exception != null;
             //initialize environment stack trace
             var stackTrace = new StackTrace(true);
-            //reverse frame order
-            var frames = stackTrace.GetFrames();
-            SetStacktraceInformation(frames, generateExceptionInformation);
+
+            if (_exception == null || _includeEnvironmentStackTrace)
+            {
+                //reverse frame order
+                var frames = stackTrace.GetFrames();
+                SetStacktraceInformation(frames, generateExceptionInformation);
+            }
             if (_exception != null)
             {
                 if (CallingAssembly == null)

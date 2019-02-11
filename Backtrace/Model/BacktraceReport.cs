@@ -1,9 +1,7 @@
 ﻿using Backtrace.Extensions;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 #if !NET35
 using System.Runtime.ExceptionServices;
@@ -89,6 +87,12 @@ namespace Backtrace.Model
         internal string MinidumpFile { get; private set; }
 
         /// <summary>
+        /// Include environment stack trace when sending exception report to Backtrace
+        /// </summary>
+        [JsonProperty(PropertyName = "environmentStackTrace")]
+        public bool IncludeEnvironmentStackTrace { get; private set; }
+
+        /// <summary>
         /// Get an assembly where report was created (or should be created)
         /// </summary>
         internal Assembly CallingAssembly { get; set; }
@@ -107,7 +111,7 @@ namespace Backtrace.Model
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null,
             bool reflectionMethodName = true)
-            : this(null as Exception, attributes, attachmentPaths, reflectionMethodName)
+            : this(null as Exception, attributes, attachmentPaths, reflectionMethodName, true)
         {
             Message = message;
         }
@@ -123,7 +127,8 @@ namespace Backtrace.Model
             Exception exception,
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null,
-            bool reflectionMethodName = true)
+            bool reflectionMethodName = true,
+            bool includeEnvironmentStacktrace = true)
         {
             Attributes = attributes ?? new Dictionary<string, object>();
             AttachmentPaths = attachmentPaths ?? new List<string>();
@@ -131,6 +136,7 @@ namespace Backtrace.Model
             ExceptionTypeReport = exception != null;
             Classifier = ExceptionTypeReport ? exception.GetType().Name : string.Empty;
             _reflectionMethodName = reflectionMethodName;
+            IncludeEnvironmentStackTrace = includeEnvironmentStacktrace;
             SetCallingAssemblyInformation();
         }
 
@@ -172,7 +178,7 @@ namespace Backtrace.Model
 
         internal void SetCallingAssemblyInformation()
         {
-            var stacktrace = new BacktraceStackTrace(Exception, _reflectionMethodName);
+            var stacktrace = new BacktraceStackTrace(Exception, _reflectionMethodName, IncludeEnvironmentStackTrace);
             DiagnosticStack = stacktrace.StackFrames;
             CallingAssembly = stacktrace.CallingAssembly;
         }

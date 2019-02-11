@@ -177,8 +177,7 @@ namespace Backtrace.Model
             {
                 throw new ArgumentException($"Section {nameof(sectionName)} is null or empty");
             }
-            var applicationSettings = ConfigurationManager.GetSection(sectionName) as NameValueCollection;
-            if (applicationSettings == null || applicationSettings.Count == 0)
+            if (!(ConfigurationManager.GetSection(sectionName) is NameValueCollection applicationSettings) || applicationSettings.Count == 0)
             {
                 throw new InvalidOperationException("Application setting are not defined");
             }

@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Backtrace.Tests.ClientTests
 {
@@ -29,6 +30,29 @@ namespace Backtrace.Tests.ClientTests
             Assert.DoesNotThrow(() => _backtraceClient.Send(exception: exception));
             Assert.DoesNotThrow(() => _backtraceClient.Send(message: "test message"));
             Assert.DoesNotThrow(() => _backtraceClient.Send(new BacktraceReport(exception)));
+        }
+
+        [Test]
+        public void TestEnvironmentStackTrace_EnvironmentStakcTraceIsEqualToTrue_ShouldReturnCorrectStackTrace()
+        {
+            //this type of exception return empty stack trace
+            //in this test if exception is empty and we don't include environemnt stacktrace
+            //diagnostic stack will be empty
+            var report = new BacktraceReport(new Exception("exception"), includeEnvironmentStacktrace: true);
+            Assert.IsTrue(report.DiagnosticStack?.Any());
+        }
+        [Test]
+        public void TestEnvironmentStackTrace_DefaultStackTraceParameter_ShouldReturnCorrectStackTrace()
+        {
+            var report = new BacktraceReport(new Exception("exception"));
+            Assert.IsTrue(report.DiagnosticStack?.Any());
+        }
+
+        [Test]
+        public void TestEnvironmentStackTrace_EnvironmentStakcTraceIsEqualToFalse_ShouldReturnCorrectStackTrace()
+        {
+            var report = new BacktraceReport(new Exception("exception"), includeEnvironmentStacktrace: false);
+            Assert.IsFalse(report.DiagnosticStack?.Any());
         }
 
         [Test]

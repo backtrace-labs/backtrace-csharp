@@ -1,19 +1,18 @@
 ﻿using Backtrace.Core.Model;
-using Backtrace.Interfaces;
 using Backtrace.Model;
 using Backtrace.Model.Database;
-using Backtrace.Services;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Backtrace.Core
 {
-    class Program
+    public class Program
     {
         private Tree tree;
+
+        private readonly Random random = new Random();
 
         /// <summary>
         /// Credentials
@@ -58,7 +57,7 @@ namespace Backtrace.Core
 
         private string GetRandomString(int length)
         {
-            Random random = new Random();
+
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             var tempString = Enumerable.Repeat(chars, length)
               .Select(s => s[random.Next(s.Length)]).ToArray();
@@ -67,7 +66,6 @@ namespace Backtrace.Core
 
         private async Task GenerateRandomStrings()
         {
-            Random random = new Random();
             int totalStrings = random.Next(20, 25);
             //+3 because we want to add two duplicats
             string[] randomStrings = new string[totalStrings + 3];
@@ -104,7 +102,6 @@ namespace Backtrace.Core
         {
             var orderedWords = tree.ToList();
             int total = orderedWords.Count();
-            Random random = new Random();
             for (int i = 0; i < 3; i++)
             {
                 int randomDuplicateIndex = random.Next(0, total);
@@ -138,7 +135,7 @@ namespace Backtrace.Core
 
         }
 
-        unsafe static void DividePtrParam(int* p, int* j)
+        private static unsafe void DividePtrParam(int* p, int* j)
         {
             *p = *p / *j;
         }
@@ -195,10 +192,10 @@ namespace Backtrace.Core
                };
         }
 
-        static void Main(string[] args)
+        private static async Task Main(string[] args)
         {
-            Program program = new Program();
-            program.Start().Wait();
+            var program = new Program();
+            await program.Start();
         }
     }
 }
