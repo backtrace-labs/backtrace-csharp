@@ -85,13 +85,7 @@ namespace Backtrace.Model
         /// </summary>
         [JsonProperty(PropertyName = "minidumpFile")]
         internal string MinidumpFile { get; private set; }
-
-        /// <summary>
-        /// Include environment stack trace when sending exception report to Backtrace
-        /// </summary>
-        [JsonProperty(PropertyName = "environmentStackTrace")]
-        public bool IncludeEnvironmentStackTrace { get; private set; }
-
+        
         /// <summary>
         /// Get an assembly where report was created (or should be created)
         /// </summary>
@@ -111,7 +105,7 @@ namespace Backtrace.Model
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null,
             bool reflectionMethodName = true)
-            : this(null as Exception, attributes, attachmentPaths, reflectionMethodName, true)
+            : this(null as Exception, attributes, attachmentPaths, reflectionMethodName)
         {
             Message = message;
         }
@@ -127,8 +121,7 @@ namespace Backtrace.Model
             Exception exception,
             Dictionary<string, object> attributes = null,
             List<string> attachmentPaths = null,
-            bool reflectionMethodName = true,
-            bool includeEnvironmentStacktrace = true)
+            bool reflectionMethodName = true)
         {
             Attributes = attributes ?? new Dictionary<string, object>();
             AttachmentPaths = attachmentPaths ?? new List<string>();
@@ -136,7 +129,6 @@ namespace Backtrace.Model
             ExceptionTypeReport = exception != null;
             Classifier = ExceptionTypeReport ? exception.GetType().Name : string.Empty;
             _reflectionMethodName = reflectionMethodName;
-            IncludeEnvironmentStackTrace = includeEnvironmentStacktrace;
             SetCallingAssemblyInformation();
         }
 
@@ -178,7 +170,7 @@ namespace Backtrace.Model
 
         internal void SetCallingAssemblyInformation()
         {
-            var stacktrace = new BacktraceStackTrace(Exception, _reflectionMethodName, IncludeEnvironmentStackTrace);
+            var stacktrace = new BacktraceStackTrace(Exception, _reflectionMethodName);
             DiagnosticStack = stacktrace.StackFrames;
             CallingAssembly = stacktrace.CallingAssembly;
         }

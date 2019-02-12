@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Backtrace.Tests.ClientTests
@@ -33,26 +34,19 @@ namespace Backtrace.Tests.ClientTests
         }
 
         [Test]
-        public void TestEnvironmentStackTrace_EnvironmentStakcTraceIsEqualToTrue_ShouldReturnCorrectStackTrace()
+        public void TestReportStackTrace_StackTraceShouldBeTheSameLikeExceptionStackTrace_ShouldReturnCorrectStackTrace()
         {
-            //this type of exception return empty stack trace
-            //in this test if exception is empty and we don't include environemnt stacktrace
-            //diagnostic stack will be empty
-            var report = new BacktraceReport(new Exception("exception"), includeEnvironmentStacktrace: true);
-            Assert.IsTrue(report.DiagnosticStack?.Any());
-        }
-        [Test]
-        public void TestEnvironmentStackTrace_DefaultStackTraceParameter_ShouldReturnCorrectStackTrace()
-        {
-            var report = new BacktraceReport(new Exception("exception"));
-            Assert.IsTrue(report.DiagnosticStack?.Any());
+            var exception = new Exception("exception");
+            var report = new BacktraceReport(exception);
+            Assert.AreEqual(report.DiagnosticStack.Count, exception.StackTrace?.Count() ?? 0);
         }
 
         [Test]
-        public void TestEnvironmentStackTrace_EnvironmentStakcTraceIsEqualToFalse_ShouldReturnCorrectStackTrace()
+        public void TestReportStackTrace_StackTraceShouldIncludeEnvironmentStackTrace_ShouldReturnCorrectStackTrace()
         {
-            var report = new BacktraceReport(new Exception("exception"), includeEnvironmentStacktrace: false);
-            Assert.IsFalse(report.DiagnosticStack?.Any());
+            var environmentStackTrace = new StackTrace(true);
+            var report = new BacktraceReport("msg");
+            Assert.AreEqual(report.DiagnosticStack.Count, environmentStackTrace.FrameCount);
         }
 
         [Test]

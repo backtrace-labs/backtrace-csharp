@@ -21,19 +21,13 @@ namespace Backtrace.Model
         internal Assembly CallingAssembly { get; set; }
 
         /// <summary>
-        /// Include environment stack trace in exception reports
-        /// </summary>
-        private readonly bool _includeEnvironmentStackTrace;
-
-        /// <summary>
         /// Current exception
         /// </summary>
         private readonly Exception _exception;
         private readonly bool _reflectionMethodName;
-        public BacktraceStackTrace(Exception exception, bool reflectionMethodName, bool includeEnvironmentStackTrace)
+        public BacktraceStackTrace(Exception exception, bool reflectionMethodName)
         {
             _exception = exception;
-            _includeEnvironmentStackTrace = includeEnvironmentStackTrace;
             _reflectionMethodName = reflectionMethodName;
             Initialize();
         }
@@ -41,15 +35,7 @@ namespace Backtrace.Model
         private void Initialize()
         {
             bool generateExceptionInformation = _exception != null;
-            //initialize environment stack trace
             var stackTrace = new StackTrace(true);
-
-            if (_exception == null || _includeEnvironmentStackTrace)
-            {
-                //reverse frame order
-                var frames = stackTrace.GetFrames();
-                SetStacktraceInformation(frames, generateExceptionInformation);
-            }
             if (_exception != null)
             {
                 if (CallingAssembly == null)
@@ -59,6 +45,12 @@ namespace Backtrace.Model
                 var exceptionStackTrace = new StackTrace(_exception, true);
                 var exceptionFrames = exceptionStackTrace.GetFrames();
                 SetStacktraceInformation(exceptionFrames, true);
+            }
+            else
+            {
+                //reverse frame order
+                var frames = stackTrace.GetFrames();
+                SetStacktraceInformation(frames, generateExceptionInformation);
             }
             //Library didn't found Calling assembly
             //The reason for this behaviour is because we throw exception from TaskScheduler
