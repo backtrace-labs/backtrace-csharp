@@ -226,6 +226,18 @@ var dbSettings = new BacktraceDatabaseSettings(path)
 }
 ```
 
+Deduplication strategy enum types:
+* Ignore - ignore deduplication strategy,
+* Default - deduplication strategy will only use current strack trace to find duplicated reports,
+* Classifier - deduplication strategy will use stack trace and exception classifier to find duplicated reports,
+* Message - deduplication strategy will use stack trace and exception message to find duplicated reports,
+* Application - deduplication strategy will use stack trace and faulting library name to find duplicated reports.
+
+To combine all possible deduplication strategies please use code below:
+```csharp
+DeduplicationStrategy = DeduplicationStrategy.Application | DeduplicationStrategy.Classifier | DeduplicationStrategy.Message
+```
+
 Notes:
 * When you aggregate reports via Backtrace C# library, `BacktraceDatabase` will store number of the same reports in `counter` file. 
 * By storing data in additional counter file we can read number of the same offline reports on application starts and send them to Backtrace when your internet connection back. 
