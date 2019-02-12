@@ -1,7 +1,7 @@
 ﻿# Backtrace C# Release Notes
 
 ## Version 2.0.7 - 11.02.2019
-- BacktraceReport `includeEnvironmentStacktrace` constructor parameter. If parameter is equal to `false`, then `BacktraceReport` won't have environment stack frames. Default is `true`,
+- If you send exception, `BacktraceReport` will generate stack trace based on exception stack trace. We will no longer include environment stack trace in exception reports,
 - Unit tests fix - incrementation fix,
 - `BacktraceDatabase` fix for `FirstOrDefault` invalid read.
 

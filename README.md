@@ -215,25 +215,6 @@ Notes:
 - If a valid `databaseDirectory` directory is supplied, the Backtrace library will generate and attach a minidump to each error report automatically. Otherwise, `BacktraceDatabase` will be disabled,
 - You can set `backtraceClient.MiniDumpType` to `MiniDumpType.None` if you don't want to generate minidump files.
 
-
-#### TLS/SSL Support
-
-For .NET Standard 2.0 and .NET Framework 4.6+, TLS 1.2 support is built-in.
-
-For .NET Framework 4.5 (and below) as well as .NET Standard 2.0 (and below), TLS 1.2 support may not be available, therefore **we recommend submitting errors using the plain HTTP listener URL**. But if you wish to use lower versions of TLS/SSL, you can use still enable lower TLS/SSL support by adding the following code **before** `BacktraceClient` initialization.
-
-```csharp
-ServicePointManager.SecurityProtocol =
-                     SecurityProtocolType.Tls
-                    | (SecurityProtocolType)0x00000300
-                    | (SecurityProtocolType)0x00000C00;
-
-ServicePointManager.ServerCertificateValidationCallback 
-    += (sender, certificate, chain, errors) => true;
-```
-
-
-
 ## Sending an error report <a name="documentation-sending-report"></a>
 
 `BacktraceClient.Send/BacktraceClient.SendAsync` method will send an error report to the Backtrace endpoint specified. There `Send` method is overloaded, see examples below:
