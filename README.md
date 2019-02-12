@@ -261,8 +261,9 @@ Notes:
 - if you initialize `BacktraceClient` with `BacktraceDatabase` and your application is offline or you pass invalid credentials to `BacktraceClient`, reports will be stored in database directory path,
 - for .NET 4.5+, we recommend to use `SendAsync` method,
 - if you don't want to use reflection to determine valid stack frame method name, you can pass `false` to `reflectionMethodName`. By default this value is equal to `true`,
-- `BacktraceReport` allows you to change default fingerprint generation algorithm. You can use `Fingerprint` property if you want to change fingerprint value. Keep in mind - fingerprint should be valid sha256 string.,
-- `BacktraceReport` allows you to change grouping strategy in Backtrace server. If you want to change how algorithm group your reports in Backtrace server please override `Factor` property.
+- `BacktraceReport` allows you to change default fingerprint generation algorithm. You can use `Fingerprint` property if you want to change fingerprint value. Keep in mind - fingerprint should be valid sha256 string,
+- `BacktraceReport` allows you to change grouping strategy in Backtrace server. If you want to change how algorithm group your reports in Backtrace server please override `Factor` property,
+- By default `BacktraceReport` include to exception information environment stack trace. If you want to change this behavior please use `includeEnvironmentStacktrace` parameter in `BacktraceReport` constructor. When `includeEnvironmentStacktrace` is `false` then report will only store information about exception stack trace.
 
 If you want to use `Fingerprint` and `Factor` property you have to override default property values. See example below to check how to use these properties:
 

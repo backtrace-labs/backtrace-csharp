@@ -1,5 +1,10 @@
 ﻿# Backtrace C# Release Notes
 
+## Version 2.0.7 - 11.02.2019
+- BacktraceReport `includeEnvironmentStacktrace` constructor parameter. If parameter is equal to `false`, then `BacktraceReport` won't have environment stack frames. Default is `true`,
+- Unit tests fix - incrementation fix,
+- `BacktraceDatabase` fix for `FirstOrDefault` invalid read.
+
 ## Version 2.0.6 - 20.12.2018
 - New `BacktraceCredentials` constructor,
 - UnhandledThreadException flow
