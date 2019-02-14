@@ -1,5 +1,4 @@
-﻿using Backtrace.Base;
-using Backtrace.Interfaces;
+﻿using Backtrace.Interfaces;
 using Backtrace.Model;
 using Backtrace.Model.Database;
 using Backtrace.Services;
@@ -9,7 +8,6 @@ using NUnit.Framework;
 using RichardSzalay.MockHttp;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -127,30 +125,25 @@ namespace Backtrace.Tests.Events
             var expectedNumberOfEnds = numberOfThreads * 2;
             var expectedNumberOfBeforeSendEvents = numberOfThreads * 2;
 
-            List<Thread> threads = new List<Thread>();
+            var threads = new List<Thread>();
             int totalStart = 0;
-            int totalBeforeSennd = 0;
+            int totalBeforeSend = 0;
             int totalEnds = 0;
 
-
-/* Unmerged change from project 'Backtrace.Tests(net45)'
-Before:
             _backtraceClient.OnReportStart = (BacktraceReport report) =>
-After:
-            _backtraceClient.OnReportStart = (Model.BacktraceReport report) =>
-*/
-            this._backtraceClient.OnReportStart = (global::Backtrace.Model.BacktraceReport report) =>
             {
-                totalStart++;
+                Interlocked.Increment(ref totalStart);
             };
+
             _backtraceClient.BeforeSend = (BacktraceData data) =>
             {
-                totalBeforeSennd++;
+                Interlocked.Increment(ref totalBeforeSend);
                 return data;
             };
+
             _backtraceClient.AfterSend = (BacktraceResult result) =>
             {
-                totalEnds++;
+                Interlocked.Increment(ref totalEnds);
             };
 
             for (int threadIndex = 0; threadIndex < numberOfThreads; threadIndex++)
@@ -159,16 +152,16 @@ After:
                 threads.Add(new Thread(new ThreadStart(() =>
                 {
                     _backtraceClient.Send("client message");
-                    _backtraceClient.SendAsync("client message").Wait();
+                    Task.WaitAll(_backtraceClient.SendAsync("client message"));
                 })));
             }
 
             threads.ForEach(n => n.Start());
             threads.ForEach(n => n.Join());
 
-            Assert.AreEqual(totalStart, expectedNumberOfStarts);
-            Assert.AreEqual(totalBeforeSennd, expectedNumberOfBeforeSendEvents);
-            Assert.AreEqual(totalEnds, expectedNumberOfEnds);
+            Assert.AreEqual(expectedNumberOfStarts, totalStart);
+            Assert.AreEqual(expectedNumberOfBeforeSendEvents, totalBeforeSend);
+            Assert.AreEqual(expectedNumberOfEnds, totalEnds);
         }
     }
 }

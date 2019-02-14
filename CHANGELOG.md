@@ -1,5 +1,10 @@
 ﻿# Backtrace C# Release Notes
 
+## Version 2.0.7 - 11.02.2019
+- If you send exception, `BacktraceReport` will generate stack trace based on exception stack trace. We will no longer include environment stack trace in exception reports,
+- Unit tests fix - incrementation fix,
+- `BacktraceDatabase` fix for `FirstOrDefault` invalid read.
+
 ## Version 2.0.6 - 20.12.2018
 - New `BacktraceCredentials` constructor,
 - UnhandledThreadException flow

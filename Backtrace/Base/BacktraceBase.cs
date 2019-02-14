@@ -102,6 +102,7 @@ namespace Backtrace.Base
         /// </summary>
         public readonly Dictionary<string, object> Attributes;
 
+
         /// <summary>
         /// Backtrace database instance that allows to manage minidump files 
         /// </summary>
