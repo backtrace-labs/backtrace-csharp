@@ -5,6 +5,11 @@
 - Deduplication parameters. Now `BacktraceDatabaseSettings` allow you to setup deduplication rules. If you use deduplication types, you can aggregate existing reports and send only one message for all the same reports.
 - `BacktraceDatabase` allows you to override default deduplication methods and generate your own hash per diagnostic data.
 
+## Version 2.0.7 - 11.02.2019
+- If you send exception, `BacktraceReport` will generate stack trace based on exception stack trace. We will no longer include environment stack trace in exception reports,
+- Unit tests fix - incrementation fix,
+- `BacktraceDatabase` fix for `FirstOrDefault` invalid read.
+
 ## Version 2.0.6 - 20.12.2018
 - New `BacktraceCredentials` constructor,
 - UnhandledThreadException flow

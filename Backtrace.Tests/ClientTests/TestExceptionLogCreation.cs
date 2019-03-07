@@ -2,6 +2,8 @@
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 namespace Backtrace.Tests.ClientTests
 {
@@ -29,6 +31,22 @@ namespace Backtrace.Tests.ClientTests
             Assert.DoesNotThrow(() => _backtraceClient.Send(exception: exception));
             Assert.DoesNotThrow(() => _backtraceClient.Send(message: "test message"));
             Assert.DoesNotThrow(() => _backtraceClient.Send(new BacktraceReport(exception)));
+        }
+
+        [Test]
+        public void TestReportStackTrace_StackTraceShouldBeTheSameLikeExceptionStackTrace_ShouldReturnCorrectStackTrace()
+        {
+            var exception = new Exception("exception");
+            var report = new BacktraceReport(exception);
+            Assert.AreEqual(report.DiagnosticStack.Count, exception.StackTrace?.Count() ?? 0);
+        }
+
+        [Test]
+        public void TestReportStackTrace_StackTraceShouldIncludeEnvironmentStackTrace_ShouldReturnCorrectStackTrace()
+        {
+            var environmentStackTrace = new StackTrace(true);
+            var report = new BacktraceReport("msg");
+            Assert.AreEqual(report.DiagnosticStack.Count, environmentStackTrace.FrameCount);
         }
 
         [Test]

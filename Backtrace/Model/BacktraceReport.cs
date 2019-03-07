@@ -85,7 +85,7 @@ namespace Backtrace.Model
         /// </summary>
         [JsonProperty(PropertyName = "minidumpFile")]
         internal string MinidumpFile { get; private set; }
-
+        
         /// <summary>
         /// Get an assembly where report was created (or should be created)
         /// </summary>

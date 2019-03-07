@@ -1,12 +1,8 @@
-﻿using System;
+﻿using Backtrace.Model;
+using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Moq;
-using NUnit.Framework;
-using Backtrace.Interfaces;
-using Backtrace.Model;
 
 namespace Backtrace.Tests.ClientTests
 {
@@ -40,9 +36,9 @@ namespace Backtrace.Tests.ClientTests
         [Test(Author = "Konrad Dysput", Description = "Test messages with attributes")]
         public void TestMessageAttributes(string message)
         {
-            Dictionary<string, object> currentAttributes = new Dictionary<string, object>();
+            var currentAttributes = new Dictionary<string, object>();
             _backtraceClient.BeforeSend =
-                (Model.BacktraceData model) =>
+                (BacktraceData model) =>
                 {
                     currentAttributes = model.Attributes;
                     return model;
