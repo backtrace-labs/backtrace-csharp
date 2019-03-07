@@ -67,7 +67,9 @@ namespace Backtrace.Tests.DatabaseTests
                 miniDumpType: Types.MiniDumpType.None
                 );
             Assert.IsNotNull(result);
-            Assert.AreEqual(maxRecordCount, _database.Count());
+            // max record + record above
+            var expectedRecordCount = maxRecordCount + 1;
+            Assert.AreEqual(maxRecordCount + 1, _database.Count());
         }
 
         [Test]

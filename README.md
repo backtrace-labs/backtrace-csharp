@@ -215,6 +215,38 @@ Notes:
 - If a valid `databaseDirectory` directory is supplied, the Backtrace library will generate and attach a minidump to each error report automatically. Otherwise, `BacktraceDatabase` will be disabled,
 - You can set `backtraceClient.MiniDumpType` to `MiniDumpType.None` if you don't want to generate minidump files.
 
+
+#### Deduplication 
+Backtrace C# library allows you to aggregate the same reports. By using Backtrace deduplication mechanism you can aggregate the same reports and send only one message to Backtrace Api. As a developer you can choose deduplication options. Please use `DeduplicationStrategy` enum to setup possible deduplication rules or copy example below to setup deduplication strategy:
+
+```csharp
+var dbSettings = new BacktraceDatabaseSettings(path)
+{
+    DeduplicationStrategy = DeduplicationStrategy.Application | DeduplicationStrategy.Classifier | DeduplicationStrategy.Message,
+}
+```
+
+Deduplication strategy enum types:
+* Ignore - ignore deduplication strategy,
+* Default - deduplication strategy will only use current strack trace to find duplicated reports,
+* Classifier - deduplication strategy will use stack trace and exception classifier to find duplicated reports,
+* Message - deduplication strategy will use stack trace and exception message to find duplicated reports,
+* Application - deduplication strategy will use stack trace and faulting library name to find duplicated reports.
+
+To combine all possible deduplication strategies please use code below:
+```csharp
+DeduplicationStrategy = DeduplicationStrategy.Application | DeduplicationStrategy.Classifier | DeduplicationStrategy.Message
+```
+
+Notes:
+* When you aggregate reports via Backtrace C# library, `BacktraceDatabase` will store number of the same reports in `counter` file. 
+* By storing data in additional counter file we can read number of the same offline reports on application starts and send them to Backtrace when your internet connection back. 
+* When C# library aggregate multiple reports into one diagnostic data, application will send only one request, not multiple,
+* `BacktraceDatabase` methods allows you to use aggregated diagnostic data together. You can check `Hash` property of `BacktraceDatabaseRecord` to check generated hash for diagnostic data and `Counter` to check how much the same records we detect.
+* `BacktraceDatabase` `Count` method will return number of all records stored in database (included deduplicated records),
+* `BacktarceDatabase` `Delete` method will remove record (with multiple deduplicated records) at the same time.
+* You can override default hash method by using `GenerateHash` delegate available in `BacktraceDatabase` object. When you add your own method implementation, `BacktraceDatabase` won't use default deduplication mechanism.
+
 ## Sending an error report <a name="documentation-sending-report"></a>
 
 `BacktraceClient.Send/BacktraceClient.SendAsync` method will send an error report to the Backtrace endpoint specified. There `Send` method is overloaded, see examples below:
@@ -284,7 +316,7 @@ catch (Exception exception)
 }
 ```
 
-### Other BacktraceReport Overloads
+### Other BacktraceReport Overloads 
 
 `BacktraceClient` can also automatically create `BacktraceReport` given an exception or a custom message using the following overloads of the `BacktraceClient.Send` method:
 
@@ -345,7 +377,6 @@ backtraceClient.BeforeSend =
 ```csharp
 backtraceClient.HandleApplicationException();
 ``` 
-
 
 ## Custom client and report classes <a name="documentation-customization"></a>
 

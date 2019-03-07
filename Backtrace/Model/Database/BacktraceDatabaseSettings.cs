@@ -1,7 +1,4 @@
 ﻿using Backtrace.Types;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Backtrace.Model.Database
 {
@@ -64,6 +61,8 @@ namespace Backtrace.Model.Database
         /// Maximum number of retries
         /// </summary>
         public uint RetryLimit { get; set; } = 3;
+
+        public DeduplicationStrategy DeduplicationStrategy { get; set; } = DeduplicationStrategy.None;
 
         public RetryOrder RetryOrder { get; set; } = RetryOrder.Queue;
     }
