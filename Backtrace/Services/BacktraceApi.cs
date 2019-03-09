@@ -93,7 +93,7 @@ namespace Backtrace.Services
                 {
                     requestUrl += $"&_mod_duplicate={deduplication}";
                 }
-                
+
                 var request = new HttpRequestMessage(HttpMethod.Post, requestUrl);
                 content.AddJson("upload_file.json", json);
                 content.AddFiles(attachments);
@@ -110,6 +110,7 @@ namespace Backtrace.Services
                         if (response.StatusCode != HttpStatusCode.OK)
                         {
                             var err = new WebException(response.ReasonPhrase);
+                            System.Diagnostics.Trace.WriteLine(fullResponse);
                             OnServerError?.Invoke(err);
                             return BacktraceResult.OnError(report, err);
                         }
@@ -121,6 +122,7 @@ namespace Backtrace.Services
                 }
                 catch (Exception exception)
                 {
+                    System.Diagnostics.Trace.WriteLine($"Backtrace - Server error: {exception.ToString()}");
                     OnServerError?.Invoke(exception);
                     return BacktraceResult.OnError(report, exception);
                 }

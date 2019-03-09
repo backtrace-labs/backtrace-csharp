@@ -79,7 +79,7 @@ namespace Backtrace.Model.Database
         /// Path to database directory
         /// </summary>
         [JsonIgnore]
-        private readonly string _path = string.Empty;      
+        private string _path = string.Empty;
 
         [JsonIgnore]
         private int _count = 0;
@@ -211,6 +211,16 @@ namespace Backtrace.Model.Database
                 Debug.WriteLine($"Message {ex.Message}");
                 return false;
             }
+        }
+        
+        /// <summary>
+        /// Setup RecordWriter and database path after deserialization event
+        /// </summary>
+        /// <param name="path">Path to database</param>
+        internal void DatabasePath(string path)
+        {
+            _path = path;
+            RecordWriter = new BacktraceDatabaseRecordWriter(path);
         }
 
         /// <summary>
@@ -357,11 +367,19 @@ namespace Backtrace.Model.Database
             {
                 return 1;
             }
+
+            string predictedPath = Path.Combine(_path, $"{Id}-counter.json");
+            if (string.IsNullOrEmpty(CounterDataPath) && File.Exists(predictedPath))
+            {
+                CounterDataPath = predictedPath;
+            }
+
             if (!File.Exists(CounterDataPath))
             {
                 CounterDataPath = Save(new CounterData(), $"{Id}-counter");
                 return 1;
             }
+            
             using (var dataReader = new StreamReader(CounterDataPath))
             {
                 try

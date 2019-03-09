@@ -274,7 +274,7 @@ namespace Backtrace
             while (record != null)
             {
                 var backtraceData = record.BacktraceData;
-                
+
                 //meanwhile someone delete data from a disk
                 if (backtraceData == null || backtraceData.Report == null)
                 {
@@ -371,6 +371,7 @@ namespace Backtrace
             foreach (var file in files)
             {
                 var record = BacktraceDatabaseRecord.ReadFromFile(file);
+                record.DatabasePath(DatabasePath);
                 if (!record.Valid())
                 {
                     record.Delete();
