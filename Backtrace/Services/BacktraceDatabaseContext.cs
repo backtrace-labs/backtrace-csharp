@@ -406,7 +406,11 @@ namespace Backtrace.Services
                 //and return file
                 if (BatchRetry.ContainsKey(i) && BatchRetry[i].Any(n => !n.Locked))
                 {
-                    var record = BatchRetry[i].First(n => !n.Locked);
+                    var record = BatchRetry[i].FirstOrDefault(n => !n.Locked);
+                    if(record == null)
+                    {
+                        return null;
+                    }
                     record.Locked = true;
                     return record;
                 }

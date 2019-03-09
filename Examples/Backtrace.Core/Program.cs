@@ -13,6 +13,8 @@ namespace Backtrace.Core
     {
         private Tree tree;
 
+        private readonly Random random = new Random();
+
         /// <summary>
         /// Credentials
         /// </summary>
@@ -68,7 +70,7 @@ namespace Backtrace.Core
 
         private string GetRandomString(int length)
         {
-            Random random = new Random();
+
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             var tempString = Enumerable.Repeat(chars, length)
               .Select(s => s[random.Next(s.Length)]).ToArray();
@@ -77,7 +79,6 @@ namespace Backtrace.Core
 
         private async Task GenerateRandomStrings()
         {
-            Random random = new Random();
             int totalStrings = random.Next(20, 25);
             //+3 because we want to add two duplicats
             string[] randomStrings = new string[totalStrings + 3];
@@ -114,7 +115,6 @@ namespace Backtrace.Core
         {
             var orderedWords = tree.ToList();
             int total = orderedWords.Count();
-            Random random = new Random();
             for (int i = 0; i < 3; i++)
             {
                 int randomDuplicateIndex = random.Next(0, total);

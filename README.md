@@ -226,6 +226,18 @@ var dbSettings = new BacktraceDatabaseSettings(path)
 }
 ```
 
+Deduplication strategy enum types:
+* Ignore - ignore deduplication strategy,
+* Default - deduplication strategy will only use current strack trace to find duplicated reports,
+* Classifier - deduplication strategy will use stack trace and exception classifier to find duplicated reports,
+* Message - deduplication strategy will use stack trace and exception message to find duplicated reports,
+* Application - deduplication strategy will use stack trace and faulting library name to find duplicated reports.
+
+To combine all possible deduplication strategies please use code below:
+```csharp
+DeduplicationStrategy = DeduplicationStrategy.Application | DeduplicationStrategy.Classifier | DeduplicationStrategy.Message
+```
+
 Notes:
 * When you aggregate reports via Backtrace C# library, `BacktraceDatabase` will store number of the same reports in `counter` file. 
 * By storing data in additional counter file we can read number of the same offline reports on application starts and send them to Backtrace when your internet connection back. 
@@ -234,24 +246,6 @@ Notes:
 * `BacktraceDatabase` `Count` method will return number of all records stored in database (included deduplicated records),
 * `BacktarceDatabase` `Delete` method will remove record (with multiple deduplicated records) at the same time.
 * You can override default hash method by using `GenerateHash` delegate available in `BacktraceDatabase` object. When you add your own method implementation, `BacktraceDatabase` won't use default deduplication mechanism.
-
-#### TLS/SSL Support
-
-For .NET Standard 2.0 and .NET Framework 4.6+, TLS 1.2 support is built-in.
-
-For .NET Framework 4.5 (and below) as well as .NET Standard 2.0 (and below), TLS 1.2 support may not be available, therefore **we recommend submitting errors using the plain HTTP listener URL**. But if you wish to use lower versions of TLS/SSL, you can use still enable lower TLS/SSL support by adding the following code **before** `BacktraceClient` initialization.
-
-```csharp
-ServicePointManager.SecurityProtocol =
-                     SecurityProtocolType.Tls
-                    | (SecurityProtocolType)0x00000300
-                    | (SecurityProtocolType)0x00000C00;
-
-ServicePointManager.ServerCertificateValidationCallback 
-    += (sender, certificate, chain, errors) => true;
-```
-
-
 
 ## Sending an error report <a name="documentation-sending-report"></a>
 
@@ -280,8 +274,9 @@ Notes:
 - if you initialize `BacktraceClient` with `BacktraceDatabase` and your application is offline or you pass invalid credentials to `BacktraceClient`, reports will be stored in database directory path,
 - for .NET 4.5+, we recommend to use `SendAsync` method,
 - if you don't want to use reflection to determine valid stack frame method name, you can pass `false` to `reflectionMethodName`. By default this value is equal to `true`,
-- `BacktraceReport` allows you to change default fingerprint generation algorithm. You can use `Fingerprint` property if you want to change fingerprint value. Keep in mind - fingerprint should be valid sha256 string.,
-- `BacktraceReport` allows you to change grouping strategy in Backtrace server. If you want to change how algorithm group your reports in Backtrace server please override `Factor` property.
+- `BacktraceReport` allows you to change default fingerprint generation algorithm. You can use `Fingerprint` property if you want to change fingerprint value. Keep in mind - fingerprint should be valid sha256 string,
+- `BacktraceReport` allows you to change grouping strategy in Backtrace server. If you want to change how algorithm group your reports in Backtrace server please override `Factor` property,
+- By default `BacktraceReport` include to exception information environment stack trace. If you want to change this behavior please use `includeEnvironmentStacktrace` parameter in `BacktraceReport` constructor. When `includeEnvironmentStacktrace` is `false` then report will only store information about exception stack trace.
 
 If you want to use `Fingerprint` and `Factor` property you have to override default property values. See example below to check how to use these properties:
 
