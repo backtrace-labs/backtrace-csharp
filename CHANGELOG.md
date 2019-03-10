@@ -1,9 +1,11 @@
 ﻿# Backtrace C# Release Notes
 
-## Version 2.1.0 - 14.01.2019
+## Version 2.1.0 - 10.03.2019
 
 - Deduplication parameters. Now `BacktraceDatabaseSettings` allow you to setup deduplication rules. If you use deduplication types, you can aggregate existing reports and send only one message for all the same reports.
-- `BacktraceDatabase` allows you to override default deduplication methods and generate your own hash per diagnostic data.
+- `BacktraceDatabase` allows you to override default deduplication methods and generate your own hash per diagnostic data,
+- `BacktraceResult` now allows you to retrieve exception object if `BaktraceResult` has status `ServerError`,
+- When Backtrace library send diagnostic data to server any exception happend, library will print information about error by using Trace interface.
 
 ## Version 2.0.7 - 11.02.2019
 - If you send exception, `BacktraceReport` will generate stack trace based on exception stack trace. We will no longer include environment stack trace in exception reports,
