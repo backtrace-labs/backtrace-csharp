@@ -67,7 +67,7 @@ namespace Backtrace.Model
         {
             get
             {
-                if ((_strategy & DeduplicationStrategy.Application) == 0)
+                if ((_strategy & DeduplicationStrategy.LibraryName) == 0)
                 {
                     return string.Empty;
                 }

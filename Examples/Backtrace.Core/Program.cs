@@ -25,7 +25,7 @@ namespace Backtrace.Core
         /// </summary>
         private readonly BacktraceDatabaseSettings databaseSettings = new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath)
         {
-            DeduplicationStrategy = DeduplicationStrategy.Application | DeduplicationStrategy.Classifier | DeduplicationStrategy.Message
+            DeduplicationStrategy = DeduplicationStrategy.LibraryName | DeduplicationStrategy.Classifier | DeduplicationStrategy.Message
         };
 
         /// <summary>

@@ -47,7 +47,7 @@ namespace Backtrace.Tests.DeduplicationTests
                 RetryLimit = _batchLimit,
                 RetryBehavior = Types.RetryBehavior.NoRetry,
                 AutoSendMode = false,
-                DeduplicationStrategy = DeduplicationStrategy.Application | DeduplicationStrategy.Classifier | DeduplicationStrategy.Message
+                DeduplicationStrategy = DeduplicationStrategy.LibraryName | DeduplicationStrategy.Classifier | DeduplicationStrategy.Message
             };
 
             _backtraceDatabase = new BacktraceDatabase(backtraceDatabaseSettings)

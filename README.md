@@ -222,20 +222,20 @@ Backtrace C# library allows you to aggregate the same reports. By using Backtrac
 ```csharp
 var dbSettings = new BacktraceDatabaseSettings(path)
 {
-    DeduplicationStrategy = DeduplicationStrategy.Application | DeduplicationStrategy.Classifier | DeduplicationStrategy.Message,
+    DeduplicationStrategy = DeduplicationStrategy.LibraryName | DeduplicationStrategy.Classifier | DeduplicationStrategy.Message,
 }
 ```
 
 Deduplication strategy enum types:
 * Ignore - ignore deduplication strategy,
 * Default - deduplication strategy will only use current strack trace to find duplicated reports,
-* Classifier - deduplication strategy will use stack trace and exception classifier to find duplicated reports,
+* Classifier - deduplication strategy will use stack trace and exception type to find duplicated reports,
 * Message - deduplication strategy will use stack trace and exception message to find duplicated reports,
-* Application - deduplication strategy will use stack trace and faulting library name to find duplicated reports.
+* LibraryName - deduplication strategy will use stack trace and faulting library name to find duplicated reports.
 
 To combine all possible deduplication strategies please use code below:
 ```csharp
-DeduplicationStrategy = DeduplicationStrategy.Application | DeduplicationStrategy.Classifier | DeduplicationStrategy.Message
+DeduplicationStrategy = DeduplicationStrategy.LibraryName | DeduplicationStrategy.Classifier | DeduplicationStrategy.Message
 ```
 
 Notes:

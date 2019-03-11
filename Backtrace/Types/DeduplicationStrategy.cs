@@ -18,7 +18,7 @@ namespace Backtrace.Types
         /// </summary>
         Default = 1,
         /// <summary>
-        /// Stack trace and exception classifier
+        /// Stack trace and exception type
         /// </summary>
         Classifier = 2,
         /// <summary>
@@ -28,6 +28,6 @@ namespace Backtrace.Types
         /// <summary>
         /// Stack trace and library name
         /// </summary>
-        Application = 8
+        LibraryName = 8
     }
 }

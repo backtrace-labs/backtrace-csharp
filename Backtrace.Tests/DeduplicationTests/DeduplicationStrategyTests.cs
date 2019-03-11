@@ -136,8 +136,8 @@ namespace Backtrace.Tests.DeduplicationTests
 
             var data = report.ToBacktraceData(null);
 
-            var deduplicationModel = new DeduplicationModel(data, DeduplicationStrategy.Application);
-            var comparer = new DeduplicationModel(data, DeduplicationStrategy.Application);
+            var deduplicationModel = new DeduplicationModel(data, DeduplicationStrategy.LibraryName);
+            var comparer = new DeduplicationModel(data, DeduplicationStrategy.LibraryName);
 
             var deduplicationSha = deduplicationModel.GetSha();
             var comparerSha = comparer.GetSha();
@@ -149,8 +149,8 @@ namespace Backtrace.Tests.DeduplicationTests
 
 
         [Test(Author = "Konrad Dysput", Description = "Test sha comparision with different options with data object")]
-        [TestCase(DeduplicationStrategy.Message | DeduplicationStrategy.Classifier | DeduplicationStrategy.Application)]
-        [TestCase(DeduplicationStrategy.Application | DeduplicationStrategy.Message)]
+        [TestCase(DeduplicationStrategy.Message | DeduplicationStrategy.Classifier | DeduplicationStrategy.LibraryName)]
+        [TestCase(DeduplicationStrategy.LibraryName | DeduplicationStrategy.Message)]
         public void TestShaComparisionWithMultipleOptionsAndReports_MultipleOptions_InvalidSha(DeduplicationStrategy strategy)
         {
             var exception = new Exception("testMessage");
@@ -174,8 +174,8 @@ namespace Backtrace.Tests.DeduplicationTests
         }
 
         [Test(Author = "Konrad Dysput", Description = "Test sha comparision with different options with data object")]
-        [TestCase(DeduplicationStrategy.Message | DeduplicationStrategy.Classifier | DeduplicationStrategy.Application)]
-        [TestCase(DeduplicationStrategy.Application | DeduplicationStrategy.Message)]
+        [TestCase(DeduplicationStrategy.Message | DeduplicationStrategy.Classifier | DeduplicationStrategy.LibraryName)]
+        [TestCase(DeduplicationStrategy.LibraryName | DeduplicationStrategy.Message)]
         public void TestShaComparisionWithMultipleOptions_MultipleOptions_ValidSha(DeduplicationStrategy strategy)
         {
             var exception = new Exception("testMessage");
