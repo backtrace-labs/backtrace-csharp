@@ -1,5 +1,6 @@
 ﻿# Backtrace C# Release Notes
 
+
 ## Version 2.1.0 - 10.03.2019
 
 - Deduplication parameters. Now `BacktraceDatabaseSettings` allow you to setup deduplication rules. If you use deduplication types, you can aggregate existing reports and send only one message for all the same reports.
