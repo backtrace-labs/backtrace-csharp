@@ -1,10 +1,8 @@
 ﻿using Backtrace.Interfaces;
 using Backtrace.Model.Database;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Backtrace.Services
@@ -74,7 +72,7 @@ namespace Backtrace.Services
         /// </summary>
         public void RemoveOrphaned(IEnumerable<BacktraceDatabaseRecord> existingRecords)
         {
-            IEnumerable<string> recordStringIds = existingRecords.Select(n => n.Id.ToString());
+            var recordStringIds = existingRecords.Select(n => n.Id.ToString());
             var files = GetAll();
             for (int fileIndex = 0; fileIndex < files.Count(); fileIndex++)
             {
@@ -117,14 +115,20 @@ namespace Backtrace.Services
             long totalRecordFiles = 0;
             foreach (var file in files)
             {
-                if(Regex.Match(file.FullName, RecordFilterRegex).Success)
+                if (Regex.Match(file.FullName, RecordFilterRegex).Success)
                 {
                     totalRecordFiles++;
 
-                    if (_maxRecordNumber > totalRecordFiles) return false;
+                    if (_maxRecordNumber > totalRecordFiles)
+                    {
+                        return false;
+                    }
                 }
                 size += file.Length;
-                if (size > _maxDatabaseSize) return false;
+                if (size > _maxDatabaseSize)
+                {
+                    return false;
+                }
             }
             return true;
         }

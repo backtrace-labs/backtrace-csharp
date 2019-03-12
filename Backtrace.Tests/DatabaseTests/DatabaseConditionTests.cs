@@ -2,6 +2,7 @@
 using Backtrace.Interfaces;
 using Backtrace.Model;
 using Backtrace.Model.Database;
+using Backtrace.Services;
 using Moq;
 using NUnit.Framework;
 using System;
@@ -21,7 +22,7 @@ namespace Backtrace.Tests.DatabaseTests
         /// <summary>
         /// Current project directory - any database path
         /// </summary>
-        private readonly string _projectDirectory = System.IO.Path.GetTempPath();
+        private readonly string _projectDirectory = Path.GetTempPath();
 
         /// <summary>
         /// Total number of reports
@@ -61,7 +62,6 @@ namespace Backtrace.Tests.DatabaseTests
                 var record = _backtraceDatabase.Add(backtraceReport, new Dictionary<string, object>(), Types.MiniDumpType.None);
                 record.Dispose();
             }
-            _backtraceDatabase.Add(backtraceReport, new Dictionary<string, object>(), Types.MiniDumpType.None);
             Assert.AreEqual(_totalNumberOfReports, _backtraceDatabase.Count());
         }
 

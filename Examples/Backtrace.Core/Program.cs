@@ -1,6 +1,7 @@
 ﻿using Backtrace.Core.Model;
 using Backtrace.Model;
 using Backtrace.Model.Database;
+using Backtrace.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,10 @@ namespace Backtrace.Core
         /// <summary>
         /// Database settings
         /// </summary>
-        private readonly BacktraceDatabaseSettings databaseSettings = new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath);
+        private readonly BacktraceDatabaseSettings databaseSettings = new BacktraceDatabaseSettings(ApplicationSettings.DatabasePath)
+        {
+            DeduplicationStrategy = DeduplicationStrategy.LibraryName | DeduplicationStrategy.Classifier | DeduplicationStrategy.Message
+        };
 
         /// <summary>
         /// New instance of BacktraceClient. Check SetupBacktraceLibrary method for intiailization example
@@ -192,7 +196,7 @@ namespace Backtrace.Core
                };
         }
 
-        private static async Task Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var program = new Program();
             await program.Start();

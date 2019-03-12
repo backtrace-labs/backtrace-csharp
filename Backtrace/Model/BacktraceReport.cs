@@ -129,6 +129,7 @@ namespace Backtrace.Model
             ExceptionTypeReport = exception != null;
             Classifier = ExceptionTypeReport ? exception.GetType().Name : string.Empty;
             _reflectionMethodName = reflectionMethodName;
+            Message = ExceptionTypeReport ? exception.Message : string.Empty;
             SetCallingAssemblyInformation();
         }
 

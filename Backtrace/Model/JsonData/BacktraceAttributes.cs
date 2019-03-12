@@ -18,6 +18,7 @@ namespace Backtrace.Model.JsonData
     /// </summary>
     public class BacktraceAttributes
     {
+        internal const string APPLICATION_ATTRIBUTE_NAME= "application";
         /// <summary>
         /// Get built-in primitive attributes
         /// </summary>
@@ -67,7 +68,7 @@ namespace Backtrace.Model.JsonData
             //A unique identifier of a machine
             Attributes["guid"] = GenerateMachineId().ToString();
             //Base name of application generating the report
-            Attributes["application"] = callingAssembly.GetName().Name;
+            Attributes[APPLICATION_ATTRIBUTE_NAME] = callingAssembly.GetName().Name;
 
             Attributes["location"] = callingAssembly.Location;
             try

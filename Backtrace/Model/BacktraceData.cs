@@ -102,6 +102,11 @@ namespace Backtrace.Model
         internal BacktraceReport Report { get; set; }
 
         /// <summary>
+        /// Number of deduplications
+        /// </summary>
+        internal int Deduplication { get; set; } = 0;
+
+        /// <summary>
         /// Create instance of report data
         /// </summary>
         /// <param name="report">Current report</param>

@@ -40,7 +40,7 @@ namespace Backtrace.Services
         /// <summary>
         /// Url to server
         /// </summary>
-        private readonly string _serverurl;
+        private readonly Uri _serverurl;
 
         /// <summary>
         /// Create a new instance of Backtrace API
@@ -52,7 +52,7 @@ namespace Backtrace.Services
             {
                 throw new ArgumentException($"{nameof(BacktraceCredentials)} cannot be null");
             }
-            _serverurl = credentials.GetSubmissionUrl().ToString();
+            _serverurl = credentials.GetSubmissionUrl();
             reportLimitWatcher = new ReportLimitWatcher(reportPerMin);
         }
         #region asyncRequest
@@ -74,21 +74,27 @@ namespace Backtrace.Services
             // execute user custom request handler
             if (RequestHandler != null)
             {
-                return RequestHandler?.Invoke(_serverurl, FormDataHelper.GetContentTypeWithBoundary(Guid.NewGuid()), data);
+                return RequestHandler?.Invoke(_serverurl.ToString(), FormDataHelper.GetContentTypeWithBoundary(Guid.NewGuid()), data);
             }
             //get a json from diagnostic object
             var json = JsonConvert.SerializeObject(data, JsonSerializerSettings);
-            return await SendAsync(Guid.NewGuid(), json, data.Attachments, data.Report);
+            return await SendAsync(Guid.NewGuid(), json, data.Attachments, data.Report, data.Deduplication);
         }
 
-        internal async Task<BacktraceResult> SendAsync(Guid requestId, string json, List<string> attachments, BacktraceReport report)
+        internal async Task<BacktraceResult> SendAsync(Guid requestId, string json, List<string> attachments, BacktraceReport report, int deduplication = 0)
         {
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
             string boundary = FormDataHelper.GetBoundary(requestId);
 
             using (var content = new MultipartFormDataContent(boundary))
             {
-                var request = new HttpRequestMessage(HttpMethod.Post, _serverurl);
+                var requestUrl = _serverurl.ToString();
+                if (deduplication > 0)
+                {
+                    requestUrl += $"&_mod_duplicate={deduplication}";
+                }
+
+                var request = new HttpRequestMessage(HttpMethod.Post, requestUrl);
                 content.AddJson("upload_file.json", json);
                 content.AddFiles(attachments);
 
@@ -104,6 +110,7 @@ namespace Backtrace.Services
                         if (response.StatusCode != HttpStatusCode.OK)
                         {
                             var err = new WebException(response.ReasonPhrase);
+                            System.Diagnostics.Trace.WriteLine(fullResponse);
                             OnServerError?.Invoke(err);
                             return BacktraceResult.OnError(report, err);
                         }
@@ -115,6 +122,7 @@ namespace Backtrace.Services
                 }
                 catch (Exception exception)
                 {
+                    System.Diagnostics.Trace.WriteLine($"Backtrace - Server error: {exception.ToString()}");
                     OnServerError?.Invoke(exception);
                     return BacktraceResult.OnError(report, exception);
                 }
@@ -143,18 +151,24 @@ namespace Backtrace.Services
             // execute user custom request handler
             if (RequestHandler != null)
             {
-                return RequestHandler?.Invoke(_serverurl, FormDataHelper.GetContentTypeWithBoundary(Guid.NewGuid()), data);
+                return RequestHandler?.Invoke(_serverurl.ToString(), FormDataHelper.GetContentTypeWithBoundary(Guid.NewGuid()), data);
             }
             //set submission data
             string json = JsonConvert.SerializeObject(data);
-            return Send(Guid.NewGuid(), json, data.Report?.AttachmentPaths ?? new List<string>(), data.Report);
+            return Send(Guid.NewGuid(), json, data.Report?.AttachmentPaths ?? new List<string>(), data.Report, data.Deduplication);
         }
 
-        private BacktraceResult Send(Guid requestId, string json, List<string> attachments, BacktraceReport report)
+        private BacktraceResult Send(Guid requestId, string json, List<string> attachments, BacktraceReport report, int deduplication = 0)
         {
+            var requestUrl = _serverurl.ToString();
+            if (deduplication > 0)
+            {
+                requestUrl += $"&_mod_duplicate={deduplication}";
+            }
+
             var formData = FormDataHelper.GetFormData(json, attachments, requestId);
             string contentType = FormDataHelper.GetContentTypeWithBoundary(requestId);
-            var request = WebRequest.Create(_serverurl) as HttpWebRequest;
+            var request = WebRequest.Create(requestUrl) as HttpWebRequest;
 
             //Set up the request properties.
             request.Method = "POST";

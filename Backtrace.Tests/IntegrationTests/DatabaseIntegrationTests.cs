@@ -82,7 +82,7 @@ namespace Backtrace.Tests.IntegrationTests
             //mock cache
             var mockCacheContext = new Mock<IBacktraceDatabaseContext>();
 
-            mockCacheContext.Setup(n => n.Add(It.IsAny<BacktraceData>()))
+            mockCacheContext.Setup(n => n.Add(It.IsAny<BacktraceData>(), MiniDumpType.None))
                 .Callback(() =>
                 {
                     mockCacheContext.Object.Add(_lastRecord);

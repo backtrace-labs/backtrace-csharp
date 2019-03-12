@@ -1,9 +1,6 @@
-﻿using Backtrace.Base;
-using Backtrace.Types;
+﻿using Backtrace.Types;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Backtrace.Model
 {
@@ -75,6 +72,18 @@ namespace Backtrace.Model
             }
         }
 
+        [JsonIgnore]
+        internal Exception Exception;
+
+        /// <summary>
+        /// Return exception if BacktraceResult was created by exception information
+        /// </summary>
+        /// <returns>BacktraceResult exception</returns>
+        public Exception GetException()
+        {
+            return Exception;
+        }
+
 
         /// <summary>
         /// Set result when client rate limit reached
@@ -99,17 +108,19 @@ namespace Backtrace.Model
         /// <returns>BacktraceResult with exception information</returns>
         internal static BacktraceResult OnError(BacktraceReport report, Exception exception)
         {
-            return new BacktraceResult()
+            var result = new BacktraceResult()
             {
                 BacktraceReport = report,
                 Message = exception.Message,
                 Status = BacktraceResultStatus.ServerError
             };
+            result.Exception = exception;
+            return result;
         }
 
         internal void AddInnerResult(BacktraceResult innerResult)
         {
-            if(InnerExceptionResult == null)
+            if (InnerExceptionResult == null)
             {
                 InnerExceptionResult = innerResult;
                 return;

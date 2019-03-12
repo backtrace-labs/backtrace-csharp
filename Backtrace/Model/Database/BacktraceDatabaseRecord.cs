@@ -40,6 +40,12 @@ namespace Backtrace.Model.Database
         internal string DiagnosticDataPath { get; set; }
 
         /// <summary>
+        /// Path to counter data json
+        /// </summary>
+        [JsonProperty(PropertyName = "counterPath")]
+        internal string CounterDataPath { get; set; }
+
+        /// <summary>
         /// Path to minidump file
         /// </summary>
         [JsonProperty(PropertyName = "minidumpPath")]
@@ -58,6 +64,12 @@ namespace Backtrace.Model.Database
         internal long Size { get; set; }
 
         /// <summary>
+        /// Record hash
+        /// </summary>
+        [JsonProperty(PropertyName = "hash")]
+        internal string Hash = string.Empty;
+
+        /// <summary>
         /// Stored record
         /// </summary>
         [JsonIgnore]
@@ -67,7 +79,23 @@ namespace Backtrace.Model.Database
         /// Path to database directory
         /// </summary>
         [JsonIgnore]
-        private readonly string _path = string.Empty;
+        private string _path = string.Empty;
+
+        [JsonIgnore]
+        private int _count = 0;
+
+        [JsonIgnore]
+        public int Count
+        {
+            get
+            {
+                if (_count == 0)
+                {
+                    _count = ReadCounter();
+                }
+                return _count;
+            }
+        }
 
         /// <summary>
         /// Record writer
@@ -110,6 +138,7 @@ namespace Backtrace.Model.Database
                         //because we have easier way to serialize and deserialize data
                         //and no problem/condition with serialization when BacktraceApi want to send diagnostic data to API
                         diagnosticData.Report = report;
+                        diagnosticData.Deduplication = Count;
                         return diagnosticData;
                     }
                     catch (SerializationException)
@@ -120,6 +149,7 @@ namespace Backtrace.Model.Database
                 }
             }
         }
+
         /// <summary>
         /// Constructor for serialization purpose
         /// </summary>
@@ -150,6 +180,7 @@ namespace Backtrace.Model.Database
         {
             try
             {
+                CounterDataPath = Save(new CounterData(), $"{Id}-counter");
                 DiagnosticDataPath = Save(Record, $"{Id}-attachment");
                 ReportPath = Save(Record.Report, $"{Id}-report");
 
@@ -181,24 +212,66 @@ namespace Backtrace.Model.Database
                 return false;
             }
         }
+        
+        /// <summary>
+        /// Setup RecordWriter and database path after deserialization event
+        /// </summary>
+        /// <param name="path">Path to database</param>
+        internal void DatabasePath(string path)
+        {
+            _path = path;
+            RecordWriter = new BacktraceDatabaseRecordWriter(path);
+        }
 
         /// <summary>
-        /// Save single file from database record
+        /// Increment number of the same records in database
         /// </summary>
-        /// <param name="data">single file (json/dmp)</param>
-        /// <param name="prefix">file prefix</param>
-        /// <returns>path to file</returns>
-        private string Save(object data, string prefix)
+        public virtual void Increment()
         {
-            if (data == null)
+            // file not exists
+            if (!File.Exists(ReportPath) && !File.Exists(DiagnosticDataPath))
             {
-                return string.Empty;
+                return;
             }
-            var json = JsonConvert.SerializeObject(data);
-            byte[] file = Encoding.UTF8.GetBytes(json);
-            Size += file.Length;
-            return RecordWriter.Write(file, prefix);
+
+            if (!File.Exists(CounterDataPath))
+            {
+                var counter = new CounterData()
+                {
+                    // because we try to increment existing report
+                    Total = 2
+                };
+                return;
+            }
+            string resultJson = string.Empty;
+            //read json files stored in BacktraceDatabase
+            using (var dataReader = new StreamReader(CounterDataPath))
+            {
+                var json = dataReader.ReadToEnd();
+                try
+                {
+                    var counterData = JsonConvert.DeserializeObject<CounterData>(json);
+                    counterData.Total++;
+                    resultJson = JsonConvert.SerializeObject(counterData);
+
+                }
+                catch (SerializationException)
+                {
+                    File.Delete(CounterDataPath);
+                    Increment();
+                }
+            }
+            using (var dataWriter = new StreamWriter(CounterDataPath))
+            {
+                if (!string.IsNullOrEmpty(resultJson))
+                {
+                    dataWriter.Write(resultJson);
+                    _count++;
+                }
+            }
         }
+
+
 
         /// <summary>
         /// Check if all necessary files declared on record exists
@@ -218,6 +291,47 @@ namespace Backtrace.Model.Database
             Delete(ReportPath);
             Delete(DiagnosticDataPath);
             Delete(RecordPath);
+            Delete(CounterDataPath);
+        }
+
+        /// <summary>
+        /// Read single record from file
+        /// </summary>
+        /// <param name="file">Current file</param>
+        /// <returns>Saved database record</returns>
+        internal static BacktraceDatabaseRecord ReadFromFile(FileInfo file)
+        {
+            using (StreamReader streamReader = file.OpenText())
+            {
+                var json = streamReader.ReadToEnd();
+                try
+                {
+                    return JsonConvert.DeserializeObject<BacktraceDatabaseRecord>(json);
+                }
+                catch (SerializationException)
+                {
+                    //handle invalid json 
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Save single file from database record
+        /// </summary>
+        /// <param name="data">single file (json/dmp)</param>
+        /// <param name="prefix">file prefix</param>
+        /// <returns>path to file</returns>
+        private string Save(object data, string prefix)
+        {
+            if (data == null)
+            {
+                return string.Empty;
+            }
+            var json = JsonConvert.SerializeObject(data);
+            byte[] file = Encoding.UTF8.GetBytes(json);
+            Size += file.Length;
+            return RecordWriter.Write(file, prefix);
         }
 
         /// <summary>
@@ -244,26 +358,49 @@ namespace Backtrace.Model.Database
         }
 
         /// <summary>
-        /// Read single record from file
+        /// Read total numbers of the same records
         /// </summary>
-        /// <param name="file">Current file</param>
-        /// <returns>Saved database record</returns>
-        internal static BacktraceDatabaseRecord ReadFromFile(FileInfo file)
+        /// <returns>Number of records</returns>
+        private int ReadCounter()
         {
-            using (StreamReader streamReader = file.OpenText())
+            if (!Valid())
             {
-                var json = streamReader.ReadToEnd();
+                return 1;
+            }
+
+            string predictedPath = Path.Combine(_path, $"{Id}-counter.json");
+            if (string.IsNullOrEmpty(CounterDataPath) && File.Exists(predictedPath))
+            {
+                CounterDataPath = predictedPath;
+            }
+
+            if (!File.Exists(CounterDataPath))
+            {
+                CounterDataPath = Save(new CounterData(), $"{Id}-counter");
+                return 1;
+            }
+            
+            using (var dataReader = new StreamReader(CounterDataPath))
+            {
                 try
                 {
-                    return JsonConvert.DeserializeObject<BacktraceDatabaseRecord>(json);
+                    var json = dataReader.ReadToEnd();
+                    var counter = JsonConvert.DeserializeObject<CounterData>(json);
+                    return counter.Total;
                 }
-                catch (SerializationException)
+                catch (SerializationException serializationException)
                 {
-                    //handle invalid json 
-                    return null;
+                    Debug.WriteLine(serializationException);
+                    return 1;
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e);
+                    return 1;
                 }
             }
         }
+
         #region dispose
         public void Dispose()
         {

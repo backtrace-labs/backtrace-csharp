@@ -119,7 +119,6 @@ namespace Backtrace.Tests.IntegrationTests
         /// </summary>
         [TestCase(1)]
         [TestCase(5)]
-        [TestCase(10)]
         [Test(Author = "Arthur Tu and Konrad Dysput", Description = "Test rate limiting on single/multiple thread thread")]
         public void SingleThreadWithoutReportRateLimit(int numberOfTasks)
         {
