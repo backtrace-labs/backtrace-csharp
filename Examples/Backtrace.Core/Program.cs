@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Backtrace.Core
 {
-    internal class Program
+    public class Program
     {
         private Tree tree;
 
