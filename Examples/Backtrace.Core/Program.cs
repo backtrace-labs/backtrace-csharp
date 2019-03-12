@@ -40,15 +40,6 @@ namespace Backtrace.Core
 
         public async Task Start()
         {
-            try
-            {
-                var i = 0;
-                var temp = 12312 / i;
-            }
-            catch (Exception e)
-            {
-                await backtraceClient.SendAsync(e);
-            }
             await GenerateRandomStrings();
             await TryClean();
             //handle uncaught exception from unsafe code
