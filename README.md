@@ -1,8 +1,8 @@
 # Backtrace
-[![Backtrace@release](https://img.shields.io/badge/Backtrace%40master-2.0.6-blue.svg)](https://www.nuget.org/packages/Backtrace)
+[![Backtrace@release](https://img.shields.io/badge/Backtrace%40master-2.1.0-blue.svg)](https://www.nuget.org/packages/Backtrace)
 [![Build status](https://ci.appveyor.com/api/projects/status/o0n9sp0ydgxb3ktu?svg=true)](https://ci.appveyor.com/project/konraddysput/backtrace-csharp)
 
-[![Backtrace@pre-release](https://img.shields.io/badge/Backtrace%40dev-2.0.7-blue.svg)](https://www.nuget.org/packages/Backtrace)
+[![Backtrace@pre-release](https://img.shields.io/badge/Backtrace%40dev-2.1.1-blue.svg)](https://www.nuget.org/packages/Backtrace)
 [![Build status](https://ci.appveyor.com/api/projects/status/o0n9sp0ydgxb3ktu/branch/dev?svg=true)](https://ci.appveyor.com/project/konraddysput/backtrace-csharp/branch/dev)
 
 
