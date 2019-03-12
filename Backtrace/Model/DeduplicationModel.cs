@@ -75,9 +75,20 @@ namespace Backtrace.Model
                 return _backtraceData.Attributes[key] as string;
             }
         }
+        public string Factor
+        {
+            get
+            {
+                return _backtraceData.Report.Factor;
+            }
+        }
 
         public string GetSha()
         {
+            if (!string.IsNullOrEmpty(_backtraceData.Report.Fingerprint))
+            {
+                return _backtraceData.Report.Fingerprint;
+            }
             string json = JsonConvert.SerializeObject(this);
             using (var sha1 = new SHA1Managed())
             {

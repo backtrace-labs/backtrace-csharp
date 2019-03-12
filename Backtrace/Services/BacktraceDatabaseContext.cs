@@ -104,6 +104,11 @@ namespace Backtrace.Services
         /// <returns>hash for current backtrace data</returns>
         private string GetHash(BacktraceData backtraceData)
         {
+            var fingerprint = backtraceData?.Report.Fingerprint ?? string.Empty;
+            if (!string.IsNullOrEmpty(fingerprint))
+            {
+                return fingerprint;
+            }
             if (DeduplicationStrategy == DeduplicationStrategy.None)
             {
                 return string.Empty;
@@ -407,7 +412,7 @@ namespace Backtrace.Services
                 if (BatchRetry.ContainsKey(i) && BatchRetry[i].Any(n => !n.Locked))
                 {
                     var record = BatchRetry[i].FirstOrDefault(n => !n.Locked);
-                    if(record == null)
+                    if (record == null)
                     {
                         return null;
                     }

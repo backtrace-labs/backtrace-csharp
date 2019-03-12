@@ -128,7 +128,7 @@ namespace Backtrace.Tests.DeduplicationTests
         }
 
         [Test(Author = "Konrad Dysput", Description = "Test sha comparision with data object by checking stack trace and application name")]
-        public void TestShaComparisionWithLibName_ApplicationStrategy_ValidSha()
+        public void TestShaComparisionWithLibName_LibraryNameStrategy_ValidSha()
         {
             var exception = new Exception("testMessage");
 
