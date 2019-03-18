@@ -54,6 +54,9 @@ namespace Backtrace.Services
             }
             _serverurl = credentials.GetSubmissionUrl();
             reportLimitWatcher = new ReportLimitWatcher(reportPerMin);
+#if !NET35
+            InitializeHttpClient(credentials.Proxy);
+#endif
         }
         #region asyncRequest
 #if !NET35
@@ -61,7 +64,18 @@ namespace Backtrace.Services
         /// <summary>
         /// The http client.
         /// </summary>
-        internal HttpClient HttpClient = new HttpClient();
+        internal HttpClient HttpClient;
+        private void InitializeHttpClient(WebProxy proxy)
+        {
+            if (proxy != null)
+            {
+                HttpClient = new HttpClient(new HttpClientHandler() { Proxy = proxy }, true);
+            }
+            else
+            {
+                HttpClient = new HttpClient();
+            }
+        }
 
         public async Task<BacktraceResult> SendAsync(BacktraceData data)
         {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Net;
 using System.Text;
 
 namespace Backtrace.Model
@@ -38,6 +39,10 @@ namespace Backtrace.Model
             }
         }
 
+#if !NET35
+        public WebProxy Proxy { get; set; } = null;
+#endif
+
         /// <summary>
         /// Create submission url to Backtrace API
         /// </summary>
@@ -63,7 +68,7 @@ namespace Backtrace.Model
             {
                 uriBuilder.Scheme = $"https://{uriBuilder.Scheme}";
             }
-            if(!uriBuilder.Path.EndsWith("/") && !string.IsNullOrEmpty(uriBuilder.Path))
+            if (!uriBuilder.Path.EndsWith("/") && !string.IsNullOrEmpty(uriBuilder.Path))
             {
                 uriBuilder.Path += "/";
             }
