@@ -1,8 +1,8 @@
 # Backtrace
-[![Backtrace@release](https://img.shields.io/badge/Backtrace%40master-2.1.0-blue.svg)](https://www.nuget.org/packages/Backtrace)
+[![Backtrace@release](https://img.shields.io/badge/Backtrace%40master-2.1.1-blue.svg)](https://www.nuget.org/packages/Backtrace)
 [![Build status](https://ci.appveyor.com/api/projects/status/o0n9sp0ydgxb3ktu?svg=true)](https://ci.appveyor.com/project/konraddysput/backtrace-csharp)
 
-[![Backtrace@pre-release](https://img.shields.io/badge/Backtrace%40dev-2.1.1-blue.svg)](https://www.nuget.org/packages/Backtrace)
+[![Backtrace@pre-release](https://img.shields.io/badge/Backtrace%40dev-2.1.2-blue.svg)](https://www.nuget.org/packages/Backtrace)
 [![Build status](https://ci.appveyor.com/api/projects/status/o0n9sp0ydgxb3ktu/branch/dev?svg=true)](https://ci.appveyor.com/project/konraddysput/backtrace-csharp/branch/dev)
 
 
@@ -191,6 +191,7 @@ For more information on `BacktraceClientConfiguration` parameters please see <a 
 
 Notes:
 - If parameter `reportPerMin` is equal to 0, there is no limit on the number of error reports per minute. When the `reportPerMin` cap is reached, `BacktraceClient.Send/BacktraceClient.SendAsync` method will return false,
+- If you develop application behind the proxy you can pass `WebProxy` object to `BacktraceCredentials` object. We will try to use `WebProxy` object when user pass it to `Backtrace`. To setup proxy use property `Proxy`,
 - `BacktraceClient` allows you to unpack `AggregateExceptions` and send only exceptions that are available in `InnerException` property of `AggregateException`. By default `BacktraceClient` will send `AggregateException` information to Backtrace server. To avoid sending these reports, please override `UnpackAggregateException` and set value to `true`.
 
 
