@@ -42,7 +42,6 @@ namespace Backtrace.Services
         /// </summary>
         private readonly Uri _serverurl;
 
-
         /// <summary>
         /// Create a new instance of Backtrace API
         /// </summary>
