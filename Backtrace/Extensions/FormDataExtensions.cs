@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 #if !NET35
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -31,7 +32,12 @@ namespace Backtrace.Extensions
 
         public static void AddFiles(this MultipartFormDataContent content, List<string> filePath)
         {
-            foreach (var file in filePath)
+            if(filePath == null || filePath.Count == 0)
+            {
+                return;
+            }
+            var files = filePath.Distinct().ToList();
+            foreach (var file in files)
             {
                 if (!File.Exists(file))
                 {

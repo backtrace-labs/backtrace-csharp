@@ -88,13 +88,7 @@ namespace Backtrace.Model
         /// Get a path to report attachments
         /// </summary>
         [JsonIgnore]
-        public List<string> Attachments
-        {
-            get
-            {
-                return Report.AttachmentPaths.Distinct().ToList();
-            }
-        }
+        public List<string> Attachments;
 
         /// <summary>
         /// Current BacktraceReport
@@ -119,6 +113,7 @@ namespace Backtrace.Model
                 return;
             }
             Report = report;
+            Attachments = Report.AttachmentPaths.Distinct().ToList();
             SetReportInformation();
             SetAttributes(clientAttributes);
             SetThreadInformations();

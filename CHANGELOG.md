@@ -1,5 +1,8 @@
 ﻿# Backtrace C# Release Notes
 
+## Version 2.1.2 - 07.06.2019
+- `BacktraceData` now allows to edit attachments in `BeforeSend` event.
+
 ## Version 2.1.1 - 18.03.2019
 - `BacktraceCredentials` allows you to pass `WebProxy` object to `Proxy` property. `BacktraceApi` will use proxy object to create `HttpClient`
 
