@@ -1,5 +1,9 @@
 ﻿# Backtrace C# Release Notes
 
+## Version 2.1.3 - 13.06.2019
+- Fixed a problem with missing path to attachments when Backtrace C# client read report from hard drive,
+- Fixed a problem with missing minidump files in report attachments
+
 ## Version 2.1.2 - 07.06.2019
 - `BacktraceData` now allows to edit attachments in `BeforeSend` event.
 

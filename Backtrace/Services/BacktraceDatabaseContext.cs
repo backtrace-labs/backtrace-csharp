@@ -149,6 +149,7 @@ namespace Backtrace.Services
 
             string minidumpPath = GenerateMiniDump(backtraceData.Report, miniDumpType);
             backtraceData.Report.SetMinidumpPath(minidumpPath);
+            backtraceData.Attachments.Add(minidumpPath);
 
             //create new record and save it on hard drive
             var record = new BacktraceDatabaseRecord(backtraceData, _path)
