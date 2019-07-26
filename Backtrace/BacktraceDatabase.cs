@@ -371,6 +371,8 @@ namespace Backtrace
             foreach (var file in files)
             {
                 var record = BacktraceDatabaseRecord.ReadFromFile(file);
+                if (record == null)
+                    continue;
                 record.DatabasePath(DatabasePath);
                 if (!record.Valid())
                 {
