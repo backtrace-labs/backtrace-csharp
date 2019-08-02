@@ -1,5 +1,8 @@
 ﻿# Backtrace C# Release Notes
 
+## Version 2.1.4 - 02.08.2019
+- `BacktraceDatabase` additional null check in LoadReports method. 
+
 ## Version 2.1.3 - 13.06.2019
 - Fixed a problem with missing path to attachments when Backtrace C# client read report from hard drive,
 - Fixed a problem with missing minidump files in report attachments
