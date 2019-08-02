@@ -138,6 +138,7 @@ namespace Backtrace.Model.Database
                         //because we have easier way to serialize and deserialize data
                         //and no problem/condition with serialization when BacktraceApi want to send diagnostic data to API
                         diagnosticData.Report = report;
+                        diagnosticData.Attachments = report.AttachmentPaths;
                         diagnosticData.Deduplication = Count;
                         return diagnosticData;
                     }
