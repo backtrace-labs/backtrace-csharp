@@ -1,5 +1,8 @@
 ﻿# Backtrace C# Release Notes
 
+## Version 2.1.3 - 02.08.2019
+- `BacktraceDatabase` additional null check in LoadReports method. 
+
 ## Version 2.1.2 - 07.06.2019
 - `BacktraceData` now allows to edit attachments in `BeforeSend` event.
 

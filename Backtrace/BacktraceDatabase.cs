@@ -372,7 +372,9 @@ namespace Backtrace
             {
                 var record = BacktraceDatabaseRecord.ReadFromFile(file);
                 if (record == null)
+                {
                     continue;
+                }
                 record.DatabasePath(DatabasePath);
                 if (!record.Valid())
                 {
