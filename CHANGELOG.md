@@ -1,4 +1,6 @@
 ﻿# Backtrace C# Release Notes
+## Version 2.1.5 - 04.10.2019
+- Changed AppDomain exception handler - now Backtrace library will try to send report synchronously instead of using async API.
 
 ## Version 2.1.4 - 02.08.2019
 - `BacktraceDatabase` additional null check in LoadReports method. 
