@@ -1,4 +1,8 @@
 ﻿# Backtrace C# Release Notes
+
+## Version 2.1.6 - 11.10.2019
+- Changed AppDomain exception handler - now Backtrace library will try to store report in database instead of sending report to Backtrace. Because of that we won't block application on unhandled exception event handler.
+
 ## Version 2.1.5 - 04.10.2019
 - Changed AppDomain exception handler - now Backtrace library will try to send report synchronously instead of using async API.
 

@@ -1,8 +1,8 @@
 # Backtrace
-[![Backtrace@release](https://img.shields.io/badge/Backtrace%40master-2.1.5-blue.svg)](https://www.nuget.org/packages/Backtrace)
+[![Backtrace@release](https://img.shields.io/badge/Backtrace%40master-2.1.6-blue.svg)](https://www.nuget.org/packages/Backtrace)
 [![Build status](https://ci.appveyor.com/api/projects/status/o0n9sp0ydgxb3ktu?svg=true)](https://ci.appveyor.com/project/konraddysput/backtrace-csharp)
 
-[![Backtrace@pre-release](https://img.shields.io/badge/Backtrace%40dev-2.1.6-blue.svg)](https://www.nuget.org/packages/Backtrace)
+[![Backtrace@pre-release](https://img.shields.io/badge/Backtrace%40dev-2.1.7-blue.svg)](https://www.nuget.org/packages/Backtrace)
 [![Build status](https://ci.appveyor.com/api/projects/status/o0n9sp0ydgxb3ktu/branch/dev?svg=true)](https://ci.appveyor.com/project/konraddysput/backtrace-csharp/branch/dev)
 
 
@@ -381,6 +381,7 @@ backtraceClient.BeforeSend =
 ```csharp
 backtraceClient.HandleApplicationException();
 ``` 
+Unhandled application exception handler will store your report in database. In case if you won't see your report in Backtrace, you will have to relaunch your application.
 
 ## Custom client and report classes <a name="documentation-customization"></a>
 

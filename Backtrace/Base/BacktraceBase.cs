@@ -328,7 +328,7 @@ namespace Backtrace.Base
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var exception = e.ExceptionObject as Exception;
-            Send(new BacktraceReport(exception));
+            Database?.Add(new BacktraceReport(exception), Attributes, MiniDumpType);
             OnUnhandledApplicationException?.Invoke(exception);
         }
 #endif
