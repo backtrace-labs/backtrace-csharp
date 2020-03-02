@@ -101,6 +101,7 @@ namespace Backtrace.Model.JsonData
                 Attributes["build.debug"] = false;
                 Attributes["build.jit"] = true;
                 Attributes["build.type"] = "Release";
+                return;
             }
             // Just because the 'DebuggableAttribute' is found doesn't necessarily mean
             // it's a DEBUG build; we have to check the JIT Optimization flag
@@ -130,6 +131,11 @@ namespace Backtrace.Model.JsonData
             var attributes = BacktraceReport.ConcatAttributes(report, clientAttributes);
             foreach (var attribute in attributes)
             {
+                if (attribute.Value == null)
+                {
+                    continue;
+                }
+
                 var type = attribute.Value.GetType();
                 if (type.IsPrimitive || type == typeof(string) || type.IsEnum)
                 {
