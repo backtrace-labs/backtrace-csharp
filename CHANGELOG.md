@@ -1,5 +1,9 @@
 ﻿# Backtrace C# Release Notes
 
+## Version 2.1.8 - 26.03.2020
+
+- Fixed self referenced object serialization errors.
+
 ## Version 2.1.7 - 02.03.2020
 
 - Fixed nullable attributes -

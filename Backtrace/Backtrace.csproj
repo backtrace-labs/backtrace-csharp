@@ -1,25 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <PackageId>Backtrace</PackageId>
+    <Title>Backtrace</Title>
     <TargetFrameworks>netstandard2.0;net45;net35</TargetFrameworks>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>Backtrace Error Diagnostic Tools Debug Bug Bugs StackTrace</PackageTags>
-    <PackageVersion>2.1.7</PackageVersion>
+    <tags>Backtrace Error Diagnostic Tools Debug Bug Bugs StackTrace</tags>
+    <PackageVersion>2.1.8</PackageVersion>
     <Product>Backtrace</Product>
     <PackageLicenseUrl>https://github.com/backtrace-labs/backtrace-csharp/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/backtrace-labs/backtrace-csharp</PackageProjectUrl>
+    <projectUrl>https://github.com/backtrace-labs/backtrace-csharp</projectUrl>
     <PackageIconUrl>http://backtrace.io/images/icon.png</PackageIconUrl>
+    <language>en-US</language>
+    <iconUrl>http://backtrace.io/images/icon.png</iconUrl>
     <Description>Backtrace's integration with C# applications allows customers to capture and report handled and unhandled C# exceptions to their Backtrace instance, instantly offering the ability to prioritize and debug software errors.</Description>
     <Summary>Backtrace's integration with C# app allows customers to catch and report handled and unhandled C# exceptions to their Backtrace instance, instantly offering the ability to prioritize and debug errors.</Summary>
     <RepositoryUrl>https://github.com/backtrace-labs/backtrace-csharp</RepositoryUrl>
     <NeutralLanguage>en</NeutralLanguage>
-    <Version>2.1.7</Version>
+    <Version>2.1.8</Version>
     <PackageLanguage>en-US</PackageLanguage>
     <Copyright>Backtrace I/O</Copyright>
     <Authors>Backtrace I/O</Authors>
+    <Owners>Backtrace I/O</Owners>
     <Company>Backtrace I/O</Company>
-    <AssemblyVersion>2.1.7.0</AssemblyVersion>
-    <FileVersion>2.1.7.0</FileVersion>
+    <AssemblyVersion>2.1.8.0</AssemblyVersion>
+    <FileVersion>2.1.8.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

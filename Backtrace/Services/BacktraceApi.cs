@@ -229,7 +229,8 @@ namespace Backtrace.Services
         private JsonSerializerSettings JsonSerializerSettings { get; } = new JsonSerializerSettings
         {
             NullValueHandling = NullValueHandling.Ignore,
-            DefaultValueHandling = DefaultValueHandling.Ignore
+            DefaultValueHandling = DefaultValueHandling.Ignore,
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
         };
         #region dispose
         private bool _disposed = false; // To detect redundant calls
