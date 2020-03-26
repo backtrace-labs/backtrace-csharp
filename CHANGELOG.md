@@ -1,21 +1,40 @@
 ﻿# Backtrace C# Release Notes
+
+## Version 2.1.8 - 26.03.2020
+
+- Fixed self referenced object serialization errors.
+
+## Version 2.1.7 - 02.03.2020
+
+- Fixed nullable attributes -
+- Fixed analysing assembly data: EXE is not a .NET EXE - (https://github.com/backtrace-labs/backtrace-csharp/issues/29)
+
+## Version 2.1.6 - 11.10.2019
+
+- Changed AppDomain exception handler - now Backtrace library will try to store report in database instead of sending report to Backtrace. Because of that we won't block application on unhandled exception event handler.
+
 ## Version 2.1.5 - 04.10.2019
+
 - Changed AppDomain exception handler - now Backtrace library will try to send report synchronously instead of using async API.
 
 ## Version 2.1.4 - 02.08.2019
-- `BacktraceDatabase` additional null check in LoadReports method. 
+
+- `BacktraceDatabase` additional null check in LoadReports method.
 
 ## Version 2.1.4 - 02.08.2019
 - `BacktraceDatabase` additional null check in LoadReports method. 
 
 ## Version 2.1.3 - 13.06.2019
+
 - Fixed a problem with missing path to attachments when Backtrace C# client read report from hard drive,
 - Fixed a problem with missing minidump files in report attachments
 
 ## Version 2.1.2 - 07.06.2019
+
 - `BacktraceData` now allows to edit attachments in `BeforeSend` event.
 
 ## Version 2.1.1 - 18.03.2019
+
 - `BacktraceCredentials` allows you to pass `WebProxy` object to `Proxy` property. `BacktraceApi` will use proxy object to create `HttpClient`
 
 ## Version 2.1.0 - 10.03.2019
@@ -26,11 +45,13 @@
 - When Backtrace library send diagnostic data to server any exception happend, library will print information about error by using Trace interface.
 
 ## Version 2.0.7 - 11.02.2019
+
 - If you send exception, `BacktraceReport` will generate stack trace based on exception stack trace. We will no longer include environment stack trace in exception reports,
 - Unit tests fix - incrementation fix,
 - `BacktraceDatabase` fix for `FirstOrDefault` invalid read.
 
 ## Version 2.0.6 - 20.12.2018
+
 - New `BacktraceCredentials` constructor,
 - UnhandledThreadException flow
 
