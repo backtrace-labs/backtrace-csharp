@@ -1,5 +1,8 @@
 ﻿# Backtrace C# Release Notes
 
+## Version 2.1.9 - 08.06.2019
+- Changed acces modifiers in `BacktraceData` object. With this change, `BeforeSend` event allows to change `Annotations`, `ThreadInformation` and `SourceCode` property
+
 ## Version 2.1.8 - 26.03.2020
 
 - Fixed self referenced object serialization errors.

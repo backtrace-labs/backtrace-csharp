@@ -61,13 +61,13 @@ namespace Backtrace.Model
         /// Get current host environment variables and application dependencies
         /// </summary>
         [JsonProperty(PropertyName = "annotations")]
-        internal Annotations Annotations { get; set; }
+        public Annotations Annotations { get; set; }
 
         /// <summary>
         /// Application thread details
         /// </summary>
         [JsonProperty(PropertyName = "threads")]
-        internal Dictionary<string, ThreadInformation> ThreadInformations { get; set; }
+        public Dictionary<string, ThreadInformation> ThreadInformations { get; set; }
 
         /// <summary>
         /// Get a main thread name
@@ -82,7 +82,7 @@ namespace Backtrace.Model
         public string[] Classifier { get; set; }
 
         [JsonProperty(PropertyName = "sourceCode", NullValueHandling = NullValueHandling.Ignore)]
-        internal Dictionary<string, SourceCode> SourceCode { get; set; }
+        public Dictionary<string, SourceCode> SourceCode { get; set; }
 
         /// <summary>
         /// Get a path to report attachments

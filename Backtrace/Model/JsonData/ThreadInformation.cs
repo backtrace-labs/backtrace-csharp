@@ -1,8 +1,6 @@
 ﻿using Backtrace.Extensions;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 
 namespace Backtrace.Model.JsonData
@@ -26,7 +24,7 @@ namespace Backtrace.Model.JsonData
 
 
         [JsonProperty(PropertyName = "stack")]
-        internal IEnumerable<BacktraceStackFrame> Stack = new List<BacktraceStackFrame>();
+        public IEnumerable<BacktraceStackFrame> Stack = new List<BacktraceStackFrame>();
 
         /// <summary>
         /// Create new instance of ThreadInformation
