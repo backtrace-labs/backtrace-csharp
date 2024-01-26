@@ -10,7 +10,7 @@ namespace Backtrace.Tests.ClientTests
     public class TestClientCredentials
     {
 
-#if NET35 || NET45
+#if NET35 || NET48
         [TestCase("EmptyCredentials")]
         [Test(Author = "Konrad Dysput", Description = "Test empty values in configuration section")]
         public void TestInvalidSectionName(string sectionName)
@@ -99,7 +99,7 @@ namespace Backtrace.Tests.ClientTests
             //if programmer pass invalid url should throw UriFormatException
             //if programmer pass null or empty string as token should throw ArgumentNullException
 
-#if NET35 || NET45
+#if NET35 || NET48
             Assert.Throws<UriFormatException>(() => new BacktraceClient(sectionName));
 #endif
             Assert.Throws<ArgumentException>(() => new BacktraceClient(new BacktraceCredentials("https://test.backtrace.io", string.Empty)));

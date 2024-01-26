@@ -138,11 +138,10 @@ namespace Backtrace.Model
 
         private void SetReportInformation()
         {
-            AssemblyName CurrentAssembly = Assembly.GetExecutingAssembly().GetName();
             Uuid = Report.Uuid;
             Timestamp = Report.Timestamp;
             LangVersion = typeof(string).Assembly.ImageRuntimeVersion;
-            AgentVersion = CurrentAssembly.Version.ToString();
+            AgentVersion = BacktraceClient.AgentVersion;
             Classifier = Report.ExceptionTypeReport ? new[] { Report.Classifier } : null;
         }
     }

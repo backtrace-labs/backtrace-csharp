@@ -66,7 +66,7 @@ namespace Backtrace.Model
 
         internal Assembly FrameAssembly { get; set; }
 
-#if NET45
+#if NET48
         public BacktraceStackFrame(Microsoft.Diagnostics.Runtime.ClrStackFrame frame)
         {
             FunctionName = frame.Method.Name;

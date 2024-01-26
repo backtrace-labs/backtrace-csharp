@@ -19,7 +19,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backtrace.UWP", "Examples\B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backtrace.WinFoms", "Examples\Backtrace.WinFoms\Backtrace.WinFoms.csproj", "{288EC366-90CA-443C-8EA2-24F129915462}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backtrace.FrameworkExample", "Backtrace.FrameworkExample\Backtrace.FrameworkExample.csproj", "{E915C5B8-D452-4DFD-8E58-E9E17EB0576D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backtrace.FrameworkExample", "Examples\Backtrace.FrameworkExample\Backtrace.FrameworkExample.csproj", "{E915C5B8-D452-4DFD-8E58-E9E17EB0576D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
