@@ -61,8 +61,8 @@ namespace Backtrace.Tests.EnvironmentTests
             var report = new BacktraceReport("testMessage");
             var attributes = new BacktraceAttributes(report, null);
 
-            Assert.Equal(attributes.Attributes["backtrace.agent"], "backtrace-csharp");
-            Assert.AreEqual(attributes.Attributes["backtrace.version"], BacktraceClient.Version);
+            Assert.Equals(attributes.Attributes["backtrace.agent"], "backtrace-csharp");
+            Assert.AreEqual(attributes.Attributes["backtrace.version"], BacktraceClient.AgentVersion);
         }
 
 
