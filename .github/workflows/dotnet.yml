@@ -23,4 +23,4 @@ jobs:
       - name: Build
         run: dotnet build Backtrace --no-restore
       - name: Test
-        run: dotnet test Backtrace.Tests --no-build --verbosity normal
+        run: dotnet test Backtrace.Tests --verbosity normal
