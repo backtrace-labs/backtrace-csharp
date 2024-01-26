@@ -19,6 +19,11 @@ namespace Backtrace.Model.JsonData
     public class BacktraceAttributes
     {
         internal const string APPLICATION_ATTRIBUTE_NAME= "application";
+
+        internal static Guid guid;
+
+        internal static Guid session = Guid.NewGuid();
+
         /// <summary>
         /// Get built-in primitive attributes
         /// </summary>
@@ -67,6 +72,11 @@ namespace Backtrace.Model.JsonData
             }
             //A unique identifier of a machine
             Attributes["guid"] = GenerateMachineId().ToString();
+            Attributes["application.session"] = session;
+
+            Attributes["backtrace.agent"] = "backtrace-csharp";
+            Attributes["backtrace.version"] = BacktraceClient.AgentVersion;
+
             //Base name of application generating the report
             Attributes[APPLICATION_ATTRIBUTE_NAME] = callingAssembly.GetName().Name;
 
@@ -74,7 +84,10 @@ namespace Backtrace.Model.JsonData
             try
             {
                 //in case when calling assembly from file system is not available
-                Attributes["version"] = FileVersionInfo.GetVersionInfo(callingAssembly.Location)?.FileVersion;
+                var version = FileVersionInfo.GetVersionInfo(callingAssembly.Location)?.FileVersion;
+                Attributes["version"] = version;
+                Attributes["application.version"] = version;
+
             }
             catch (FileNotFoundException) { }
             var culture = callingAssembly.GetName().CultureInfo.Name;
@@ -160,6 +173,10 @@ namespace Backtrace.Model.JsonData
         /// <returns>Machine uuid</returns>
         private Guid GenerateMachineId()
         {
+            if(guid != Guid.Empty)
+            {
+                return guid;
+            }
             var networkInterface =
                  NetworkInterface.GetAllNetworkInterfaces()
                     .FirstOrDefault(n => n.OperationalStatus == OperationalStatus.Up);
@@ -170,12 +187,14 @@ namespace Backtrace.Model.JsonData
                 || (physicalAddr = networkInterface.GetPhysicalAddress()) == null
                 || string.IsNullOrEmpty(macAddress = physicalAddr.ToString()))
             {
-                return Guid.NewGuid();
+                guid = Guid.NewGuid();
+                return guid;
             }
 
             string hex = macAddress.Replace(":", string.Empty);
             var value = Convert.ToInt64(hex, 16);
-            return GuidExtensions.FromLong(value);
+            guid = GuidExtensions.FromLong(value);
+            return guid;
         }
 
         /// <summary>

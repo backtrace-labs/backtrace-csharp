@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using Backtrace.Services;
 using Backtrace.Types;
 using Backtrace.Model.Database;
+using System.Reflection;
+
 #if !NET35
 using System.Threading.Tasks;
 #endif
@@ -23,6 +25,20 @@ namespace Backtrace.Base
         /// </summary>
         public bool UnpackAggregateExcetpion { get; set; } = false;
 #endif
+
+        internal static string _agentVersion = Assembly.GetExecutingAssembly().GetName()?.Version.ToString();
+
+        /// <summary>
+        /// Current library version
+        /// </summary>
+        public static string AgentVersion
+        {
+            get
+            {
+                return _agentVersion;
+            }
+        }
+
 
         /// <summary>
         /// Custom request handler for HTTP call to server

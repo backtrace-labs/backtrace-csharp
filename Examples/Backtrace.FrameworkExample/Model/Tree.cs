@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Backtrace.Framework45Example.Model
+namespace Backtrace.FrameworkExample.Model
 {
     public class Tree : IEnumerable<String>
     {

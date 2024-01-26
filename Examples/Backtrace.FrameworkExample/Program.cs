@@ -1,13 +1,14 @@
-﻿using Backtrace.Framework45Example.Model;
-using Backtrace.Model;
-using Backtrace.Model.Database;
+﻿using Backtrace.FrameworkExample.Model;
+using Backtrace;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Backtrace.Model;
+using Backtrace.Model.Database;
 
-namespace Backtrace.Framework45Example
+namespace Backtrace.FrameworkExample
 {
     internal class Program
     {
@@ -16,7 +17,7 @@ namespace Backtrace.Framework45Example
         /// <summary>
         /// Credentials
         /// </summary>
-        private readonly BacktraceCredentials credentials = new BacktraceCredentials(ApplicationSettings.Host, ApplicationSettings.Token);
+        private readonly BacktraceCredentials credentials = new BacktraceCredentials(ApplicationSettings.SubmissionUrl);
 
         /// <summary>
         /// Database settings

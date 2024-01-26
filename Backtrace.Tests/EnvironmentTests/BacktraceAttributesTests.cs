@@ -31,6 +31,40 @@ namespace Backtrace.Tests.EnvironmentTests
             });
         }
 
+        [Test]
+        public void TestGuidCreation()
+        {
+            var report = new BacktraceReport("testMessage");
+            var attributes = new BacktraceAttributes(report, null);
+            var attributes2 = new BacktraceAttributes(report, null);
+
+            Assert.NotNull(attributes.Attributes["guid"]);
+            Assert.AreEqual(attributes.Attributes["guid"], attributes2.Attributes["guid"]);
+        }
+
+
+        [Test]
+        public void TestSessionCreation()
+        {
+            var report = new BacktraceReport("testMessage");
+            var attributes = new BacktraceAttributes(report, null);
+            var attributes2 = new BacktraceAttributes(report, null);
+
+            var sessionAttribute = "application.session";
+            Assert.NotNull(attributes.Attributes[sessionAttribute]);
+            Assert.AreEqual(attributes.Attributes[sessionAttribute], attributes2.Attributes[sessionAttribute]);
+        }
+
+        [Test]
+        public void TestBacktraceReporterMetadata()
+        {
+            var report = new BacktraceReport("testMessage");
+            var attributes = new BacktraceAttributes(report, null);
+
+            Assert.AreEqual(attributes.Attributes["backtrace.agent"], "backtrace-csharp");
+            Assert.AreEqual(attributes.Attributes["backtrace.version"], BacktraceClient.AgentVersion);
+        }
+
 
         [Test]
         public void TestFingerprintAttribute()
