@@ -295,6 +295,7 @@ namespace Backtrace.Base
         public virtual void HandleApplicationException()
         {
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
         }
 
         /// <summary>
@@ -307,15 +308,10 @@ namespace Backtrace.Base
             OnUnhandledApplicationException?.Invoke(e.Exception);
         }
 
-        //public virtual void HandleUnobservedTaskExceptions()
-        //{
-        //    TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
-        //}
-
         private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
             var exception = e.Exception as Exception;
-            Send(new BacktraceReport(exception));
+            ReportUnhandledException(exception);
             OnUnhandledApplicationException?.Invoke(e.Exception);
         }
 
@@ -328,8 +324,24 @@ namespace Backtrace.Base
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var exception = e.ExceptionObject as Exception;
-            Database?.Add(new BacktraceReport(exception), Attributes, MiniDumpType);
+            ReportUnhandledException(exception);
             OnUnhandledApplicationException?.Invoke(exception);
+        }
+
+        private void ReportUnhandledException(Exception exception)
+        {
+            // Always prefer to use Database rather than freezing the app because of the http request.
+            // On environment where the database cannot be enabled for any reason, we still want to report
+            // data and in this situation we prefer to take this tradeoff. 
+            var report = new BacktraceReport(exception);
+            if (Database != null)
+            {
+                Database.Add(report, Attributes, MiniDumpType);
+            }
+            else
+            {
+                Send(report);
+            }
         }
 #endif
     }
