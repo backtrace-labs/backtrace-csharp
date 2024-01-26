@@ -24,3 +24,20 @@ jobs:
         run: dotnet build .\Backtrace\Backtrace.csproj --no-restore
       - name: Test
         run: dotnet test Backtrace.Tests --verbosity normal
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build .\Backtrace\Backtrace.csproj -f netstandard2.0 --no-restore
+      - name: Test
+        run: dotnet test Backtrace.Tests -f net80 --verbosity normal
+    
+    
