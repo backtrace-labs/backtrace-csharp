@@ -99,6 +99,6 @@ namespace Backtrace.Interfaces
         /// <summary>
         /// Deduplication method. Use this method to override default method to generate hash from deduplication model
         /// </summary>
-        Func<DeduplicationStrategy,BacktraceData, string> DeduplicationHash { get; set; }
+        Func<DeduplicationStrategy, BacktraceData, string> DeduplicationHash { get; set; }
     }
 }

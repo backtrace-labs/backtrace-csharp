@@ -15,7 +15,7 @@ namespace Backtrace.Tests.DatabaseTests.Model
         public MockBacktraceDatabaseWriter()
             : base(string.Empty)
         { }
-        
+
         public override void SaveTemporaryFile(string path, byte[] file)
         {
             if (writeFail)

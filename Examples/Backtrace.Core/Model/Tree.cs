@@ -54,7 +54,7 @@ namespace Backtrace.Core.Model
             {
                 throw new ArgumentException("Word is empty or null.");
             }
-            
+
             var current = _root;
 
             for (int i = 0; i < word.Length; ++i)

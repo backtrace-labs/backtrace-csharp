@@ -32,7 +32,7 @@ namespace Backtrace.Model.JsonData
         /// <param name="assembly">Current assembly</param>
         private void ReadDependencies(Assembly assembly)
         {
-            if(assembly == null)
+            if (assembly == null)
             {
                 return;
             }
@@ -41,7 +41,7 @@ namespace Backtrace.Model.JsonData
             {
                 referencedAssemblies = assembly.GetReferencedAssemblies();
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return;
             }

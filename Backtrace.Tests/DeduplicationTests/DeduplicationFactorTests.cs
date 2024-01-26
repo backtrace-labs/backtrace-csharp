@@ -26,7 +26,7 @@ namespace Backtrace.Tests.DeduplicationTests
 
         [Test(Author = "Konrad Dysput", Description = "Test sha comparision with data object by checking empty stack trace")]
         public void TestShaComparision_OnlyEmptyStackTrace_ReportsWithTheSameFactorAreTheSame()
-        {            
+        {
             var reportWithFactor = new BacktraceReport(new Exception("test message"))
             {
                 Factor = "12345"
@@ -50,7 +50,7 @@ namespace Backtrace.Tests.DeduplicationTests
         {
             var exception = new Exception("testMessage");
             var report = new BacktraceReport(exception);
-            
+
             var data = report.ToBacktraceData(null);
 
             var deduplicationModel = new DeduplicationModel(data, strategy);

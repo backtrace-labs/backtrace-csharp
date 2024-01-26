@@ -95,6 +95,6 @@ namespace Backtrace.Services
         {
             _reportQue.Clear();
         }
-        
+
     }
 }

@@ -213,7 +213,7 @@ namespace Backtrace.Model.Database
                 return false;
             }
         }
-        
+
         /// <summary>
         /// Setup RecordWriter and database path after deserialization event
         /// </summary>
@@ -380,7 +380,7 @@ namespace Backtrace.Model.Database
                 CounterDataPath = Save(new CounterData(), $"{Id}-counter");
                 return 1;
             }
-            
+
             using (var dataReader = new StreamReader(CounterDataPath))
             {
                 try

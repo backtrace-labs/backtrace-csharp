@@ -18,7 +18,7 @@ namespace Backtrace.Model.JsonData
     /// </summary>
     public class BacktraceAttributes
     {
-        internal const string APPLICATION_ATTRIBUTE_NAME= "application";
+        internal const string APPLICATION_ATTRIBUTE_NAME = "application";
 
         internal static Guid guid;
 
@@ -81,15 +81,17 @@ namespace Backtrace.Model.JsonData
             Attributes[APPLICATION_ATTRIBUTE_NAME] = callingAssembly.GetName().Name;
 
             Attributes["location"] = callingAssembly.Location;
-            try
+            if (!string.IsNullOrEmpty(callingAssembly.Location))
             {
-                //in case when calling assembly from file system is not available
-                var version = FileVersionInfo.GetVersionInfo(callingAssembly.Location)?.FileVersion;
-                Attributes["version"] = version;
-                Attributes["application.version"] = version;
-
+                try
+                {
+                    //in case when calling assembly from file system is not available
+                    var version = FileVersionInfo.GetVersionInfo(callingAssembly.Location)?.FileVersion;
+                    Attributes["version"] = version;
+                    Attributes["application.version"] = version;
+                }
+                catch (FileNotFoundException) { }
             }
-            catch (FileNotFoundException) { }
             var culture = callingAssembly.GetName().CultureInfo.Name;
             if (!string.IsNullOrEmpty(culture))
             {
@@ -173,7 +175,7 @@ namespace Backtrace.Model.JsonData
         /// <returns>Machine uuid</returns>
         private Guid GenerateMachineId()
         {
-            if(guid != Guid.Empty)
+            if (guid != Guid.Empty)
             {
                 return guid;
             }

@@ -6,6 +6,6 @@ namespace Backtrace.Types
 {
     public enum RetryOrder
     {
-        Stack,Queue
+        Stack, Queue
     }
 }

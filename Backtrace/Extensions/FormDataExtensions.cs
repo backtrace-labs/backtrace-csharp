@@ -32,7 +32,7 @@ namespace Backtrace.Extensions
 
         public static void AddFiles(this MultipartFormDataContent content, List<string> filePath)
         {
-            if(filePath == null || filePath.Count == 0)
+            if (filePath == null || filePath.Count == 0)
             {
                 return;
             }

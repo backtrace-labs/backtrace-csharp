@@ -40,7 +40,7 @@ namespace Backtrace.Tests.ServicesTests
             //watcher not work
             var reportWatcher = new ReportLimitWatcher(0);
             uint max = uint.MaxValue;
-            Assert.Throws<OverflowException>(() => new ReportLimitWatcher(max *2));
+            Assert.Throws<OverflowException>(() => new ReportLimitWatcher(max * 2));
             Assert.True(reportWatcher.WatchReport(new BacktraceReport("test")));
         }
     }

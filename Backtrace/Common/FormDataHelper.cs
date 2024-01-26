@@ -62,7 +62,7 @@ namespace Backtrace.Common
 
             foreach (var attachmentPath in attachments)
             {
-                if(!File.Exists(attachmentPath))
+                if (!File.Exists(attachmentPath))
                 {
                     continue;
                 }

@@ -26,7 +26,7 @@ namespace Backtrace.Tests.ClientTests
             base.Setup();
         }
         [Test]
-        public void TestLogCreation([ValueSource("_exceptions")]Exception exception)
+        public void TestLogCreation([ValueSource("_exceptions")] Exception exception)
         {
             Assert.DoesNotThrow(() => _backtraceClient.Send(exception: exception));
             Assert.DoesNotThrow(() => _backtraceClient.Send(message: "test message"));
@@ -50,7 +50,7 @@ namespace Backtrace.Tests.ClientTests
         }
 
         [Test]
-        public void TestExceptionAttributes([ValueSource("_exceptions")]Exception exception)
+        public void TestExceptionAttributes([ValueSource("_exceptions")] Exception exception)
         {
             Dictionary<string, object> currentAttributes = new Dictionary<string, object>();
             _backtraceClient.BeforeSend =

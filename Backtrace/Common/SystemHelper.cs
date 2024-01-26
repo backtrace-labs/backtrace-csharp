@@ -168,8 +168,8 @@ namespace Backtrace.Common
                 return false;
             }
             return
-                (type.IsDefined(typeof(CompilerGeneratedAttribute)) 
-                && (typeof(IAsyncStateMachine).IsAssignableFrom(type) 
+                (type.IsDefined(typeof(CompilerGeneratedAttribute))
+                && (typeof(IAsyncStateMachine).IsAssignableFrom(type)
                     || typeof(IEnumerator).IsAssignableFrom(type))
                 && typeof(IAsyncStateMachine).GetTypeInfo().IsAssignableFrom(type));
         }
