@@ -95,7 +95,7 @@ namespace Backtrace.Model.JsonData
             var culture = callingAssembly.GetName().CultureInfo.Name;
             if (!string.IsNullOrEmpty(culture))
             {
-                Attributes["culture"] = callingAssembly.GetName().CultureInfo.Name;
+                Attributes["culture"] = culture;
             }
 #if !NET35
             Attributes["dynamic"] = callingAssembly.IsDynamic;
