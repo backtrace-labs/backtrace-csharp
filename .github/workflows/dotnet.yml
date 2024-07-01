@@ -13,15 +13,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup .NET Framework 4.5
+      - name: Setup .NET Framework 4.5 and MSBuild
         run: |
-          choco install visualstudio2017-workload-netfx
-          choco install netfx-4.5.2-devpack
-          echo "Installing MSBuild tools..."
-          choco install microsoft-build-tools -y
+          echo "Installing .NET Framework 4.8 Developer Pack..."
+          choco install netfx-4.8-devpack -y
+
+          echo "Installing Visual Studio 2019 Build Tools..."
+          choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools --includeRecommended --includeOptional" -y
+
+          echo "Adding MSBuild to PATH..."
+          $env:PATH += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\"
+          Write-Output $env:PATH
+
           echo "Verifying MSBuild installation..."
-          $msbuild = Get-Command msbuild
-          Write-Output "MSBuild is installed at $msbuild"
+          if (!(Get-Command msbuild -ErrorAction SilentlyContinue)) {
+            Write-Error "MSBuild is not installed or not in the PATH."
+            exit 1
+          } else {
+            Write-Output "MSBuild is installed and available."
+          }
 
       - name: Restore dependencies
         run: nuget restore
