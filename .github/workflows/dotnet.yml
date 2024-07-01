@@ -13,35 +13,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup .NET Framework 4.5 and MSBuild
-        run: |
-          echo "Installing .NET Framework 4.8 Developer Pack..."
-          choco install netfx-4.8-devpack -y
-
-          echo "Installing Visual Studio 2019 Build Tools..."
-          choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools --includeRecommended --includeOptional" -y
-
-          echo "Adding MSBuild to PATH..."
-          $env:PATH += ";C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\"
-          Write-Output $env:PATH
-
-          echo "Verifying MSBuild installation..."
-          if (!(Get-Command msbuild -ErrorAction SilentlyContinue)) {
-            Write-Error "MSBuild is not installed or not in the PATH."
-            exit 1
-          } else {
-            Write-Output "MSBuild is installed and available."
-          }
+       - name: Setup .NET 8.0
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x
 
       - name: Restore dependencies
-        run: nuget restore
+        run: dotnet restore
 
       - name: Build solution
-        run: msbuild /p:Configuration=Release .\Backtrace\Backtrace.csproj
+        run: dotnet build ./Backtrace/Backtrace.csproj --no-restore --configuration Release
 
       - name: Run tests
-        run: |
-          vstest.console.exe Backtrace.Tests
+        run: dotnet test Backtrace.Tests -f net45
 
   test_dotnet80:
     runs-on: ubuntu-latest
