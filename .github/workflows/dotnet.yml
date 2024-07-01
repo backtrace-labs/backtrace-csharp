@@ -7,7 +7,7 @@ on:
   pull_request:
 
 jobs:
-  test_dotnet45:
+  test_windows:
     runs-on: windows-latest
     steps:
       - name: Checkout code
@@ -25,9 +25,9 @@ jobs:
         run: dotnet build ./Backtrace/Backtrace.csproj --no-restore --configuration Release
 
       - name: Run tests
-        run: dotnet test Backtrace.Tests
+        run: dotnet test Backtrace.Tests --verbosity normal
 
-  test_dotnet80:
+  test_linux:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -45,4 +45,4 @@ jobs:
         run: dotnet build ./Backtrace/Backtrace.csproj --no-restore --configuration Release
 
       - name: Run tests
-        run: dotnet test Backtrace.Tests
+        run: dotnet test Backtrace.Tests --verbosity normal
