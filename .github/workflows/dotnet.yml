@@ -17,6 +17,11 @@ jobs:
         run: |
           choco install visualstudio2017-workload-netfx
           choco install netfx-4.5.2-devpack
+          echo "Installing MSBuild tools..."
+          choco install microsoft-build-tools -y
+          echo "Verifying MSBuild installation..."
+          $msbuild = Get-Command msbuild
+          Write-Output "MSBuild is installed at $msbuild"
 
       - name: Restore dependencies
         run: nuget restore
@@ -43,7 +48,7 @@ jobs:
         run: dotnet restore
 
       - name: Build solution
-        run: dotnet build .\Backtrace\Backtrace.csproj --no-restore --configuration Release
+        run: dotnet build ./Backtrace/Backtrace.csproj --no-restore --configuration Release
 
       - name: Run tests
         run: dotnet test Backtrace.Tests
