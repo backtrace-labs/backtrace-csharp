@@ -1,26 +1,49 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
-name: .NET
+name: .NET Tests
 
 on:
   push:
-    branches: ["master"]
+    branches:
+      - main
   pull_request:
 
 jobs:
-  build:
+  test_dotnet45:
     runs-on: windows-latest
-
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET Framework 4.5
+        run: |
+          choco install visualstudio2017-workload-netfx
+          choco install netfx-4.5.2-devpack
+
+      - name: Restore dependencies
+        run: nuget restore
+
+      - name: Build solution
+        run: msbuild /p:Configuration=Release .\Backtrace\Backtrace.csproj
+
+      - name: Run tests
+        run: |
+          vstest.console.exe Backtrace.Tests
+
+  test_dotnet80:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET 8.0
+        uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 5.0.x
+          dotnet-version: 8.0.x
+
       - name: Restore dependencies
         run: dotnet restore
-      - name: Build
-        run: dotnet build .\Backtrace\Backtrace.csproj --no-restore
-      - name: Test
-        run: dotnet test Backtrace.Tests --verbosity normal
+
+      - name: Build solution
+        run: dotnet build .\Backtrace\Backtrace.csproj --no-restore --configuration Release
+
+      - name: Run tests
+        run: dotnet test Backtrace.Tests
