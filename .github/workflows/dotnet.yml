@@ -25,7 +25,7 @@ jobs:
         run: dotnet build ./Backtrace/Backtrace.csproj --no-restore --configuration Release
 
       - name: Run tests
-        run: dotnet test Backtrace.Tests -f net45
+        run: dotnet test Backtrace.Tests
 
   test_dotnet80:
     runs-on: ubuntu-latest
