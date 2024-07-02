@@ -4,16 +4,17 @@ on:
   push:
     tags:
       - "*.*.*"
-env:
-  PACKAGE_VERSION: ${{ steps.extract_version.outputs.VERSION }}
 
 jobs:
   release:
     runs-on: windows-latest
 
     steps:
-      - name: print current tag version
-        run: echo "$PACKAGE_VERSION ./output/Backtrace$PACKAGE_VERSION.nupkg"
+      - name: Extract version from tag
+        run: echo "PACKAGE_VERSION=${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
+
+      - name: version
+        run: echo "./output/Backtrace$PACKAGE_VERSION.nupkg"
 
       - name: Checkout code
         uses: actions/checkout@v4
