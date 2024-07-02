@@ -18,11 +18,11 @@ jobs:
         with:
           dotnet-version: 3.0.x
 
-      - name: Verify fomatting
-        run: dotnet format '.' --verify-no-changes
-
       - name: Restore dependencies
         run: dotnet restore
+
+      - name: Verify fomatting
+        run: dotnet format '.' --verify-no-changes
 
       - name: Build solution
         run: dotnet build ./Backtrace/Backtrace.csproj --no-restore --configuration Release
