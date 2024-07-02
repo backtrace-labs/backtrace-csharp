@@ -10,15 +10,6 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Extract version from tag
-        id: extract_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $env:GITHUB_ENV
-        shell: pwsh
-
-      - name: Verify extracted version
-        run: echo "Extracted version is $env:VERSION ${{ github.ref_name }}"
-        shell: pwsh
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -42,4 +33,4 @@ jobs:
       - name: Publish to NuGet
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: dotnet nuget push ./output/Backtrace$PACKAGE_VERSION.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ./output/Backtrace${{ github.ref_name }}.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json
