@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Extract version from tag
         id: extract_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $env:GITHUB_ENV
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $env:GITHUB_ENV
         shell: pwsh
 
       - name: Verify extracted version
