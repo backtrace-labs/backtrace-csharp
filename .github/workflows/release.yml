@@ -16,7 +16,7 @@ jobs:
         shell: pwsh
 
       - name: Verify extracted version
-        run: echo "Extracted version is $env:VERSION"
+        run: echo "Extracted version is $env:VERSION ${{ github.ref_name }}"
         shell: pwsh
 
       - name: Checkout code
