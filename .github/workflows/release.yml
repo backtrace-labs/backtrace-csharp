@@ -27,6 +27,11 @@ jobs:
       - name: Pack
         run: dotnet pack ./Backtrace/Backtrace.csproj --configuration Release --no-build -o ./output/
 
+      - name: print current tag version
+        env:
+          PACKAGE_VERSION: ${{ github.ref_name }}
+        run: echo $PACKAGE_VERSION ./output/Backtrace$PACKAGE_VERSION.nupkg
+
       - name: Publish to NuGet
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
