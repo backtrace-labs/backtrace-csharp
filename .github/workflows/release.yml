@@ -4,12 +4,17 @@ on:
   push:
     tags:
       - "*.*.*"
+env:
+  PACKAGE_VERSION: ${{ steps.extract_version.outputs.VERSION }}
 
 jobs:
   release:
     runs-on: windows-latest
 
     steps:
+      - name: print current tag version
+        run: echo "$PACKAGE_VERSION ./output/Backtrace$PACKAGE_VERSION.nupkg"
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -33,5 +38,4 @@ jobs:
       - name: Publish to NuGet
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-          PACKAGE_VERSION: ${{ github.ref_name }}
-        run: dotnet nuget push ./output/Backtrace$GITHUB_REF.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ./output/Backtrace$PACKAGE_VERSION.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json
