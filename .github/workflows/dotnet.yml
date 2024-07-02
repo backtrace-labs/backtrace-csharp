@@ -18,6 +18,9 @@ jobs:
         with:
           dotnet-version: 3.0.x
 
+      - name: Verify fomatting
+        run: dotnet format '.' --verify-no-changes
+
       - name: Restore dependencies
         run: dotnet restore
 
