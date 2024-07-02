@@ -11,10 +11,13 @@ jobs:
 
     steps:
       - name: Extract version from tag
-        run: echo VERSION=${GITHUB_REF#refs/tags/v} >> $env:GITHUB_ENV
+        id: extract_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $env:GITHUB_ENV
+        shell: pwsh
 
-      - name: version
-        run: echo "./output/Backtrace$PACKAGE_VERSION.nupkg"
+      - name: Verify extracted version
+        run: echo "Extracted version is: $env:VERSION"
+        shell: pwsh
 
       - name: Checkout code
         uses: actions/checkout@v4
