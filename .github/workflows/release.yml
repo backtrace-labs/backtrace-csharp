@@ -25,9 +25,9 @@ jobs:
         run: dotnet build ./Backtrace/Backtrace.csproj --no-restore --configuration Release
 
       - name: Pack
-        run: dotnet pack ./Backtrace/Backtrace.csproj --configuration Release --no-build -o ./output
+        run: dotnet pack ./Backtrace/Backtrace.csproj --configuration Release --no-build -o ./output/Backtrace.nupkg
 
       - name: Publish to NuGet
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: dotnet nuget push ./output/*.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ./output/Backtrace.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json
