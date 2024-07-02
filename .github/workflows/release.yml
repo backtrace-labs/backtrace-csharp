@@ -33,4 +33,4 @@ jobs:
       - name: Publish to NuGet
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: dotnet nuget push ./output/Backtrace${{ github.ref_name }}.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ./output/Backtrace.${{ github.ref_name }}.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json
