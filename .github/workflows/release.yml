@@ -28,12 +28,10 @@ jobs:
         run: dotnet pack ./Backtrace/Backtrace.csproj --configuration Release --no-build -o ./output/
 
       - name: print current tag version
-        env:
-          PACKAGE_VERSION: ${{ github.ref_name }}
-        run: echo $PACKAGE_VERSION ./output/Backtrace$PACKAGE_VERSION.nupkg
+        run: echo ${{ env.RELEASE_VERSION }} ./output/Backtrace$${{ env.RELEASE_VERSION }}.nupkg
 
       - name: Publish to NuGet
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
           PACKAGE_VERSION: ${{ github.ref_name }}
-        run: dotnet nuget push ./output/Backtrace$PACKAGE_VERSION.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ./output/Backtrace${{ env.RELEASE_VERSION }}.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json
