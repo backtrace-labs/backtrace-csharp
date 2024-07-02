@@ -25,7 +25,7 @@ jobs:
         run: dotnet build ./Backtrace/Backtrace.csproj --no-restore --configuration Release
 
       - name: Pack
-        run: dotnet pack --configuration Release --no-build -o ./output
+        run: dotnet pack ./Backtrace/Backtrace.csproj --configuration Release --no-build -o ./output
 
       - name: Publish to NuGet
         env:
