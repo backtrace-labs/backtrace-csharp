@@ -1,0 +1,33 @@
+name: Publish NuGet Package
+
+on:
+  push:
+    tags:
+      - "*.*.*"
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build ./Backtrace/Backtrace.csproj --no-restore --configuration Release
+
+      - name: Pack
+        run: dotnet pack --configuration Release --no-build -o ./output
+
+      - name: Publish to NuGet
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push ./output/*.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json
