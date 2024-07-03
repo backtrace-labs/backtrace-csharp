@@ -1,6 +1,6 @@
 # Backtrace
 
-[![Backtrace@release](https://img.shields.io/badge/Backtrace%40master-2.1.9-blue.svg)](https://www.nuget.org/packages/Backtrace)
+[![Backtrace@release](https://img.shields.io/badge/Backtrace%40master-2.1.10-blue.svg)](https://www.nuget.org/packages/Backtrace)
 
 [Backtrace](http://backtrace.io/)'s integration with C# applications allows customers to capture and report handled and unhandled C# exceptions to their Backtrace instance, instantly offering the ability to prioritize and debug software errors.
 
@@ -9,9 +9,9 @@
 ## Usage
 
 ```csharp
-// replace with your endpoint url and token
+// replace with your universe name and token
 var backtraceCredentials =
-	new BacktraceCredentials(@"https://myserver.sp.backtrace.io:6097", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
+	new BacktraceCredentials(@"https://submit.backtrace.io/universe-name/token/json");
 var backtraceClient = new BacktraceClient(backtraceCredentials);
 
 try{
@@ -49,7 +49,7 @@ catch(Exception exception){
 7. [Good to know](#good-to-know)
 8. [Release Notes](#changelog)
 
-# Features Summary <a name="features-summary"></a>
+# Features Summary
 
 - Light-weight C# client library that quickly submits C#/.NET exceptions and crashes to your Backtrace dashboard
   - Can include callstack, system metadata, custom metadata, and file attachments (e.g. minidump) if needed.
@@ -60,7 +60,7 @@ catch(Exception exception){
 - Fully customizable and extendable event handlers and base classes for custom implementations
 - Available as a [NuGet Package](https://www.nuget.org/packages/Backtrace/) as well as a fully open-sourced [Github Release](https://github.com/backtrace-labs/backtrace-csharp/).
 
-# Supported .NET Frameworks <a name="supported-frameworks"></a>
+# Supported .NET Frameworks
 
 - .NET Framework 3.5 +
 - .NET Framework 4.5 +
@@ -72,9 +72,9 @@ catch(Exception exception){
   - Universal Windows Platform
 - Unity
 
-# Installation <a name="installation"></a>
+# Installation
 
-## Prerequisites <a name="installation-before-start"></a>
+## Prerequisites
 
 ### Development Environment
 
@@ -86,7 +86,7 @@ catch(Exception exception){
 
 The [**Backtrace** library](https://www.nuget.org/packages/Backtrace/) is available on NuGet. You can read more about NuGet and how to download the packages [here](https://docs.microsoft.com/en-us/nuget/)
 
-## Installing Backtrace via NuGet <a name="installation-nuget"></a>
+## Installing Backtrace via NuGet
 
 You can install Backtrace via NuGet using the following commands:
 
@@ -102,76 +102,9 @@ Linux/Mac OS X .NET Core CLI:
 dotnet add package Backtrace
 ```
 
-# Running sample application <a name="sample-app"></a>
+# Documentation
 
-## Visual Studio <a name="sample-app-vs"></a>
-
-Visual Studio allows you to build a project and run all available samples (includes support for .NET Core, .NET Framework 4.5, .NET Framework 3.5).
-
-- Double click `.sln` file or **open** project directory in Visual Studio.
-- In **Solution Explorer** navigate to directory `Sample` and set preferred project (.NET Core/Framework) as startup project.
-
-![Visual Studio](https://github.com/backtrace-labs/backtrace-csharp/raw/master/Backtrace/Documents/Images/VisualStudio.PNG)
-
-- Open `Program.cs` class in any **Backtrace Sample project** and replace `BacktraceCredential` constructor patemeters with with your `Backtrace endpoint URL` (e.g. https://xxx.sp.backtrace.io:6098) and `submission token`:
-
-```csharp
-    var backtraceCredentials = new BacktraceCredentials(@"https://myserver.sp.backtrace.io:6097", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
-```
-
-- Press `Ctrl+Shift+B` to `build` solution
-- Press `F5` to run the project
-- You should see new errors in your Backtrace instance. Refresh the Project page or Query Builder to see new details in real-time.
-
-## .NET Core command line <a name="sample-app-cli"></a>
-
-You can use .NET Core's CLI to run sample project on Windows, Mac OS and Linux. To run a sample project using .NET Core CLI:
-
-- While in solution directory, navigate to **Backtrace.Core** sample application:
-
-```
-    cd Backtrace.Core
-```
-
-- Open `Program.cs` in project **Backtrace.Core** and replace `BacktraceCredential` constructor parameters with with your `Backtrace endpoint URL` (e.g. https://xxx.sp.backtrace.io:6098) and `submission token`:
-
-```csharp
-    var backtraceCredentials = new BacktraceCredentials(@"https://myserver.sp.backtrace.io:6097", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
-```
-
-- Build the project:
-
-```
-    dotnet build
-```
-
-- When the build completes, run the project:
-
-```
-    dotnet run
-```
-
-- You should see new errors in your Backtrace instance. Refresh the Project page or Query Builder to see new details in real-time.
-
-## Visual Studio for MacOS <a name="sample-app-vs-mac"></a>
-
-- Open the **Backtrace** solution in Visual Studio, unload all projects except **Backtrace**, **Backtrace.Tests** and **Backtrace.Core**, and set **Backtrace.Core** as your startup project:
-
-![VisualStudioMacOS](https://github.com/backtrace-labs/backtrace-csharp/raw/master/Backtrace/Documents/Images/VisualStudioMacOS.PNG)
-
-- Open `Program.cs` class in project **Backtrace.Core** and replace `BacktraceCredential` constructor parameters with with your `Backtrace endpoint URL` (e.g. https://xxx.sp.backtrace.io:6098) and `submission token`:
-
-```csharp
-    var backtraceCredentials = new BacktraceCredentials(@"https://myserver.sp.backtrace.io:6097", "4dca18e8769d0f5d10db0d1b665e64b3d716f76bf182fbcdad5d1d8070c12db0");
-```
-
-- Build the project.
-- Upon successful build, run the project.
-- You should see new errors in your Backtrace instance. Refresh the Project page or Query Builder to see new details in real-time.
-
-# Documentation <a name="documentation"></a>
-
-## Initialize a new BacktraceClient <a name="documentation-initialization"></a>
+## Initialize a new BacktraceClient
 
 First create a `BacktraceCredential` instance with your `Backtrace endpoint URL` (e.g. https://xxx.sp.backtrace.io:6098) and `submission token`, and supply it as a parameter in the `BacktraceClient` constructor:
 
@@ -192,7 +125,7 @@ var configuration = new BacktraceClientConfiguration(credentials){
 var backtraceClient = new BacktraceClient(configuration);
 ```
 
-For more information on `BacktraceClientConfiguration` parameters please see <a href="#architecture-BacktraceClient">Architecture</a> section.
+For more information on `BacktraceClientConfiguration` parameters please see Architecture section.
 
 Notes:
 
@@ -200,7 +133,7 @@ Notes:
 - If you develop application behind the proxy you can pass `WebProxy` object to `BacktraceCredentials` object. We will try to use `WebProxy` object when user pass it to `Backtrace`. To setup proxy use property `Proxy`,
 - `BacktraceClient` allows you to unpack `AggregateExceptions` and send only exceptions that are available in `InnerException` property of `AggregateException`. By default `BacktraceClient` will send `AggregateException` information to Backtrace server. To avoid sending these reports, please override `UnpackAggregateException` and set value to `true`.
 
-#### Database initialization <a name="documentation-database-initialization"></a>
+#### Database initialization
 
 `BacktraceClient` allows you to customize the initialization of `BacktraceDatabase` for local storage of error reports by supplying a `BacktraceDatabaseSettings` parameter, as follows:
 
@@ -258,7 +191,7 @@ Notes:
 - `BacktarceDatabase` `Delete` method will remove record (with multiple deduplicated records) at the same time.
 - You can override default hash method by using `GenerateHash` delegate available in `BacktraceDatabase` object. When you add your own method implementation, `BacktraceDatabase` won't use default deduplication mechanism.
 
-## Sending an error report <a name="documentation-sending-report"></a>
+## Sending an error report
 
 `BacktraceClient.Send/BacktraceClient.SendAsync` method will send an error report to the Backtrace endpoint specified. There `Send` method is overloaded, see examples below:
 
@@ -353,7 +286,7 @@ catch (Exception exception)
 }
 ```
 
-## Attaching custom event handlers <a name="documentation-events"></a>
+## Attaching custom event handlers
 
 `BacktraceClient` allows you to attach your custom event handlers. For example, you can trigger actions before the `Send` method:
 
@@ -397,17 +330,17 @@ backtraceClient.HandleApplicationException();
 
 Unhandled application exception handler will store your report in database. In case if you won't see your report in Backtrace, you will have to relaunch your application.
 
-## Custom client and report classes <a name="documentation-customization"></a>
+## Custom client and report classes
 
 You can extend `BacktraceBase` to create your own Backtrace client and error report implementation. You can refer to `BacktraceClient` for implementation inspirations.
 
-# Architecture <a name="architecture"></a>
+# Architecture
 
-## BacktraceReport <a name="architecture-BacktraceReport"></a>
+## BacktraceReport
 
 **`BacktraceReport`** is a class that describe a single error report. Keep in mind that `BacktraceClient` uses `CallingAssembly` method to retrieve information about your application.
 
-## BacktraceClient <a name="architecture-BacktraceClient"></a>
+## BacktraceClient
 
 **`BacktraceClient`** is a class that allows you to instantiate a client instance that interacts with `BacktraceApi`. This class sets up connection to the Backtrace endpoint and manages error reporting behavior (for example, saving minidump files on your local hard drive and limiting the number of error reports per minute). `BacktraceClient` extends `BacktraceBase` class.
 
@@ -417,11 +350,11 @@ You can extend `BacktraceBase` to create your own Backtrace client and error rep
 - `ClientAttributes` - custom attributes to be submitted to Backtrace alongside the error report.
 - `ReportPerMin` - A cap on the number of reports that can be sent per minute. If `ReportPerMin` is equal to zero then there is no cap.
 
-## BacktraceData <a name="architecture-BacktraceData"></a>
+## BacktraceData
 
 **`BacktraceData`** is a serializable class that holds the data to create a diagnostic JSON to be sent to the Backtrace endpoint via `BacktraceApi`. You can add additional pre-processors for `BacktraceData` by attaching an event handler to the `BacktraceClient.BeforeSend` event. `BacktraceData` require `BacktraceReport` and `BacktraceClient` client attributes.
 
-## BacktraceApi <a name="architecture-BacktraceApi"></a>
+## BacktraceApi
 
 **`BacktraceApi`** is a class that sends diagnostic JSON to the Backtrace endpoint. `BacktraceApi` is instantiated when the `BacktraceClient` constructor is called. You use the following event handlers in `BacktraceApi` to customize how you want to handle JSON data:
 
@@ -431,11 +364,11 @@ You can extend `BacktraceBase` to create your own Backtrace client and error rep
 
 `BacktraceApi` can send synchronous and asynchronous reports to the Backtrace endpoint. To enable asynchronous report (default is synchronous) you have to set `AsynchronousRequest` property to `true`.
 
-## BacktraceResult <a name="architecture-BacktraceResult"></a>
+## BacktraceResult
 
 **`BacktraceResult`** is a class that holds response and result from a `Send` or `SendAsync` call. The class contains a `Status` property that indicates whether the call was completed (`OK`), the call returned with an error (`ServerError`), the call was aborted because client reporting limit was reached (`LimitReached`), or the call wasn't needed because developer use `UnpackAggregateException` property with empty `AggregateException` object (`Empty`). Additionally, the class has a `Message` property that contains details about the status. Note that the `Send` call may produce an error report on an inner exception, in this case you can find an additional `BacktraceResult` object in the `InnerExceptionResult` property.
 
-## BacktraceDatabase <a name="architecture-BacktraceDatabase"></a>
+## BacktraceDatabase
 
 **`BacktraceDatabase`** is a class that stores error report data in your local hard drive. If `DatabaseSettings` dones't contain a **valid** `DatabasePath` then `BacktraceDatabase` won't generate minidump files and store error report data.
 
@@ -455,11 +388,11 @@ stored reports every `RetryInterval` seconds up to `RetryLimit` times, both cust
 
 If you want to clear your database or remove all reports after send method you can use `Clear`, `Flush` and `FlushAsync` methods.
 
-## ReportWatcher <a name="architecture-ReportWatcher"></a>
+## ReportWatcher
 
 **`ReportWatcher`** is a class that validate send requests to the Backtrace endpoint. If `reportPerMin` is set in the `BacktraceClient` constructor call, `ReportWatcher` will drop error reports that go over the limit. `BacktraceClient` check rate limit before `BacktraceApi` generate diagnostic json.
 
-# Good to know <a name="good-to-know"></a>
+# Good to know
 
 ## Xamarin
 
@@ -469,6 +402,6 @@ You can use this Backtrace library with Xamarin if you change your `HttpClient` 
 
 [androidsupport]: https://github.com/backtrace-labs/backtrace-csharp/raw/master/Backtrace/Documents/Images/AndroidSupport.PNG "Xamarin Android Support"
 
-# Release Notes <a name="changelog"></a>
+# Release Notes
 
 See release notes [here](./CHANGELOG.md).
