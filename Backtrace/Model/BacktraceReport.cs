@@ -93,7 +93,7 @@ namespace Backtrace.Model
 
         internal readonly bool _reflectionMethodName;
 
-        private const string ERROR_TYPE_VALUE = "error.type";
+        private const string ERROR_TYPE_ATTRIBUTE = "error.type";
 
         /// <summary>
         /// Create new instance of Backtrace report to sending a report with custom client message
@@ -110,7 +110,7 @@ namespace Backtrace.Model
             : this(null as Exception, attributes, attachmentPaths, reflectionMethodName)
         {
             Message = message;
-            if (!Attributes.ContainsKey(ERROR_TYPE_VALUE))
+            if (!Attributes.ContainsKey(ERROR_TYPE_ATTRIBUTE))
             {
                 SetReportErrorType("Message");
             }
@@ -137,7 +137,7 @@ namespace Backtrace.Model
             _reflectionMethodName = reflectionMethodName;
             Message = ExceptionTypeReport ? exception.Message : string.Empty;
             SetCallingAssemblyInformation();
-            if (ExceptionTypeReport && !Attributes.ContainsKey(ERROR_TYPE_VALUE))
+            if (ExceptionTypeReport && !Attributes.ContainsKey(ERROR_TYPE_ATTRIBUTE))
             {
                 SetReportErrorType("Exception");
             }
@@ -206,7 +206,7 @@ namespace Backtrace.Model
 
         internal void SetReportErrorType(string errorType)
         {
-            Attributes[ERROR_TYPE_VALUE] = errorType;
+            Attributes[ERROR_TYPE_ATTRIBUTE] = errorType;
         }
     }
 }
