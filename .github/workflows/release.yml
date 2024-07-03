@@ -32,4 +32,4 @@ jobs:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
           ls 
-          dotnet nuget push Backtrace.${{ github.ref_name }}.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json
+          dotnet nuget push Backtrace.${{ github.ref_name }}.nupkg -k "$NUGET_API_KEY" -s https://api.nuget.org/v3/index.json
