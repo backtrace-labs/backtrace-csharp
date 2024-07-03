@@ -13,7 +13,7 @@ Improvements:
 
 Maintenance: 
 - Removed codeql-analysis action 
-- Moved testing and building to Github aciton (#37, #40)
+- Moved testing and building to Github action (#37, #40)
 - Added a CICD pipeline for releasing a new version of libraries
 
 ## Version 2.1.9 - 08.06.2019
