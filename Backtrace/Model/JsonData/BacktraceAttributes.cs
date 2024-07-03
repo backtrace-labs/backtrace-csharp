@@ -181,17 +181,18 @@ namespace Backtrace.Model.JsonData
             }
             var networkInterface =
                  NetworkInterface.GetAllNetworkInterfaces()
-                    .FirstOrDefault(n => n.OperationalStatus == OperationalStatus.Up);
+                    .FirstOrDefault(n =>
+                        n.OperationalStatus == OperationalStatus.Up
+                        && !string.IsNullOrEmpty(n.GetPhysicalAddress()?.ToString())
+                    );
 
-            PhysicalAddress physicalAddr = null;
-            string macAddress = null;
-            if (networkInterface == null
-                || (physicalAddr = networkInterface.GetPhysicalAddress()) == null
-                || string.IsNullOrEmpty(macAddress = physicalAddr.ToString()))
+            if (networkInterface == null)
             {
                 guid = Guid.NewGuid();
                 return guid;
             }
+
+            string macAddress = networkInterface.GetPhysicalAddress().ToString();
 
             string hex = macAddress.Replace(":", string.Empty);
             var value = Convert.ToInt64(hex, 16);
