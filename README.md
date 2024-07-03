@@ -125,7 +125,7 @@ var configuration = new BacktraceClientConfiguration(credentials){
 var backtraceClient = new BacktraceClient(configuration);
 ```
 
-For more information on `BacktraceClientConfiguration` parameters please see Architecture section.
+For more information on `BacktraceClientConfiguration` parameters please see [Architecture](#architecture).
 
 Notes:
 
