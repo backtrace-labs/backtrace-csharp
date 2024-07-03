@@ -8,11 +8,10 @@
     <tags>Backtrace Error Diagnostic Tools Debug Bug Bugs StackTrace</tags>
     <PackageVersion>2.1.10-alpha1</PackageVersion>
     <Product>Backtrace</Product>
-    <PackageLicenseUrl>https://github.com/backtrace-labs/backtrace-csharp/blob/master/LICENSE</PackageLicenseUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <projectUrl>https://github.com/backtrace-labs/backtrace-csharp</projectUrl>
     <PackageIconUrl>http://backtrace.io/images/icon.png</PackageIconUrl>
-    <PackageIcon>http://backtrace.io/images/icon.png</PackageIcon>
+    <PackageIcon>icon.png</PackageIcon>
     <language>en-US</language>
     <Icon>http://backtrace.io/images/icon.png</Icon>
     <Description>Backtrace's integration with C# applications allows customers to capture and report handled and unhandled C# exceptions to their Backtrace instance, instantly offering the ability to prioritize and debug software errors.</Description>
@@ -33,6 +32,7 @@
   <ItemGroup>
     <None Include="..\README.md" Pack="true" PackagePath="\" />
     <None Include="..\LICENSE" Pack="true" PackagePath="\" />
+    <None Include="..\icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
   
   <ItemGroup>
