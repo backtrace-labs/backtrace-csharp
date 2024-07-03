@@ -319,8 +319,7 @@ namespace Backtrace.Base
         /// </summary>
         public virtual void HandleApplicationThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
         {
-            var exception = e.Exception as Exception;
-            Send(new BacktraceReport(exception));
+            ReportUnhandledException(e.Exception);
             OnUnhandledApplicationException?.Invoke(e.Exception);
         }
 
@@ -346,18 +345,26 @@ namespace Backtrace.Base
 
         private void ReportUnhandledException(Exception exception)
         {
+            if (UnpackAggregateExcetpion && exception is AggregateException)
+            {
+                exception = exception.InnerException;
+            }
             // Always prefer to use Database rather than freezing the app because of the http request.
             // On environment where the database cannot be enabled for any reason, we still want to report
             // data and in this situation we prefer to take this tradeoff. 
             var report = new BacktraceReport(exception);
+            report.SetReportErrorType("Unhandled Exception");
             if (Database != null)
             {
-                Database.Add(report, Attributes, MiniDumpType);
+                var result = Database.Add(report, Attributes, MiniDumpType);
+                // try to send anyway if the database refuses to accept a report for any reason.
+                if (result != null)
+                {
+                    return;
+                }
             }
-            else
-            {
-                Send(report);
-            }
+            Send(report);
+
         }
 #endif
     }
