@@ -7,8 +7,8 @@ Improvements:
 - On uncaught exception, store a report in the database rather sending it to API. If the database is not available, try sending a report to the server (#36).
 - Added `application.session`, `application.version`, `backtrace.agent` and `backtrace.version` attributes.
 - Read `application.version` and `version` attributes only when the assembly is available.
-- Added support for the `error.type` attribute.
-- Fixed the problem when the `guid` attribute value was set incorrectly.
+- Added support for the `error.type` attribute (#42).
+- Fixed the problem when the `guid` attribute value was set incorrectly (#43).
 
 
 Maintenance: 
