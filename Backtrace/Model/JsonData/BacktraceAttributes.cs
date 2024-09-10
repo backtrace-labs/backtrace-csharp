@@ -241,7 +241,14 @@ namespace Backtrace.Model.JsonData
                 {
                     Attributes["process.age"] = totalProcessAge;
                 }
+            }
+            catch (NotSupportedException)
+            {
+                Trace.TraceWarning($"Cannot retrieve process age - TotalProcessorTime is not supported");
+            }
             
+            try
+            {            
                 Attributes["cpu.process.count"] = Process.GetProcesses().Count();
 
                 //Resident memory usage.
