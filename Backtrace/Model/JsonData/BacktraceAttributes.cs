@@ -246,7 +246,7 @@ namespace Backtrace.Model.JsonData
             {
                 Trace.TraceWarning($"Cannot retrieve process age - TotalProcessorTime is not supported");
             }
-            
+
             try
             {            
                 Attributes["cpu.process.count"] = Process.GetProcesses().Count();
