@@ -248,7 +248,7 @@ namespace Backtrace.Model.JsonData
             }
 
             try
-            {            
+            {
                 Attributes["cpu.process.count"] = Process.GetProcesses().Count();
 
                 //Resident memory usage.
