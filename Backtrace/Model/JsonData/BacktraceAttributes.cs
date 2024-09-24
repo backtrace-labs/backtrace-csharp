@@ -232,13 +232,21 @@ namespace Backtrace.Model.JsonData
             {
                 return;
             }
-            //How long the application has been running  in secounds
-            var processAge = Math.Round(process.TotalProcessorTime.TotalSeconds);
-            var totalProcessAge = unchecked((long)processAge);
-            if (totalProcessAge > 0)
+            try
             {
-                Attributes["process.age"] = totalProcessAge;
+                //How long the application has been running  in secounds
+                var processAge = Math.Round(process.TotalProcessorTime.TotalSeconds);
+                var totalProcessAge = unchecked((long)processAge);
+                if (totalProcessAge > 0)
+                {
+                    Attributes["process.age"] = totalProcessAge;
+                }
             }
+            catch (NotSupportedException)
+            {
+                Trace.TraceWarning($"Cannot retrieve process age - TotalProcessorTime is not supported");
+            }
+
             try
             {
                 Attributes["cpu.process.count"] = Process.GetProcesses().Count();
@@ -275,7 +283,7 @@ namespace Backtrace.Model.JsonData
                     Attributes["vm.vma.peak"] = peakVirtualMemorySize;
                 }
             }
-            catch (PlatformNotSupportedException)
+            catch (NotSupportedException)
             {
                 Trace.TraceWarning($"Cannot retrieve information about process memory - platform not supported");
             }
