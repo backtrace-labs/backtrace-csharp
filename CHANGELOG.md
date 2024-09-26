@@ -1,8 +1,14 @@
 ﻿# Backtrace C# Release Notes
 
+## Version 2.1.11 - 26.09.2024
+
+Bugfix:
+- Fixed an Exception due to unsupported `process.TotalProcessorTime` usage (#44).
+
 ## Version 2.1.10 - 02.07.2024
 
 Improvements:
+
 - Updated dependencies to the latest verison.
 - On uncaught exception, store a report in the database rather sending it to API. If the database is not available, try sending a report to the server (#36).
 - Added `application.session`, `application.version`, `backtrace.agent` and `backtrace.version` attributes.
@@ -10,9 +16,9 @@ Improvements:
 - Added support for the `error.type` attribute (#42).
 - Fixed the problem when the `guid` attribute value was set incorrectly (#43).
 
+Maintenance:
 
-Maintenance: 
-- Removed codeql-analysis action 
+- Removed codeql-analysis action
 - Moved testing and building to Github action (#37, #40)
 - Added a CICD pipeline for releasing a new version of libraries
 
