@@ -179,12 +179,18 @@ namespace Backtrace.Model.JsonData
             {
                 return guid;
             }
-            var networkInterface =
-                 NetworkInterface.GetAllNetworkInterfaces()
-                    .FirstOrDefault(n =>
-                        n.OperationalStatus == OperationalStatus.Up
-                        && !string.IsNullOrEmpty(n.GetPhysicalAddress()?.ToString())
-                    );
+
+            NetworkInterface networkInterface = null;
+            try
+            {
+                networkInterface = NetworkInterface.GetAllNetworkInterfaces()
+                        .FirstOrDefault(n =>
+                            n.OperationalStatus == OperationalStatus.Up
+                            && !string.IsNullOrEmpty(n.GetPhysicalAddress()?.ToString())
+                        );
+            }
+            catch (Exception){}
+
 
             if (networkInterface == null)
             {
