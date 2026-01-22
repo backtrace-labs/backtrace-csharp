@@ -189,7 +189,9 @@ namespace Backtrace.Model.JsonData
                             && !string.IsNullOrEmpty(n.GetPhysicalAddress()?.ToString())
                         );
             }
-            catch (Exception){}
+            catch (Exception ex){
+                Trace.TraceWarning("Failed to retrieve Network Interfaces", ex);
+            }
 
 
             if (networkInterface == null)
