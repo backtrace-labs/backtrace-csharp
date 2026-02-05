@@ -175,7 +175,7 @@ namespace Backtrace.Model
             if (attributes == null)
             {
                 return reportAttributes;
-            };
+            }
             return reportAttributes.Merge(attributes);
         }
 
