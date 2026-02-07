@@ -95,7 +95,7 @@ namespace Backtrace.Model
                 var bytes = Encoding.ASCII.GetBytes(json);
                 var hash = sha1.ComputeHash(bytes);
                 return Convert.ToBase64String(hash);
-            };
+            }
         }
     }
 }
